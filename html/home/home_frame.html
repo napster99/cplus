@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+   <meta name="viewport" content="maximum-scale=1,minimum-scale=1,user-scalable=1,width=device-width,initial-scale=1"/>
+  <meta content="yes" name="apple-mobile-web-app-capable" />
+  <meta content="black" name="apple-mobile-web-app-status-bar-style" />
+  <meta content="telephone=no" name="format-detection" />
+  
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/my.css">
+  <link rel="stylesheet" href="../../css/form.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <title>我</title>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="my">
+    <!-- 菜单列表 -->
+    <div class="text-list mt10">
+      <ul class="border-top">
+        <li name="avatar" class="border-bottom big elastic">
+          <div class="r">
+            <div class="avatar" id="avatar"><i class="icon-m icon-user-fill"></i></div>
+            <span class="enter"><i class="icon-m icon-arrow-right"></i></span>
+          </div>
+          <span class="field">头像</span>
+        </li>
+
+        <li name="nickname" class="border-bottom">
+          <span class="r">
+            <span class="val" id="nickname"></span>
+            <span class="enter"><i class="icon-m icon-arrow-right"></i></span>
+          </span>
+          <span class="field">昵称</span>
+        </li>
+
+       <li class="border-bottom">
+          <span class="r">
+            <span class="val" id="no"></span>
+          </span>
+          <span class="field">多多号</span>
+        </li>
+       
+        <li name="my-qrcode" class="border-bottom">
+          <span class="r">
+            <i class="icon-m icon-qrcode"></i>
+            <span class="enter"><i class="icon-m icon-arrow-right"></i></span>
+          </span>
+          <span class="field">我的二维码</span>
+        </li>
+        <!-- <li>
+          <div class="r"><i class="icon-m icon-arrow-right"></i></div>
+          <span class="field">我的地址</span>
+        </li> -->
+      </ul>
+      <ul class="border-top">
+        <li name="gender" class="border-bottom">
+          <div class="r"><span class="value" id="gender"></span><i class="icon-m icon-arrow-right"></i></div>
+          <span class="field">性别</span>
+        </li>
+        <!-- <li>
+          <div class="r"><span class="value">浙江 杭州</span><i class="icon-m icon-arrow-right"></i></div>
+          <span class="field">地区</span>
+        </li> -->
+      </ul>
+      
+       <ul class="border-top bottom-one">
+        <li id="logout" class="border-bottom center">
+          退出登录
+        </li>
+      </ul>
+    </div>
+  </div>
+
+
+
+
+</div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+  apiready = function() {
+
+    authInfo(function(data, code, msg) {
+      if(code === 0) {
+        $api.setStorage('user', data);
+        renderData(data);
+      }
+    })
+
+    function renderData(data) {
+      if(!$.isEmptyObject(data)) {
+        $('#nickname').text(data['nickname']);
+        $('#no').text(data['no']);
+        var avatarImg = getPicUrl(data['avatar'], 65*window.devicePixelRatio, 65*window.devicePixelRatio);
+
+        var img = new Image();
+        img.src = avatarImg;
+        img.onload = function() {
+          $('#avatar').html('<div class="img-box"><img src="'+avatarImg+'" /></div>');
+        }
+
+        if(data['gender'] == 1) {
+          $('#gender').text('男');
+        }else if(data['gender'] == 2) {
+          $('#gender').text('女');
+        }else{
+          $('#gender').text('未知');
+        }
+      }
+    }
+
+    api.addEventListener({
+      name: 'viewappear'
+    }, function(ret, err){
+      authInfo(function(data, code, msg) {
+        if(code === 0) {
+          $api.setStorage('user', data);
+          renderData(data);
+        }
+      })
+
+      //++++++++++++++奖励++++++++++++++
+      var rewarbHome = $api.getStorage('rewarbHome');
+      if(!$.isEmptyObject(rewarbHome)) {
+        if(rewarbHome['exp']) {
+          openRewarbTip({
+            'gold' : rewarbHome['gold'],
+            'exp' : rewarbHome['exp'],
+            'tasks' : rewarbHome['tasks'],
+            'name' : '完善资料'
+          }, '../../html/rewarbTip_frame.html')
+        }
+        $api.setStorage('rewarbHome', null);
+      }
+      //++++++++++++++奖励++++++++++++++
+
+    });
+    
+
+    $('li').on('tap', function() {
+      var name = $(this).attr('name');
+      if(!name || name === 'cancel' || name ==='camera' || name === 'album' || name === 'avatar') return;
+      if(name === 'my-qrcode') {
+        api.openWin({
+          'name' : 'my-qrcode',
+          'url' : './my-qrcode.html',
+          'bounces' : false
+        });
+        return;
+      }
+      api.openWin({
+        'name' : name,
+        'url' : './' + name + '.html'
+      });
+    });
+
+    //更改头像
+    $('li[name=avatar]').on('tap',  function(event) {
+      if(event.target.nodeName === 'IMG') return;
+      
+      avatarChange(function(index){
+        if(index === 3) return;
+        var name = 'camera';
+        if(index === 2) { //从手机相册选取
+          name = 'album';
+        }
+
+        api.getPicture({
+          sourceType: name,
+          encodingType: 'jpg',
+          mediaValue: 'pic',
+          destinationType: 'base64',
+          allowEdit: true,
+          quality: 100,
+          targetWidth:130,
+          targetHeight:130,
+          saveToPhotoAlbum: false
+        }, function(ret, err){
+            if (ret) {
+              encodeBase64 = ret.base64Data.split(',')[1];
+
+              api.showProgress({
+                style: 'default',
+                animationType: 'fade',
+                title: '正在上传头像...',
+                text: '再耐心等待一会，就要上钩啦',
+                modal: false
+              });
+              
+              sendAjax(URLConfig('uploadPic'), {'tag' : 'user:avatar','pic' : encodeBase64}, function(data, code, msg) {
+                if(code === 0) {
+                  sendAjax(URLConfig('userModify'), {'avatar' : data['src']}, function(datas, code, msg) {
+                    api.hideProgress();
+                    if(code === 0) {
+                      $('#avatar img').attr('src', data['src']);
+
+                      //++++++++++++++奖励++++++++++++++
+                      if(data['exp']) {
+                        openRewarbTip({
+                          'gold' : data['gold'],
+                          'exp' : data['exp'],
+                          'name' : '完善资料'
+                        }, '../../html/rewarbTip_frame.html')
+                      }
+                      //++++++++++++++奖励++++++++++++++
+                      
+                    }else{
+                      api && api.toast({
+                        msg: msg || '修改失败，请稍后再试！',
+                        duration:2000,
+                        location: 'middle'
+                      });
+                    }
+                  });
+                }else{
+                  api && api.toast({
+                    msg: msg || '上传图片，请稍后再试！',
+                    duration:2000,
+                    location: 'middle'
+                  });
+                }
+              });
+            }
+        });
+      });
+    });
+    
+    //查看头像大图
+    $('#avatar').on('tap', 'img', function() {
+        var src = $(this).attr('src');
+        var avatarImg = getPicUrl(src, api.winWidth*window.devicePixelRatio, api.winHeight*window.devicePixelRatio);
+        api.openWin({
+          'name' : 'img-view',
+          'url' : '../img-view_frame.html',
+          'bounces' : false,
+          'pageParam' :  {'src' : [avatarImg]},
+          'animation' : {
+            'type' : 'none'
+          }
+        });
+
+       return false;
+    });
+
+
+
+
+
+    //登出
+    $('#logout').on('click', function() {
+      sendAjax(URLConfig('logout'), null, function(data, code, msg) {
+        if(code === 0) {
+          api.toast({
+            msg: '退出成功！',
+            duration:1000,
+            location: 'middle'
+          });
+          //清空User数据
+          $api.setStorage('user', null);
+
+          //刷新页面 首页
+          api.execScript({
+            name: 'index',
+            frameName: 'index',
+            script: 'initIndexData();'
+          });
+
+
+          setTimeout(function() {
+            api.execScript({
+              name: 'index',
+              script: 'openIndexFrame(true);'
+            });
+
+            api.closeToWin({
+              name: 'index'
+            });
+
+
+          },1000);
+
+        }else{
+          api.toast({
+            msg: msg || '登出失败，请稍后再试！',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+    });
+
+  }
+</script>
+</html>

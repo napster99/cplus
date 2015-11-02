@@ -1,0 +1,313 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../css/discover.css">
+  <title>发现</title>
+</head>
+<body >
+  <div class="wrap">
+    <div class="discover border-top border-bottom">
+      <div class="text-list pt10">
+        <ul class="border-top">
+          <li id="nearPepole" class="border-bottom">
+            <span class="r">
+              <span class="desc">认识周围的新朋友</span>
+              <span class="enter"><i class="icon-m icon-arrow-right"></i></span>
+            </span>
+            <i class="icon-m icon-position"></i>
+            <span class="field">附近的人</span>
+          </li>
+          <li id="weather" class="border-bottom">
+            <span class="r">
+              <span class="enter"><i class="icon-m icon-arrow-right"></i></span>
+            </span>
+            <i class="icon-m icon-weather"></i>
+            <span class="field">钓鱼看天</span>
+          </li>
+          <li id="guagua" class="border-bottom">
+            <span class="r">
+              <span class="enter"><i class="icon-m icon-arrow-right"></i></span>
+            </span>
+            <i class="icon-m icon-ticket"></i>
+            <span class="field">刮卡券包</span>
+          </li>
+          <!-- <li id="list-gatherFish" class="border-bottom">
+            <span class="r"><span class="enter"><i class="icon-m icon-arrow-right"></i></span></span>
+            <i class="icon-m icon-gold"></i>
+            <span class="field">周末福利</span>
+          </li> -->
+
+          <li id="list-gatherFish2" class="border-bottom">
+            <span class="r"><span class="enter"><i class="icon-m icon-arrow-right"></i></span></span>
+            <i class="icon-m icon-user-group"></i>
+            <span class="field">同城约钓</span>
+          </li>
+
+          <!-- <li id="redeem" class="border-bottom">
+            <span class="r"><span class="enter"><i class="icon-m icon-arrow-right"></i></span></span>
+            <i class="icon-m icon-pay-way"></i>
+            <span class="field">兑换商城</span>
+          </li> -->
+          
+          <!-- <li id="pay" class="border-bottom">
+            <span class="r"><span class="enter"><i class="icon-m icon-arrow-right"></i></span></span>
+            <i class="icon-m icon-user-group-fill"></i>
+            <span class="field">支付（支付宝）</span>
+          </li>
+
+          <li id="pay2" class="border-bottom">
+            <span class="r"><span class="enter"><i class="icon-m icon-arrow-right"></i></span></span>
+            <i class="icon-m icon-user-group-fill"></i>
+            <span class="field">支付（微信）</span>
+          </li> -->
+
+          <li id="pk" class="border-bottom">
+            <span class="r"><span class="enter"><i class="icon-m icon-arrow-right"></i></span></span>
+            <i class="icon-m icon-focus"></i>
+            <span class="field">话题PK</span>
+          </li>
+
+<!-- 
+          <li id="yudou" class="border-bottom">
+            <span class="r"><span class="enter"><i class="icon-m icon-arrow-right"></i></span></span>
+            <i class="icon-m icon-remind"></i>
+            <span class="field">鱼豆抽奖</span>
+          </li> -->
+
+
+
+
+        </ul>  
+      </div>
+    </div>
+  </div>  
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+
+    $('#nearPepole').on('tap',  function() {
+      api.openWin({
+        'name' : 'nearPepole',
+        'bounces' : false,
+        'url' : 'nearPepole.html'
+      });
+    });
+    
+    $('#weather').on('tap',  function() {
+      api.openWin({
+        'name' : 'tools',
+        'url' : 'tools_frame.html'
+      });
+    });
+    
+    $('#guagua').on('tap',  function() {
+      var user = $api.getStorage('user');
+      if($.isEmptyObject(user)) {
+        showLoginConfirm('../index.html');
+        return;
+      }
+      api.openWin({
+        'name' : 'guagua',
+        'bounces' : false,
+        'url' : 'guagua.html'
+      });
+    });
+
+    //周末福利
+    $('#list-gatherFish').on('tap', function() {
+      api.openWin({
+        'name' : 'gatherFish',
+        'url' : './gatherFish/static_list.html',
+        'bounces' : false
+      });
+    });
+
+
+    //同城约钓
+    $('#list-gatherFish2').on('tap', function() {
+      api.openWin({
+        'name' : 'gatherFish2',
+        'url' : './gatherFish2/list-gatherFish.html',
+        'bounces' : false
+      });
+
+    });
+
+    //商城
+    $('#redeem').on('tap', function() {
+      sendAjax(URLConfig('redeem'), null, function(data, code, msg) {
+        api.openWin({
+          'name' : 'duiba',
+          'url' : data['url'],
+          'bounces' : false
+        });
+      });
+
+      // api.openWin({
+      //   'name' : 'duiba',
+      //   'url' : 'http://www.duiba.com.cn/autoLogin/autologin?uid=0&credits=0&appKey=En34oHdSQwZveaXiJS6dX1Ks3Lc&sign=a34cf6d81b9f434ff43fba6bca31c65d&timestamp=1444894895000',
+      //   'bounces' : false
+      // });
+    });
+
+
+    //鱼豆
+    $('#yudou').on('tap', function() {
+      api.openWin({
+        'name' : 'yudou',
+        'url' : './yudou/index.html'
+      });
+    })
+
+
+    api.setFrameAttr({
+      'scrollToTop' : false
+    });
+
+    //test
+    $('#pay').on('tap', function() {
+      // api.openWin({
+      //   'name' : 'pay',
+      //   'url' : './pay.html',
+      //   'bounces' : false
+      // });
+      // ...生成订单号后 链接支付宝
+        sendAjax(URLConfig('payOrder2'), null, function(data, code, msg) {
+          var aliPay = api.require('aliPay');
+          var subject = '支付宝充值金币(鱼多多)';
+          var body = '支付宝充值金币(鱼多多)';
+          var amount = 0.01;
+          var tradeNO = data['out_trade_no'];
+          var notifyURL = data['notify_url'];
+        
+          aliPay.pay({
+              partner: '2088021768690799',
+              seller: '2088021768690799',
+              rsaPriKey: 'MIICXAIBAAKBgQDUd3KqIBOKluAXiG9oZM2gYu5+kKoxM1l6xtcULXY9as7Nwjxp4isOiVVqFQVkCjP7cc7TPWb5Tzr8Gh1cYw/nYgKrk6xzxizdwKh9s05jLDUaKSc45EdXwF2Yvl8yYcVGdxMp2q0GHi3e+s3hbup1OyFTT0G68Vjwi8tx4QHjYwIDAQABAoGAdA0ul5hftCKHErOWTspIuuNu67jvDWLD7Fkx37aZUCDIBwGiaB9+bzk6a3BB+ovMKvrWAvIWDfVl/Y/yG6WMaFHEqTxPGTBqbYi/yUvj+la0kcphe8mSxlMUBrWo3iro/wL0lda8a8Un3Q5N80HfjseyiQvatz8+QWmS8ccQvNkCQQD8NGrbmfgXL4hVHqXuKj+2joBXphdv+kingQUlTO3qHGbIO24QfhghjfwBvRyD7U76/uCvIxzBBE8B77P0eRt3AkEA16nx5zvJSYrCx1FU9VNZxRUbxHrM6rBkppuV96F0a1173uc7cM2EK4a7xlGg9GFJTELaTeE43EEz+PmPlSPadQJBAKRJdO5WLtDTqshf7ZDmPpip3Rq7W/sam6dZmUOCCFz/YUi/xePCb++zsNxlFyUtOcywqSYNBlcJenn1blErbuMCQDwNZX+3BSjGS9CGlDqv1/pqE05Vx4O+VHiUMGFBAxL2eAyspL+XaqtYHCdwCXqjMG7c2r7+7P9f5KH6lAG6dxUCQHtLwmKu04ufWSnDzcx91Vw8I9EHPUYgx9cpf3ENyIDfmJfNzykOQlzOpUDY02SvfhTsscz7HLoTjoCR7nhbu7E=',
+              rsaPubKey: 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCnxj/9qwVfgoUh/y2W89L6BkRAFljhNhgPdyPuBV64bfQNN1PjbCzkIM6qRdKBoLPXmKKMiFYnkd6rAoprih3/PrQEB/VsW8OoM8fxn67UDYuyBTqA23MML9q1+ilIZwBC2AQ2UBVOrFXfFl75p6/B5KsiNG9zpgmLCUYuLkxpLQIDAQAB',
+              subject: subject,
+              body: body,
+              amount: amount,
+              tradeNO: tradeNO,
+              notifyURL: notifyURL
+          }, function(ret, err) {
+
+            // statusCode 9000
+            // code 9000
+
+            if(ret['code'] == '9000' ) { //支付宝通过
+              
+              
+
+            }else{
+              api.alert({
+                  title: '支付结果',
+                  msg: ret.statusMessage,
+                  buttons: ['确定']
+              });
+            }
+              
+          });
+
+
+
+
+        });
+
+
+        
+
+
+
+    });
+
+
+$('#pay2').on('tap', function() {
+      // api.openWin({
+      //   'name' : 'pay',
+      //   'url' : './pay.html',
+      //   'bounces' : false
+      // });
+      // ...生成订单号后 链接支付宝
+        sendAjax(URLConfig('payOrder'), null, function(data, code, msg) {
+
+          var weiXin = api.require('weiXin');
+          weiXin.payOrder({
+               orderId: data['out_trade_no'],
+               partnerId:'1274114801',
+               nonceStr:data['noncestr'],
+               timeStamp:data['timestamp'],
+               package:data['package'],
+               sign:data['app_signature']
+          },function(ret,err) {
+               if (ret.status) {
+
+               }else{
+                  api.alert({msg:err.msg});
+               }
+          })
+          var weiXin = api.require('weiXin');
+
+          weiXin.config({
+               appId: 'wx12089dbe050754df',
+               mchId:'1274114801',
+               partnerKey:'jdaijwjfijc33243fjauiw32jjNJUewd',
+               notifyUrl:data['notify_url']
+          },function(ret,err) {
+               if (ret.status) {
+                   weiXin.pay({
+                         body: '支付宝充值金币(鱼多多)',
+                         totalFee:'1',
+                         tradeNo:data['out_trade_no']
+                    },function(ret,err) {
+                       if (ret.status) {
+                           ret.result;
+                       }else{
+                           api.alert({msg:err.msg});
+                       }
+                    });
+
+               }else{
+                   api.alert({msg:err.msg});
+               }
+          });
+
+
+
+          
+
+
+
+
+        });
+
+        
+
+
+
+    });
+
+    $('#pk').on('tap', function() {
+      api.openWin({
+        'name' : 'pk_list',
+        'url' : './pk/pk_list.html',
+        'bounces' : false
+      });
+    });
+    
+    
+    
+  }
+  
+</script>
+</html>

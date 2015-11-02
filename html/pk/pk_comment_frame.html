@@ -1,0 +1,589 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <link rel="stylesheet" href="../../css/shop-detail.css">
+  <link rel="stylesheet" href="../../css/feed.css">
+  <style>
+
+    .nice-box{
+      background: #eee;
+    }
+
+    .nice-box h3{
+      background: #fff;
+    }
+
+    .layer-info{
+      padding: 10px;
+    }
+
+    .layer-info .floor{
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .which-block{
+      color: #fff;
+      display: inline-block;
+      margin-top: -3px;
+      padding: 5px 10px;
+      border-radius: 25px; 
+    }
+    
+    .red{
+      background: red;
+    }
+
+    .red:after{
+      content: "红方阵营";
+    }
+
+    .blue{
+      background: blue;
+    }
+
+    .blue:after{
+      content: "蓝方阵营";
+    }
+
+    .no-data{
+      padding: 10px;
+    }
+    
+    .long{
+      color: #007aff;
+    }
+
+    .title-s{
+      background-color: #cd3738;
+      color: #fff;
+      padding: 8px;
+      padding-right: 15px;
+      border-radius: 0 10px 10px 0;
+      margin-left: -15px;
+      font-weight: normal;
+      font-size: 14px;
+    }
+
+    .icon-box{
+      position: fixed;
+      bottom: 50px; right: 10px;
+      border-radius: 5px;
+      background-color: rgba(0,0,0,.4);
+      color: #fff;
+      font-size: 20px;
+      width: 35px;
+      text-align: center;
+      height: 35px;
+      line-height: 36px;
+    }
+
+    .icon-plane{
+      font-size: 62px;
+      color: #f2d03b;
+      position: absolute;
+      left: 50%; bottom: 2px;
+      -webkit-transform:translateX(-50%);
+    }
+
+    .floor-count{
+      border: 1px solid #ccc;
+      width: 50px;
+      margin: 0 15px;
+    }
+
+    .action-group li{
+      margin-left : 10px;
+    }
+    .action-group li .icon-m{
+      left: 7px;
+      top: 13px;
+    }
+
+  </style>
+  <title>评论</title>
+</head>
+<body>
+  <div class="wrap">
+
+    <div id="conDiv" class="hidden">
+      <div class="nice-box border-bottom mt10">
+        <h3 class="border-bottom"><span class="title-s">热门跟帖</span></h3>
+        
+        <div id="hotList">
+          <div class="no-data">暂无跟帖</div>
+
+
+        </div>
+
+      </div>
+
+      <div class="nice-box border-bottom mt10">
+        <h3 class="border-bottom"><span class="title-s">最新跟帖</span></h3>
+        
+        <div id="newList">
+          <div class="no-data">暂无跟帖</div>
+        </div>
+
+      </div>
+    </div>
+    
+
+
+    <div id="findFloor" class="icon-box" style="z-index:1000;">
+      <i class="icon-m icon-search"></i>
+    </div>
+
+
+    <div id="floorPop" class="pop hidden">
+      <div class="mask"></div>
+      <div class="pop-c">
+        <div class="award-box">
+          <div class="sham-pic">
+            <div class="trophy">
+              <i class="icon-m icon-plane"></i>
+            </div>
+          </div>
+          <div class="title" id="missionName">第<input type="tel" id="floorCount" class="floor-count"/>楼</div>
+          <div class="award">
+            <button id="goFloor">飞过去</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="load-page wait"></div>
+    
+  </div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+  apiready = function() {
+    var id = api.pageParam['id'];
+
+    var page = 1, curPkid = 0, curWhich = 0, curRedCount = 0, curBlueCount = 0;
+    var o, loadCount = 2;
+    var isEnd = false, isAjaxing = false;
+    var condicationObj = {
+      'page' : page,
+      'pk_id' : id,
+      'type' : 'new'
+    }
+
+
+    function getListData(name, params, callback, first) {
+      isAjaxing = true;
+      sendAjax(URLConfig(name), params, function(data, code, msg) {
+        isAjaxing = false;
+        api.refreshHeaderLoadDone();
+        if(code === 0) {
+          callback(data, first);
+        }else{
+          api.toast({
+            msg: msg || '请求失败，稍后再试',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+    }
+    
+    
+
+
+    window.initdata = function() {
+      //热门话题
+      getListData('voteList', {'type' : 'hot', 'pk_id' : id}, function(data, first) {
+        renderData(data,first,$('#hotList'));
+      }, true);
+
+      //最新话题
+      getListData('voteList', condicationObj, function(data, first) {
+        renderData(data,first,$('#newList'));
+      }, true);
+
+      // setTimeout(function() {
+        
+      // },500);
+    }
+
+    initdata();
+    
+    api.setRefreshHeaderInfo({
+        visible: true,
+        loadingImg: 'widget://image/push-down.gif',
+        bgColor: '#fff',
+        textColor: '#ccc',
+        textDown: '下拉刷新...',
+        textUp: '松开刷新...',
+        showTime: true
+    }, function(ret, err){
+       isEnd = false;
+       page = 1;
+       condicationObj = {
+        'page' : 1,
+        'type' : 'new',
+        'pk_id' : id
+       }
+       isAjaxing = false;
+
+       //热门话题
+      getListData('voteList', {'type' : 'hot', 'pk_id' : id}, function(data, first) {
+        renderData(data,first,$('#hotList'));
+      }, true);
+
+      //最新话题
+      getListData('voteList', condicationObj, function(data, first) {
+        renderData(data,first,$('#newList'));
+      }, true);
+    });
+ 
+    //下拉加载
+    api.addEventListener({
+      name: 'scrolltobottom'
+    }, function(ret, err){
+      if(!isEnd && !isAjaxing) {
+        showButtonLoadDiv(false, $('#newList'), '../../images/loadButton.gif');
+        condicationObj['page']++;
+        getListData('voteList', condicationObj ,renderData);
+      }
+    });
+
+    function renderData(data, first, con) {
+      var htmlStr = '', rate = 0;
+
+      con = con || $('#newList');
+           
+      if(data instanceof Array) {
+        for(var i=0; i<data.length; i++) {
+          var gender = '<i class="icon-m icon-male"></i>';
+
+          if(data[i]['u_sex'] == 2) {
+            gender = '<i class="icon-m icon-female"></i>';
+          }
+
+          htmlStr += '<div class="feed border-top mt10">'
+          +'  <div class="user-info">'
+          if(data[i]['zaned'] == 0 || data[i]['is_admin']) {
+            htmlStr += '<button name="zan" isAdmin="'+data[i]['is_admin']+'" voteId="'+data[i]['vote_id']+'" oldCount="'+data[i]['zan']+'" class="btn-line color-green"><i class="icon-m icon-appreciate"></i><span>'+data[i]['zan']+'</span></button>'
+          }else{
+            htmlStr += '<button class="btn-line"><i class="icon-m icon-appreciate"></i>'+data[i]['zan']+'</button>'
+          }
+          htmlStr += '    <div class="avatar-box" url="'+data[i]['u_avatar']+'" uid="'+data[i]['u_id']+'" onclick="enterProfilePk(this);">'
+          +'      <i class="icon-m icon-user"></i>'
+          +'    </div>'
+          +'    <div class="info">'
+          +'      <div class="name">'+data[i]['u_nickname']+gender+'</div>'
+          +'      <div class="other">'
+          +'        <span class="time"><i class="icon-m icon-time"></i>'+data[i]['vote_time']+'</span>'
+          +'      </div>'
+          +'    </div>'
+          +'  </div>'
+          +'  <div class="content">'
+
+          var comment = analysisFaceToDom(data[i]['comment'], true);
+
+      
+          if(data[i]['comment'].length > 120) {
+            htmlStr += '    <div class="c">'+comment.substring(0, 120)+'</div>'
+            htmlStr += '    <div class="long" allText="'+data[i]['comment']+'" name="showAll">展开</div>'
+          }else{
+            htmlStr += '    <div class="c">'+comment+'</div>'
+          }
+
+          htmlStr += '  </div>'
+          +'  <div class="layer-info border-top">'
+          +'    <span class="floor">'+data[i]['vote_sequence']+'楼</span>'
+          if(data[i]['vote_for'] == 1) {
+            htmlStr += '    <span class="r which-block red"></span>'
+          }else if(data[i]['vote_for'] == 2){
+            htmlStr += '    <span class="r which-block blue"></span>'
+          }
+          htmlStr += '  </div>'
+
+
+
+          htmlStr += '<div class="action-group border-top border-bottom" style="margin-bottom:0;">'
+          +'  <ul>'
+          +'    <li name="comments" voteId="'+data[i]['vote_id']+'" floor="'+data[i]['vote_sequence']+'" avatar="'+data[i]['u_avatar']+'" class="border-right">'
+          +'      <span>'
+          +'        <i class="icon-m icon-comment"></i>'
+          +'      </span>评论'
+          +'    </li>'
+          +'    <li name="share" voteId="'+data[i]['vote_id']+'" floor="'+data[i]['vote_sequence']+'" avatar="'+data[i]['u_avatar']+'" text="'+data[i]['comment']+'" class="border-right">'
+          +'      <span>'
+          +'        <i class="icon-m icon-share"></i>'
+          +'      </span>分享'
+          +'    </li>'
+
+          if(data[i]['is_admin']) {
+            htmlStr += '    <li name="del" voteId="'+data[i]['vote_id']+'" class="border-right">'
+            +'      <span>'
+            +'        <i class="icon-m icon-close-round"></i>'
+            +'      </span>删除'
+            +'    </li>'
+          }
+
+
+          htmlStr += '  </ul>'
+          +'</div>'
+
+
+
+          var commentCount = data[i]['at_vote_num'];
+          var comments = data[i]['at_vote_list'];
+          if(commentCount > 0) {
+            htmlStr += '  <div class="comment-list">'
+            +'    <div class="count">'
+            +'      <i class="icon-m icon-comment"></i><span class="num">'+commentCount+'</span>'
+            +'    </div>'
+            +'    <ul>'
+            commentCount = commentCount > 5 ? 5 : commentCount;
+            for(var j=0; j<commentCount; j++) {
+              htmlStr += '<li class="border-bottom">'
+                      +'   <div class="avatar-box" url="'+comments[j]['u_avatar']+'" uid="'+comments[j]['u_id']+'" onclick="enterProfilePk(this);"><i class="icon-m icon-user"></i></div>'
+                      +'   <div class="dialogue">'
+                      +'       <span class="name">'+comments[j]['u_nickname']+'</span>:<span class="c">'+analysisFaceToDom(comments[j]['comment'], true)+'</span>'
+                      +'   </div>'
+                      +'</li>'
+            }
+            htmlStr += '</ul>'
+            +'  </div>'
+          }
+          
+          htmlStr += '</div>'
+        }
+
+        if(first) {
+          if(htmlStr) {
+            con.html(htmlStr);
+          }
+        }else{
+          if(htmlStr) {
+            con.append(htmlStr);
+          }
+        }
+
+
+        renderAvatar();
+
+      }
+      
+      loadCount--;
+      if(loadCount === 0 && $('#conDiv').hasClass('hidden')) {
+        showLoadDiv(false, $('#conDiv'));
+      }
+
+    
+      showButtonLoadDiv(false, $('#newList'), '../../images/loadButton.gif');
+      
+      if(con.attr('id') == 'newList') {
+        if(data.length < 15) {
+          isEnd = true;
+        }else{
+          showButtonLoadDiv(true, $('#newList'), '../../images/loadButton.gif');
+        }
+      }
+
+    }
+
+
+    //打开个人简介页
+    window.enterProfilePk = function(el) {
+      var uid = $(el).attr('uid')
+      if(!uid) return;
+      api.openWin({
+        'name' : 'profile',
+        'url' : '../profile.html',
+        'bounces' : true,
+        'bgColor' : '#507be7',
+        'pageParam' : {'uid' : uid}
+      });
+
+    }
+
+    //展开
+    $(document).on('tap', 'div.long',  function() {
+      var allText = $(this).attr('allText');
+      if($(this).attr('name') === 'showAll') {
+        $(this).prev().html(analysisFaceToDom(allText, true)).css('max-height','none');
+        $(this).text('收起').attr('name','stopAll');  
+      }else{
+        $(this).prev().html(analysisFaceToDom(allText.substring(0, 120), true)).css('max-height','125px');
+        $(this).text('展开').attr('name','showAll');
+      }
+    });
+
+
+    //回复
+    $(document).on('tap', 'li[name=comments]',  function() {
+      var voteId = $(this).attr('voteId');
+      var floor = $(this).attr('floor');
+      replyFn(voteId, floor);
+    });
+
+    //分享
+    $(document).on('tap', 'li[name=share]', function() {
+      var c = $(this).attr('text');
+      var avatar = $(this).attr('avatar');
+      var voteId = $(this).attr('voteId');
+
+      shareFn(c, avatar, voteId);
+    });
+
+    //删除
+    $(document).on('tap', 'li[name=del]', function() {
+      var voteId = $(this).attr('voteId');
+      var self = this;
+
+      api.confirm({
+          title: '提示框',
+          msg: '是否删除',
+          buttons:['取消', '确定']
+      },function(ret,err){
+          if(ret.buttonIndex == 2){
+              sendAjax(URLConfig('delComment'),{'vote_id' : voteId},  function(data, code, msg) {
+                if(code == 0) {
+                  $(self).parents('.feed').remove();
+                }else{
+                  api.toast({
+                    msg: msg || '请求失败，稍后再试',
+                    duration:2000,
+                    location: 'middle'
+                  });
+                }
+              });
+          }
+      });
+
+      
+    });
+
+    //转发
+    function shareFn(descs, avatar, voteId) {
+      var datas = {};
+      datas['info'] = {
+        'title' : descs,
+        'description' : descs,
+        'content_url' : 'http://yuxin.yddapp.com/feed/pk?cid=' + voteId,
+        'imageUrl' : avatar
+      };
+      
+      sharePop('分享一个投票评论',datas);
+
+    }
+
+
+    //回复
+    function replyFn(voteId, floor) {
+      var userInner = $api.getStorage('user');
+      if($.isEmptyObject(userInner)) {
+        showLoginConfirm('../../index.html');  
+        return;
+      }
+      
+      api.execScript({
+        name : 'pk_comment',
+        script: 'showComment("'+voteId+'","'+floor+'");'
+      });
+    }
+
+
+    $('body').on('touchstart',  function() {
+      //重置发表框
+      api.execScript({
+        name : 'pk_comment',
+        script: 'resetComment();'
+      });
+    });
+
+    //点赞
+    $(document).on('tap', 'button[name=zan]', function() {
+      if(!$(this).hasClass('color-green')) return;
+      var self = this;
+
+      var isAdmin = $(this).attr('isAdmin');
+
+      var userInner = $api.getStorage('user');
+      if($.isEmptyObject(userInner)) {
+        showLoginConfirm('../../index.html');  
+        return;
+      }
+      var voteId = $(this).attr('voteId');
+
+      if(isAdmin == 'true') {
+        var oldCount = Number($(this).attr('oldCount'));
+        oldCount = oldCount + 3;
+        $(this).find('span').text(oldCount);
+      }else{
+        var oldCount = Number($(this).attr('oldCount'));
+        $(this).find('span').text(++oldCount);
+        $(this).removeClass('color-green');  
+      }
+
+      
+
+      sendAjax(URLConfig('voteZan'), {'vote_id' : voteId},  function(data, code, msg) {
+        if(code == 0){
+
+        }else{
+          $(self).find('span').text(--oldCount);
+          $(self).addClass('color-green');
+          api.toast({
+            msg: msg || '请求失败，稍后再试',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+
+    });
+
+
+    //跳转楼层
+    $('#findFloor').on('tap', function() {
+      $('#floorPop').removeClass('hidden');
+    });
+
+    $('body').on('tap',  function(event) {
+      if(!$(event.target).hasClass('icon-search') && !$(event.target).hasClass('pop') && !$(event.target).parents('.pop-c')[0]){
+        $('#floorPop').addClass('hidden');
+      }
+    });
+
+    //跳转按钮
+    $('#goFloor').on('tap', function() {
+      var floorCount = $('#floorCount').val();
+
+      if(floorCount) {
+        api.openWin({
+          'name' : 'me',
+          'url' : 'pk_me.html',
+          'pageParam' : {'id' : id, 'floorCount' : floorCount, 'title' : '飞往第' + floorCount +'层'}
+        });
+
+        $('#floorCount').val('');
+        $('#floorPop').addClass('hidden');
+      }else{
+        api.toast({
+          msg: '请输入楼层？',
+          duration:2000,
+          location: 'middle'
+        });
+      }
+
+
+    });
+  }
+
+</script>
+</html>

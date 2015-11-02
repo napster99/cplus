@@ -1,0 +1,249 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/shop.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <link rel="stylesheet" href="../../css/shop-detail.css">
+  <title>钓点_上钩啦_找钓点，就用上钩啦</title>
+  <style type="text/css">
+   
+    .unit{
+      height: auto !important;
+    }
+    .unit-con{
+      position: relative; 
+      overflow: hidden; 
+      background-color: #fff;
+      /*height: 100%;*/
+      height: 150px;
+
+      width: 100% !important;
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+      float: static !important;
+    }
+
+    .unit-con img{
+      max-height: none;
+    }
+
+    .unit-con .icon-m{
+      font-size: 36px;
+      color: #ddd;
+      position: absolute;
+      top: 50%; left: 50%;
+      -webkit-transform: translate(-50%,-50%);
+    }
+
+    h2{
+      margin: 10px 0 0;
+    }
+
+    .ml20{
+      margin-left: 20px;
+    }
+
+    .head-info .infos{
+      margin-right: 0;
+      position: relative;
+    }
+
+    .active-name{
+      display: inline-block;
+      width: 150px;
+    }
+
+    .flag-btn{
+      width: 80px;
+      position: absolute; 
+      right: 0px;
+      top: 5px;
+    }
+
+
+  </style>
+</head>
+<body>
+<div class="wrap">
+  
+  <!-- 商店列表 -->
+  <div id="conDiv" class="shop-list hidden">
+    <ul id="fishList">
+      <!-- <li class="unit mt10 head-info">
+        <div class="unit-con">
+          <img src="http://pond.qiniu.yddapp.com/Fsu7bnkQQSXSSRm-ztUsf4McNlJK?jpeg-96936-1280-719" />
+        </div>
+        <div class="infos">
+          <h2>【鱼多多】超级狂拉让你爽</h2>
+          <div>
+            <button class="flag-btn btn-line r color-red">报名开启</button>
+            <i class="icon-m icon-position"></i><span class="active-name">德清彭公水库</span>
+            <i class="icon-m icon-time" class="ml20"></i><span>周六 9月1日 9:00</span>
+          </div>
+        </div>
+      </li>
+
+      <li class="unit mt10 head-info">
+        <div class="unit-con">
+          <img src="http://pond.qiniu.yddapp.com/Fsu7bnkQQSXSSRm-ztUsf4McNlJK?jpeg-96936-1280-719" />
+        </div>
+        <div class="infos">
+          <h2>【鱼多多】超级狂拉让你爽</h2>
+          <div>
+            <i class="icon-m icon-position"></i><span class="active-name">德清彭公水库</span>
+            <i class="icon-m icon-time" class="ml20"></i><span>周六 9月1日 9:00</span>
+          </div>
+        </div>
+      </li> -->
+    </ul>
+  </div>
+  <!-- 商店列表end -->
+  <div class="load-page wait"></div>
+
+</div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+  apiready = function() {
+
+    var isEnd = false, isAjaxing = false;
+
+    
+    function getListData(name, params, callback, first) {
+      if(!first) {
+        showButtonLoadDiv(true, $('#fishList'), '../../images/loadButton.gif');  
+      }
+      isAjaxing = true;
+      
+      sendAjax(URLConfig(name), params, function(data, code, msg) {
+        isAjaxing = false;
+        api.refreshHeaderLoadDone();
+        if(code === 0) {
+          callback(data, first);
+        }else{
+          api.toast({
+            msg: msg || '请求失败，稍后再试',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+    }
+
+    getListData('gatherList', {'number' : 1} ,renderFeedData, true);
+
+
+    window.initData = function() {
+      getListData('gatherList', {'number' : 1} ,renderFeedData, true);      
+    }
+    
+    api.setRefreshHeaderInfo({
+        visible: true,
+        loadingImg: 'widget://image/push-down.gif',
+        bgColor: '#fff',
+        textColor: '#ccc',
+        textDown: '下拉刷新...',
+        textUp: '松开刷新...',
+        showTime: true
+    }, function(ret, err){
+       isEnd = false;
+       
+       isAjaxing = false;
+       getListData('gatherList',  {'number' : 1}, renderFeedData, true);
+    });
+    
+
+    function renderFeedData(data, first) {
+      var htmlStr = '';
+      data = data['activities']
+
+      for(var i=0; i<data.length; i++) {
+        htmlStr += '<li class="unit mt10 head-info" onclick="enterDetail(this);" id="'+data[i]['id']+'" title="'+data[i]['name']+'">'
+        +'  <div class="unit-con">'
+        +'    <img src="'+data[i]['activity_icon']+'" />'
+        +'  </div>'
+        +'  <div class="infos">'
+        +'    <h2>'+data[i]['name']+'</h2>'
+        +'    <div>'
+        // -1 结束  1 - 已报名  2 -已满 3- 开启 
+        switch(data[i]['status']) {
+          case -1:
+            htmlStr += '<button class="flag-btn btn-line r color-red">活动结束</button>'
+            break;
+          case 1:
+            htmlStr += '<button class="flag-btn btn-line r">已报名</button>'
+            break;
+          case 2:
+            htmlStr += '<button class="flag-btn btn-line r color-orange">活动已满</button>'
+            break;
+          case 3:
+            htmlStr += '<button class="flag-btn btn-line r color-blue">报名开启</button>'
+            break;
+        }
+
+        htmlStr += '      <i class="icon-m icon-position"></i><span class="active-name">'+data[i]['pname']+'</span>'
+        +'      <i class="icon-m icon-time" class="ml20"></i><span>'+data[i]['started_at']+'</span>'
+        +'    </div>'
+        +'  </div>'
+        +'</li>'
+      }
+
+      if(first) {
+        $('#fishList').html(htmlStr);
+      }else{
+        $('#fishList').append(htmlStr);
+      }
+
+      //render 图片
+      // renderLogo();
+
+
+      showLoadDiv(false, $('#conDiv'));
+
+      showButtonLoadDiv(false, $('#fishList'), '../../images/loadButton.gif');
+      if(data.length === 0) {
+        isEnd = true;
+        if(first && data.length === 0) {
+          showNoData($('#conDiv'));
+        }else if(!first){
+          api.toast({
+            msg: '没有更多数据了',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      }else if(data.length >= 15){
+        showButtonLoadDiv(true, $('#fishList'), '../../images/loadButton.gif');
+      }
+    }
+
+
+    window.enterDetail = function(el) {
+      var id = $(el).attr('id');
+      var title = $(el).attr('title');
+
+      api.openWin({
+        'name' : 'gatherFish-detail',
+        'url' : 'gatherFish-detail.html',
+        'bounces' : false,
+        'pageParam' : {'id' : id, 'title' : title}
+      });
+    }
+    
+    $(document).on('tap', 'li', function() {
+      
+    });
+
+  }
+
+</script>
+</html>

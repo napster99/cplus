@@ -1,0 +1,91 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <title>我的昵称</title>
+</head>
+<body>
+<div class="wrap">
+  <div class="text-list mt10">
+    <ul class="border-top">
+      <li class="border-bottom">
+        <i id="clearThis" class="icon-m icon-close-fill"></i>
+        <input id="nickname" type="text"> 
+      </li>
+    </ul>
+  </div>
+</div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+  apiready = function() {
+    var user = $api.getStorage('user');
+
+    $('#nickname').val(user['nickname']);
+
+
+    $('#clearThis').on('click', function() {
+       $('#nickname').val('');
+       $(this).addClass('hidden');
+       $('#nickname').focus();
+    });
+
+    $('#nickname').on('keyup',  function() {
+      if($(this).val() != '') {
+        $('#clearThis').removeClass('hidden');
+      }else{
+        $('#clearThis').addClass('hidden');
+      }
+    });
+    
+    window.saveNickname = function() {
+      var nickname = $('#nickname').val();
+
+      if(nickname == '') {
+        api.toast({
+          msg: '昵称不能为空！',
+          duration:1000,
+          location: 'middle'
+        });
+        $('#nickname').focus();
+        return;
+      }
+
+      sendAjax(URLConfig('userModify'), {'nickname' : nickname}, function(data, code, msg) {
+        if(code === 0) {
+          $api.setStorage('rewarbHome', data);
+          // api.closeFrame();
+
+          // api.toast({
+          //   msg: '昵称修改成功！',
+          //   duration:1000,
+          //   location: 'middle'
+          // });
+          
+          api.execScript({
+            name: 'nickname',
+            script: 'listenChildBack();'
+          });
+
+        }else{
+          api && api.toast({
+            msg: msg || '修改失败，请稍后再试！',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+
+      });
+    }
+
+  }
+</script>
+</html>

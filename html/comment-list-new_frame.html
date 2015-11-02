@@ -1,0 +1,287 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../css/feed.css">
+  <title>评论列表</title>
+</head>
+<body>
+
+<div class="wrap">
+  <div id="conDiv" class="hidden">
+    <div class="comment-list bg-white">
+      <ul id="commentList"></ul>
+    </div>
+
+    <div class="slogan">
+      <div class="trophys">
+        <i class="icon-m icon-trophy trophy-the-second mid-one"></i>
+        <i class="icon-m icon-trophy trophy-the-first big-one"></i>
+        <i class="icon-m icon-trophy trophy-the-third mid-one"></i>
+      </div>
+      <div class="title">成为钓点之王</div>
+      <div class="desc">添加渔获，分享每一次快乐！</div>
+    </div>
+  </div>
+
+  
+
+  <div class="load-page wait"></div>
+</div>
+
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+    var lastId = 0, feedId = api.pageParam['feedId'];
+    var isEnd = false, isAjaxing = false;
+    var curName = '', curUid = '';
+    var chatBox = api.require('UIChatBox');
+
+    var condicationObj = {
+      'lastId' : lastId,
+      'feed_id' : feedId
+    }
+    
+    function getListData(name, params, callback, first) {
+      if(first) {
+        $('#comment').addClass('hidden');
+      }else{
+        showButtonLoadDiv(true, $('#commentList'), '../images/loadButton.gif');  
+      }
+      isAjaxing = true;
+      sendAjax(URLConfig(name), params, function(data, code, msg) {
+        isAjaxing = false;
+        api.refreshHeaderLoadDone();
+        if(code === 0) {
+          callback(data, first);
+        }else{
+          api.toast({
+            msg: msg || '请求失败，稍后再试',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+    }
+
+    getListData('comments', condicationObj, function(data, first) {
+        renderData(data,first);
+    }, true);
+
+    api.setRefreshHeaderInfo({
+        visible: true,
+        loadingImg: 'widget://image/push-down.gif',
+        bgColor: '#fff',
+        textColor: '#ccc',
+        textDown: '下拉刷新...',
+        textUp: '松开刷新...',
+        showTime: true
+    }, function(ret, err){
+       isEnd = false;
+       condicationObj = {
+        'lastId' : 0,
+        'feed_id' : feedId
+       }
+       isAjaxing = false;
+       // $('#commentList').html('');
+      getListData('comments', condicationObj, renderData, true);
+    });
+
+    // 下拉加载
+    api.addEventListener({
+      name: 'scrolltobottom'
+    }, function(ret, err){
+      if(!isEnd && !isAjaxing) {
+        showButtonLoadDiv(false, $('#commentList'), '../images/loadButton.gif');
+        condicationObj['lastId'] = $('#commentList').find('li').last().attr('id');
+        getListData('comments', condicationObj ,renderData);
+      }
+    });
+
+    function renderData(data, first) {
+      var htmlStr = '';
+      for(var i=0; i<data.length; i++) {
+        htmlStr += '<li id="'+data[i]['id']+'" class="border-bottom">'
+                +'  <div class="avatar-box"><img onclick="enterProfile(this);" uid="'+data[i]['uid']+'" class="avator" src="'+data[i]['u_avatar']+'" alt=""></div>'
+                +'  <div class="dialogue" curName="'+data[i]['u_name']+'" curUid="'+data[i]['uid']+'" cid="'+data[i]['id']+'">'
+                if(data[i]['atu_name']){
+                  htmlStr += '    <span onclick="enterProfile(this);" uid="'+data[i]['uid']+'" class="name">'+data[i]['u_name']+'</span>回复<span onclick="enterProfile(this);" uid="'+data[i]['at_uid']+'" class="name">'+data[i]['atu_name']+'</span>:<span class="c"><strong>'+analysisFaceToDom(data[i]['comment'])+'</strong></span>'
+                }else{
+                  htmlStr += '    <span class="name">'+data[i]['u_name']+'</span>:<span class="c"><strong>'+analysisFaceToDom(data[i]['comment'])+'</strong></span>'
+                }
+                htmlStr += '  </div>'
+                +'</li>'
+      }
+      if(first){
+        $('#commentList').html(htmlStr);
+      }else{
+        $('#commentList').append(htmlStr);
+      }
+      showLoadDiv(false, $('#conDiv'));
+      showChatBox();
+      $('#comment').removeClass('hidden');
+      showButtonLoadDiv(false, $('#commentList'), '../images/loadButton.gif');
+      if(data.length === 0) {
+        isEnd = true;
+        if(first && data.length === 0) {
+          showNoData($('#commentList'));
+        }else if(!first){
+          api.toast({
+            msg: '没有更多数据了',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+        
+      }else{
+        if(data.length > 8) {
+          showButtonLoadDiv(true, $('#commentList'), '../images/loadButton.gif');
+        }
+      }
+    }
+
+    //点击回复
+    $(document).on('tap', '.dialogue', function() {
+      curName = $(this).attr('curName');
+      curUid = $(this).attr('curUid');
+      
+      var userInner = $api.getStorage('user');
+      if($.isEmptyObject(userInner)) {
+        showLoginConfirm('../index.html');  
+        return;
+      }
+
+      chatBox.setPlaceholder({
+        placeholder: '回复'+curName
+      });
+      
+      chatBox.popupKeyboard();
+    });
+
+
+    window.hideBorad = function() {
+      chatBox.close();
+      chatBox.closeKeyboard();
+    }
+
+    //删除评论（长按）
+    $(document).on('longTap', '.dialogue',  function() {
+      var self = this;
+      authInfo(function(data, code, msg) {
+        if(code === 2) {
+          showLoginConfirm('../index.html');
+        }else if(code === 0){
+          var curuid = $(self).attr('curuid');
+          var cmid = $(self).attr('cid');
+
+          if(data['id'] == curuid || data['role'] === 'admin'){//自己删除自己   或者是管理员  评论人
+            // openPop({}, 44, api.winHeight - 44 - 50);
+            actionPop([], function(index) {
+              if(index === 1) {
+                //删除评论
+                delComments(cmid);
+              }
+            });
+          }
+        }
+      });
+    });
+
+    function delComments(cmid) {
+      sendAjax(URLConfig('deleteComment'), {'comment_id' : cmid}, function(data, code, msg) {
+        if(code === 0) {
+          $('#'+cmid).remove();
+        }else{
+          api.toast({msg: msg || '请求失败，稍后再试',duration:2000,location:'middle'});
+        }
+      });
+    }
+
+
+    // var chatBoxOpend = false;
+    
+
+    function showChatBox() {
+      chatBox.open({
+        placeholder: '称赞下这篇渔获吧...',
+        maxRows: 1,
+        emotionPath: 'widget://images/emotion',
+        styles: {
+            inputBar: {
+                borderColor: '#d9d9d9',
+                bgColor: '#f2f2f2'
+            },
+            inputBox: {
+                borderColor: '#B3B3B3',
+                bgColor: '#FFFFFF'
+            },
+            emotionBtn: {
+                normalImg: 'widget://images/emotion/face1.png'
+            },
+            keyboardBtn: {
+                normalImg: 'widget://images/emotion/key1.png'
+            }
+        }
+      }, function(ret,e){
+          //点击发送按钮
+          if(ret.eventType == 'send' && ret.msg.replace(/\s+/g,'') != ''){
+              var userInner = $api.getStorage('user');
+              if($.isEmptyObject(userInner)) {
+                showLoginConfirm('../index.html');  
+                return;
+              }
+              var text = ret.msg;
+              if(text.replace(/\s+/g,'') === '') {
+                return api.toast({msg:'您总得说点什么吧！', duration:2000, location: 'middle'});
+              }
+
+              sendAjax(URLConfig('comment'), {'feed_id' : feedId, 'comment' : text}, function(data, code, msg) {
+                if(code === 0) {
+                  var user = $api.getStorage('user'), htmlStr = '';
+                  if(!$.isEmptyObject(user)) {
+                    htmlStr += '<li id="'+data+'" class="border-bottom">'
+                            +'  <div class="avatar-box"> <img onclick="enterProfile(this);" uid="'+user['id']+'" class="avator" src="'+user['avatar']+'" alt=""></div>'
+                            +'  <div class="dialogue" curName="'+curName+'" curUid="'+curUid+'" cid="'+data+'">'
+                            if(curName){
+                              htmlStr += '    <span onclick="enterProfile(this);" uid="'+user['id']+'" class="name">'+user['nickname']+'</span>回复<span onclick="enterProfile(this);" uid="'+curUid+'" class="name">'+curName+'</span>:<span class="c">'+text+'</span>'
+                            }else{
+                              htmlStr += '    <span onclick="enterProfile(this);" uid="'+user['id']+'" class="name">'+user['nickname']+'</span>:<span class="c">'+text+'</span>'
+                            }
+                    htmlStr += '  </div>'
+                            +'</li>'
+                    if($('#commentList').find('li').first()[0]) {
+                      $('#commentList').find('li').first().before($(htmlStr));
+                    }else{
+                      $('#commentList').html(htmlStr);
+                    }
+                    $('.wrap').animate({scrollTop: '0px'}, 200);
+                  }
+                 $('#commentText').val('');
+                 chatBox.value({
+                    msg: '称赞下这篇渔获吧...'
+                 });
+                 //缩起键盘
+                 chatBox.closeKeyboard();
+                 api.toast({msg: '评论成功！', duration:2000, location: 'middle'});
+                }else{
+                  api.toast({msg: msg || '请求失败，稍后再试', duration:2000, location: 'middle'});
+                }
+              });
+          }
+      });
+
+    }
+
+  }
+
+</script>
+</html>

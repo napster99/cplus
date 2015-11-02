@@ -1,0 +1,169 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../css/payment.css">
+  <title>支付成功</title>
+  
+</head>
+<body>
+<div class="wrap">
+
+
+  <div id="failureCon" class="result-box hidden">
+
+    <div class="status">
+      <i class="icon-m icon-close-fill text-red"></i>
+      <span>支付失败</span>
+    </div>
+
+    <div class="desc border-top">
+      原因：<span class="text-orange" id="failMsg"></span>
+    </div> 
+
+  </div>
+
+
+  <div id="successCon" class="result-box hidden">
+    <div id="titleCon" class="title">
+      
+    </div>
+
+    <div class="status">
+      <i class="icon-m icon-check-fill text-green"></i>
+      <span>交易成功</span>
+    </div>
+
+    <div class="desc border-top">
+      原价<span class="text-orange" id="totalPrice"></span>，您实际需支付<span class="text-green" id="realPrice"></span>
+    </div>
+
+
+    <!-- 抵用券列表 -->
+   <div class="text-list mt10 border-top">
+      <ul>
+        <li class="border-bottom">
+          <span class="r">
+            <span id="dateline" class="val"></span>
+          </span>
+          <span class="field l">时间</span>
+        </li>
+        <li class="border-bottom">
+          <span class="r">
+            <span id="cardId" class="val"></span>
+          </span>
+          <span class="field l">券码</span>
+        </li>
+        <li class="border-bottom">
+          <span class="r">
+            <span id="tradeNo" class="val"></span>
+          </span>
+          <span class="field l">流水号</span>
+        </li>
+
+      </ul>
+    </div>
+  <!-- 抵用券列表end -->
+
+
+    <div class="form-row mt20">
+        <button id="shareBtn" type="button" class="btn-fill btn-lg color-blue hidden">立即分享</button>
+    </div>
+
+
+  </div>
+
+
+</div>
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+
+    var msg = api.pageParam['msg'];
+    var flag = api.pageParam['flag'];
+    var params = api.pageParam['params'];
+
+    var pondId = api.pageParam['pond_id'];
+
+    $('#failMsg').text(msg)
+    if(flag === 'success') {
+
+      if(!$.isEmptyObject(params['coupon'])){
+        var type = params['coupon']['type'];
+        var organization = params['coupon']['organization'];
+        var name = params['coupon']['name'];
+        var type = '代金券'
+        var price = params['coupon']['discount'];
+
+        var unit = '元';
+        if(params['coupon']['type'] == 0){
+          unit = '折';
+          type = '券';
+        }
+
+        if(params['coupon']['discount'] == 0 && params['coupon']['type'] == 0){
+          unit = '';
+          type = '';
+          price = '免单券';
+        }
+
+        if(name) {
+          $('#titleCon').html('<strong class="text-orange">'+name+'</strong>&nbsp;<small>（'+organization+'）</small>');
+        }else{
+          $('#titleCon').html('<strong class="text-orange">'+price+unit+'</strong>&nbsp;'+type+'<small>（'+organization+'）</small>');
+        }
+        
+      }
+
+      $('#totalPrice').text(params['amount']['total']+'元');
+      $('#realPrice').text(params['amount']['real']+'元');
+
+      $('#dateline').text(params['dateline']);
+      $('#cardId').text(String(params['card_id']).replace(/(.{4})/g,'$1 '));
+      $('#tradeNo').text(String(params['trade_no']).replace(/(.{4})/g,'$1 '));
+
+      $('#successCon').removeClass('hidden');
+
+
+      if(params['shared']['url'] && params['shared']['url'] != '') {
+        $('#shareBtn').removeClass('hidden');
+      }
+
+      //直接关注商家
+      sendAjax(URLConfig('favorite'), {'type' : 1, 'target' : pondId, 'action' : 'do'}, function(data, code, msg) {
+      });
+
+    }else{
+      $('#failureCon').removeClass('hidden');
+    }
+
+    //立即分享
+    $('#share').on('tap', function() {
+       var datas = {};
+       var share_url = params['shared']['url'];
+       var desc = params['shared']['desc'];
+       var title = params['shared']['title'];
+     
+       datas['info'] = {
+        'title' : title,
+        'description' : desc,
+        'content_url' : share_url,
+        'imageUrl' : 'http://img1.shanggou.la/default/logo.jpg'
+       };
+
+       sharePop(title, datas);
+    });
+
+
+  }
+</script>
+</html>

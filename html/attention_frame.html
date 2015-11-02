@@ -1,0 +1,208 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <title>关注</title>
+</head>
+<body>
+<div class="wrap">
+  <!-- 关注 -->
+  <div class="user-sns-list border-top border-bottom">
+    <ul id="attenList">
+    </ul>
+  </div>
+  <!-- 关注 End -->
+
+  <div class="load-page wait"></div>
+</div>
+
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+
+    var page_size = 15;
+    var isEnd = false, isAjaxing = false;
+    var condicationObj = {
+      'page' : 1,
+      'page_size' : page_size,
+      'uid' : api.pageParam['uid']
+    }
+    
+    function getListData(name, params, callback, first) {
+      if(first) {
+        // showLoadDiv(true, $('#attenList'));  
+      }else{
+        showButtonLoadDiv(true, $('#attenList'), '../images/loadButton.gif');  
+      }
+      isAjaxing = true;
+      sendAjax(URLConfig(name), params, function(data, code, msg) {
+        isAjaxing = false;
+        api.refreshHeaderLoadDone();
+        if(code === 0) {
+          callback(data, first);
+        }else{
+          api.toast({
+            msg: msg || '请求失败，稍后再试',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+    }
+
+    getListData('guanzhu', condicationObj, function(data, first) {
+      renderData(data,first);
+    }, true);
+
+    api.setRefreshHeaderInfo({
+        visible: true,
+        loadingImg: 'widget://image/push-down.gif',
+        bgColor: '#fff',
+        textColor: '#ccc',
+        textDown: '下拉刷新...',
+        textUp: '松开刷新...',
+        showTime: true
+    }, function(ret, err){
+       isEnd = false;
+       condicationObj = {
+        'page' : 1,
+        'page_size' : page_size,
+        'uid' : api.pageParam['uid']
+       }
+       isAjaxing = false;
+       // $('#attenList').html('');
+      getListData('guanzhu', condicationObj, renderData, true);
+    });
+    
+    //下拉加载
+    api.addEventListener({
+      name: 'scrolltobottom'
+    }, function(ret, err){
+      if(!isEnd && !isAjaxing) {
+        showButtonLoadDiv(false, $('#attenList'), '../images/loadButton.gif');
+        ++condicationObj['page'];
+        getListData('guanzhu', condicationObj ,renderData);
+      }
+    });
+
+    function renderData(data, first) {
+      var htmlStr = '';
+      for(var i=0; i<data.length; i++) {
+        var avatarImg = data[i]['avatar'];
+        if(avatarImg) {
+          avatarImg = getPicUrl(avatarImg, 40, 40);
+        }
+
+        htmlStr += '<li class="border-bottom">'
+                +'  <div uid="'+data[i]['uid']+'" onclick="enterProfile(this);" class="avatar-box" url="'+avatarImg+'"><i class="icon-m icon-user"></i></div>'
+                if(data[i]['is_following'] == 0) {
+                  htmlStr += '  <div class="btn-box"><button name="follow-btn" uid="'+data[i]['uid']+'" follow="no" class="btn-line color-green">关注</button></div>'
+                }else{
+                  htmlStr += '  <div class="btn-box"><button name="follow-btn" uid="'+data[i]['uid']+'" follow="yes" class="btn-line">已关注</button></div>'
+                }
+                if(data[i]['pic']){
+                  htmlStr += '  <div class="last-photo" uid="'+data[i]['uid']+'" onclick="enterProfile(this);">'
+                  +'    <div url="'+data[i]['pic']+'" name="imgBox" class="img-box"  tapmode feedId="'+data[i]['feed_id']+'"  onclick="enterFeedDetail(this);"><i class="icon-m icon-logo"></i></div>'
+                  +'  </div>'
+                }
+                htmlStr += '  <div class="infos" uid="'+data[i]['uid']+'" onclick="enterProfile(this);">'
+                +'    <h3>'+(data[i]['nickname'] || '--')+'</h3>'
+                +'    <div class="info">'
+                +'      <div><span>'+data[i]['feeds']+'</span>篇渔获</div>'
+                +'      <div><span>'+data[i]['fans']+'</span>人关注</div>'
+                +'    </div>'
+                +'  </div>'
+                +'</li>'
+        // proImg[data[i]['pic']] = { 'url' :  data[i]['pic']};
+      }
+      // getImageSize(proImg);
+      if(first){
+        $('#attenList').html(htmlStr);
+      }else{
+        $('#attenList').append(htmlStr);
+      }
+
+      renderAvatar();
+      renderLogo();
+
+
+      showLoadDiv(false, $('#attenList'));
+      showButtonLoadDiv(false, $('#attenList'), '../images/loadButton.gif');
+      if(data.length < page_size) {
+        isEnd = true;
+        if(first && data.length === 0) {
+          showNoData($('#attenList'));
+        }else if(!first){
+          api.toast({
+            msg: '没有更多数据了',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      }else{
+        showButtonLoadDiv(true, $('#attenList'), '../images/loadButton.gif');
+      }
+    }
+
+    window.enterFeedDetail = function(el){
+      event.stopPropagation();
+      el = $(el);
+      var feedId = el.attr('feedId');
+      
+      if(!feedId || feedId == 'null') return;
+      api.openWin({
+        'name' : 'feedDetail',
+        'url' : './feedDetail.html',
+        'pageParam' : {'id' : feedId},
+        'bounces':true
+      });
+    }
+    
+    
+    $(document).on('tap', 'button[name=follow-btn]', function() {
+      var uid = $(this).attr('uid'), follow = $(this).attr('follow'), self = this;
+      var userInner = $api.getStorage('user');
+      if($.isEmptyObject(userInner)) {
+        showLoginConfirm('../index.html');  
+        return;
+      }
+      // authInfo(function(data, code, msg) {
+      //   if(code === 2) {
+      //     showLoginConfirm('../index.html');  
+      //   }else if(code === 0){
+          if(follow === 'no'){
+            //关注
+            $(self).removeClass('color-green').text('已关注').attr('follow', 'yes');
+            sendAjax(URLConfig('follow'), {'uid' : uid}, function(data, code, msg) {
+              if(code != 0) {
+                $(self).addClass('color-green').text('关注').attr('follow', 'no');
+                api.toast({msg: msg || '请求失败，稍后再试', duration:2000,location: 'middle'});
+              }
+            });
+          }else{
+            //取消关注
+            $(self).addClass('color-green').text('关注').attr('follow', 'no');
+            sendAjax(URLConfig('cancelFollow'), {'uid' : uid}, function(data, code, msg) {
+              if(code != 0) {
+                $(self).removeClass('color-green').text('已关注').attr('follow', 'yes');
+                api.toast({msg: msg || '请求失败，稍后再试', duration:2000,location: 'middle'});
+              }
+            });
+          }
+      //   }
+      // });
+    });
+
+  }
+
+</script>
+</html>

@@ -1,0 +1,336 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../css/search.css">
+  <link rel="stylesheet" href="../css/shop.css">
+  <title>搜索钓点</title>
+</head>
+<body>
+<div class="wrap">
+  <div class="select-shop">
+    <div class="search-box">
+      <div class="right-info" id="search-cancle">取消</div>
+      <div class="input-box">
+        <form action="javascript:;">
+          <input type="search" placeholder="搜钓点" id="searchPond" autofocus="autofocus">
+        </form>
+        <i class="icon-m icon-search"></i>
+        <i id="clearThis" class="icon-m icon-close-fill hidden"></i>
+      </div>
+    </div>
+    <div id="container" class="select-result border-top" style="overflow:auto;">
+      <div id="selectPondCon" class="text-list hidden">
+        <ul id="pondList">
+          <!-- <li class="border-bottom">
+              <div class="r"><span class="distance">210m</span></div>
+              <span class="field">阿忠钓场</span>
+          </li>
+          <li class="border-bottom text-green">
+            <div class="r"><span class="distance">210m</span></div>
+            <i class="icon-m icon-check"></i>
+            <span class="field">阿忠钓场</span>
+          </li> -->
+        </ul>
+      </div>
+      <div id="searchPondCon" class="shop-list hidden">
+        <ul id="pondList2">
+          
+        </ul>
+      </div>
+
+
+      <div id="peopleCon" class="user-sns-list hidden">
+        <ul id="peopleList">
+          
+
+          
+
+
+        </ul>
+      </div>
+
+
+    </div>
+
+  </div>
+</div>
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+    var type = api.pageParam['type'];
+    var curPondId = '', curPond = $api.getStorage('curPond');
+    if(!$.isEmptyObject(curPond)) {
+      curPondId = curPond['id'];
+    }
+
+
+    if(api.pageParam['type'] === 'people') {
+      $('#searchPond').attr('placeholder','搜索多多号/昵称');
+    }
+
+    $('#container').height(api.winHeight - 50 - 44);
+
+    $('#clearThis').on('tap', function() {
+      $('#searchPond').val('');
+      $(this).addClass('hidden');
+      $('#pondList, #pondList2, #peopleList').html('');
+    });
+
+
+    $('#searchPond').on('keyup',  function(event) {
+      var text = $(this).val().replace(/\s+/g,'');
+      if(text === '') {
+        $('#clearThis').addClass('hidden');
+        $('#pondList, #pondList2').html('');
+        return;
+      }else{
+        $('#clearThis').removeClass('hidden');
+      }
+      var which = event.keyCode || event.which;
+
+      if(which === 13) {
+        searchAjax(text);
+      }
+      
+
+    });
+
+
+
+    function searchAjax(text) {
+      $('#searchPond').blur();
+      if(type === 'select') {  //选择钓点
+        sendAjax(URLConfig('search'), {'q' : text}, function(data, code, msg) {
+          if(code === 0) {
+            renderSelectData(data);
+          }else{
+            api.toast({ msg: msg || '请求失败，稍后再试', duration:2000, location: 'middle'});
+          }
+        });
+      }else if(type === 'pond') { //搜索钓点
+        sendAjax(URLConfig('search'), {'q' : text}, function(data, code, msg) {
+          if(code === 0) {
+            renderPondData(data);
+          }else{
+            api.toast({ msg: msg || '请求失败，稍后再试', duration:2000, location: 'middle'});
+          }
+        });
+      }else if(type === 'people') { //搜素多多号  昵称
+        sendAjax(URLConfig('findByNo'), {'no' : text}, function(data, code, msg) {
+          if(code === 0) {
+            renderPeopleData(data);
+          }else{
+            $('#peopleList').html('');
+            api.toast({ msg: msg || '请求失败，稍后再试', duration:2000, location: 'middle'});
+          }
+        });
+      }
+
+
+
+    }
+
+    //选择钓点
+    function renderSelectData(data){
+      var htmlStr = '';
+      for(var i=0; i<data.length; i++) {
+        htmlStr += '<li lat="'+data[i]['location_lat']+'" lon="'+data[i]['location_lon']+'" id="'+data[i]['id']+'" name="'+data[i]['name']+'" class="border-bottom">'
+        +'    <div class="r"><span class="distance">'+data[i]['distance']+'</span></div>'
+        +'    <span class="field">'+data[i]['name']+'</span>'
+        +'</li>'
+      }
+      $('#pondList').html(htmlStr);
+      $('#selectPondCon').removeClass('hidden');
+    }
+
+
+    //搜索钓点
+    function renderPondData(data){
+      if(!data) { //人均最低  null -> []
+        data = [];
+      }
+      //1 免费   3天塘  2斤塘
+      var htmlStr = '', curLocation = [];
+      for(var i=0; i<data.length; i++) {
+        var cacheUrl = getPicUrl(data[i]['spic'], 97*window.devicePixelRatio, 73*window.devicePixelRatio);
+          htmlStr += '<li class="border-bottom" id="'+data[i]['id']+'" onclick="enterDetail(this);">'
+                  +'  <div url="'+cacheUrl+'" name="imgBox" class="img-box"><i class="icon-m icon-logo"></i></div>'
+                  +'  <div class="info">'
+                  +'    <h3 class="name">'+data[i]['name']+'</h3>'
+                  +'    <div class="price">'
+
+                  if(!data[i]['price']) {
+                    htmlStr += '      未知';
+                  }else{
+                    if(data[i]['discount_price']) {
+                      if(data[i]['charge_type'] == 1) {
+                        htmlStr += '      免费';
+                      }else if(data[i]['charge_type'] == 3){
+                        htmlStr += '      ￥'+data[i]['discount_price']+'<small>/天</small><del>'+data[i]['price']+'/天</del>';
+                      }else if(data[i]['charge_type'] == 2) {
+                        htmlStr += '      ￥'+data[i]['discount_price']+'<small>/斤</small><del>'+data[i]['price']+'/斤</del>';
+                      }else if(data[i]['charge_type'] == 4) {
+                        htmlStr += '      ￥'+data[i]['discount_price']+'<small>/场</small><del>'+data[i]['price']+'/场</del>';
+                      }else{
+                        htmlStr += '      未知';
+                      }
+                    }else{
+                      if(data[i]['charge_type'] == 1) {
+                        htmlStr += '      免费';
+                      }else if(data[i]['charge_type'] == 3){
+                        htmlStr += '      ￥'+data[i]['price']+'<small>/天</small>';
+                      }else if(data[i]['charge_type'] == 2) {
+                        htmlStr += '      ￥'+data[i]['price']+'<small>/斤</small>';
+                      }else if(data[i]['charge_type'] == 4) {
+                        htmlStr += '      ￥'+data[i]['price']+'<small>/场</small>';
+                      }else{
+                        htmlStr += '      未知';
+                      }
+                    }
+                  }
+            if(data[i]['tag'] & 1) {
+              htmlStr += '<span class="text-badge bg-orange">合作</span>';
+            }
+
+            if(data[i]['tag'] & 2) {
+              htmlStr += '<span class="text-badge bg-green">抽券</span>';
+            }
+            
+
+            
+            htmlStr += '    </div>'
+                  +'    <div class="addr"><div class="distance">'+data[i]['distance']+'</div>'+(data[i]['address'] || '暂无地址')+'</div>'
+            if(data[i]['level'] == 9) {
+              htmlStr += '    <div class="auth-lv1"><i class="icon-m icon-auth"></i>官方认证</div></div></li>'
+            }else if(data[i]['level'] == 5){
+              htmlStr += '    <div class="auth-lv2"><i class="icon-m icon-auth"></i>钓友认证</div></div></li>'
+            }else if(data[i]['level'] == 3) {
+              htmlStr += '      <div class="auth-lv3"><i class="icon-m icon-auth"></i>电话认证</div></div></li>'
+            }
+
+
+      }
+      $('#pondList2').html(htmlStr);
+      if(data.length === 0) {
+        api.toast({ msg: '钓点不存在', duration:2000, location: 'middle'});
+      }
+
+
+      //render 图片
+      renderLogo();
+
+
+      $('#searchPondCon').removeClass('hidden');
+    }
+
+
+    function renderPeopleData(data) {
+      var htmlStr = '', user = $api.getStorage('user');
+      if($.isEmptyObject(data)) {
+        api.toast({ msg: '用户不存在', duration:2000, location: 'middle'});
+      }else{
+        htmlStr += '<li class="border-bottom">'
+        +'  <div uid="'+data['id']+'" onclick="enterProfile(this);" class="avatar-box"><img src="'+data['avatar']+'"></div>'
+        if(user['id'] != data['id']) {
+          if(data['follow'] == 0) {
+            htmlStr += '  <div class="btn-box"><button uid="'+data['id']+'" follow="no" class="btn-line color-green">关注</button></div>'
+          }else{
+            htmlStr += '  <div class="btn-box"><button uid="'+data['id']+'" follow="yes" class="btn-line">已关注</button></div>'
+          }
+        }
+        
+        if(data['feed_pic']) {
+          htmlStr += '  <div class="last-photo">'
+          +'    <div class="img-box"><img src="'+data['feed_pic']+'"></div>'
+          +'  </div>'
+        }
+        htmlStr += '  <div class="infos">'
+        +'    <h3>'+data['nickname']+'</h3>'
+        +'  </div>'
+        +'</li>'
+      }
+
+      $('#peopleList').html(htmlStr);
+      $('#peopleCon').removeClass('hidden');
+    }
+
+
+    $(document).on('tap',  'button', function() {
+      var follow = $(this).attr('follow'), self = this;
+      var uid = $(this).attr('uid');
+
+      var userInner = $api.getStorage('user');
+      if($.isEmptyObject(userInner)) {
+        showLoginConfirm('../index.html');  
+        return;
+      }
+
+      if(follow === 'no'){
+        //关注
+        $(this).removeClass('color-green').text('已关注').attr('follow', 'yes');
+        sendAjax(URLConfig('follow'), {'uid' : uid}, function(data, code, msg) {
+          if(code != 0) {
+            $(this).addClass('color-green').text('关注').attr('follow', 'no');
+            api.toast({msg: msg || '请求失败，稍后再试',duration:2000,location:'middle'});
+          }
+        });
+      }else{
+        //取消关注
+        $(this).addClass('color-green').text('关注').attr('follow', 'no');
+        sendAjax(URLConfig('cancelFollow'), {'uid' : uid}, function(data, code, msg) {
+          if(code != 0) {
+            $(this).removeClass('color-green').text('已关注').attr('follow', 'yes');
+            api.toast({msg: msg || '请求失败，稍后再试', duration:2000,location: 'middle'});
+          }
+        });
+      }
+
+    });
+
+
+    //event 选择钓点
+    $('#pondList').on('tap',  'li', function() {
+      var id = $(this).attr('id');
+      var name = $(this).attr('name');
+      var lat = $(this).attr('lat');
+      var lon = $(this).attr('lon');
+
+      $api.setStorage('curPond', {
+        'id' : id,
+        'name' : name,
+        'lat' : lat,
+        'lon' : lon
+      });
+
+      api.execScript({
+        name: 'fishPond',
+        frameName: 'fishPond',
+        script: 'setCurrentPond();'
+      });
+
+      api.closeWin();
+    });
+    
+    window.enterDetail = function(el) {
+      api.openWin({
+        name: 'pond_detail',
+        url: './pond-details.html',
+        bounces : false,
+        bgColor : '#fff',
+        pageParam: {'pondId': el.id}
+      });
+    }
+    
+  }
+</script>
+</html>

@@ -1,0 +1,136 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <link rel="stylesheet" href="../../css/shop-detail.css">
+  <style>
+
+    input{
+      border: 1px solid #ccc;
+      height: 30px !important;
+      margin-top: 8px;
+      padding-left:5px;
+    }
+
+    .text-list>ul>li .field{
+      display: inline-block;
+      margin-top: 10px;
+    }
+
+    .text-list>ul>li{
+      line-height: 30px;
+    }
+
+    .static{
+      margin-top: 10px;
+    }
+  </style>
+  <title>装备</title>
+</head>
+<body>
+  <div class="wrap">
+    
+    <div class="text-list pt10">
+      <ul class="border-top">
+        <li name="ganzhang" class="border-bottom">
+          <span name="set" class="r hidden"><input type="text" placeholder="例如3米6、4米5、5米4等"/></span>
+          <span name="get" class="r static hidden"></span>
+          <span class="field">竿长</span>
+        </li>
+        <li name="zhuxian" class="border-bottom">
+          <span name="set" class="r hidden"><input type="text" placeholder="例如0.8、1.0、2.0等"/></span>
+          <span name="get" class="r static hidden"></span>
+          <span class="field">主线</span>
+        </li>
+        <li name="zixian" class="border-bottom">
+          <span name="set" class="r hidden"><input type="text" placeholder="例如0.4、0.6、1.0等"/></span>
+          <span name="get" class="r static hidden"></span>
+          <span class="field">子线</span>
+        </li>
+        <li name="shuishen" class="border-bottom">
+          <span name="set" class="r hidden"><input type="text"/></span>
+          <span name="get" class="r static hidden"></span>
+          <span class="field">水深</span>
+        </li>
+        <li name="yuer" class="border-bottom">
+          <span name="set" class="r hidden"><input type="text"/></span>
+          <span name="get" class="r static hidden"></span>
+          <span class="field">鱼饵</span>
+        </li>
+        <li name="woliao" class="border-bottom">
+          <span name="set" class="r hidden"><input type="text"/></span>
+          <span name="get" class="r static hidden"></span>
+          <span class="field">窝料</span>
+        </li>
+      </ul>  
+    </div>
+   
+    
+  </div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+  apiready = function() {
+    var which = api.pageParam['which'];
+
+    var device = api.pageParam['device'] || {};
+
+
+    if(which === 'set') {
+      $('span[name=set]').removeClass('hidden');
+      $.each(device,  function(key, val) {
+        if($('li[name='+key+']')[0]) {
+          $('li[name='+key+']').find('input').val(val);
+        }
+      });
+    }else{
+      $('span[name=get]').removeClass('hidden');
+      var lis = $('li');
+      for(var i=0; i<lis.length; i++) {
+        var name = lis.eq(i).attr('name');
+        if(device[name]) {
+          lis.eq(i).find('.static').text(device[name]);
+        }else{
+          lis.eq(i).addClass('hidden');
+        }
+      }
+
+      // $.each(device,  function(key, val) {
+      //   if($('li[name='+key+']')[0]) {
+      //     $('li[name='+key+']').find('.static').text(val);
+      //   }
+      // });
+    }
+
+
+    window.getParams = function() {
+      var lis = $('li'), obj = {};
+      for(var i=0; i<lis.length; i++) {
+        var name = lis.eq(i).attr('name');
+        var val = lis.eq(i).find('input').val();
+        if(val.replace(/\s+/g,'') != '') {
+          obj[name] = val;
+        }
+      }
+
+      //获得参数
+      api.execScript({
+        name : 'publish-diaoji',
+        frameName : 'publish-diaoji',
+        script: 'setDeviceParams('+JSON.stringify(obj)+');'
+      });
+
+      api.closeWin();
+    }
+
+  }
+</script>
+</html>

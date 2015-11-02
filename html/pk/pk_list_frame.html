@@ -1,0 +1,763 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <link rel="stylesheet" href="../../css/shop-detail.css">
+  <style>
+
+    .con-box{
+      padding: 10px;
+    }
+
+    .rows{
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .timer{
+      /*color: #FF2932;*/
+    }
+
+    .icon-cash, .icon-mission{
+      font-size: 20px;
+      vertical-align: -4px;
+      display: inline-block;
+      margin-top :-2px;
+      margin-right: 5px;
+      color: orangered;
+    }
+
+    .win, .win2{
+      font-size: 14px;
+      color: orangered;
+      border: 1px solid orangered;
+      padding: 0px 10px;
+      border-radius:25px;
+    }
+
+    .icon-mission{
+      color: #568ADA;
+    }
+
+    .win2{
+      color: #568ADA;
+      border: 1px solid #568ADA;
+    }
+
+    h2{
+      margin: 10px 0;
+    }
+
+    .pk-con{
+
+    }
+
+    .pk-con li{
+      float: left;
+      width: 33.3333%;
+      text-align: center;
+    }
+
+    .pk-con li.red-team{
+      color: red;
+    }
+
+    .pk-con li.blue-team{
+      color: blue;
+    }
+
+    .vs{
+      font-size: 30px;
+      font-weight: bold;
+      color: #000;
+    }
+
+    .pk-team{
+      font-size: 22px;
+      font-family: Microsoft Yahei;
+    }
+
+    .icon-level{
+      vertical-align:-2px;
+      margin-right: 5px;
+    }
+
+    .pk-action{
+      padding: 10px;
+      background: #DEDEDE;
+    }
+
+    .pk-action li{
+      float: left;
+      text-align: center;
+    }
+
+    .ding-red, .ding-blue, .ding-checked-red, .ding-checked-blue{
+      padding: 10px;
+      border-radius: 25px;
+    }
+
+    .ding-red{
+      border: 1px solid red;
+    }
+
+    .ding-checked-red{
+      background: red;
+    }
+
+    .ding-checked-red i.icon-red{
+      color: #fff;
+    }
+
+    .ding-checked-blue{
+      background: blue;
+    }
+
+    .ding-checked-blue i.icon-blue{
+      color: #fff;
+    }
+
+    .ding-blue, .ding-checked-blue{
+      border: 1px solid blue;
+      -webkit-transform:scaleX(-1);
+    }
+
+    .icon-appreciate{
+      font-size: 26px;
+    }
+
+    .icon-red{
+      color: red;
+    }
+
+    .icon-blue{
+      color: blue;
+    }
+
+    .ding-txt{
+      margin-left: 20%;
+      padding-top: 18px;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .process-con{
+      position: relative;
+      background: blue;
+      height: 5px;
+      margin-left: 10px;
+      margin-top: 20px;
+      width: 200px;
+    }
+
+    .process-inner{
+      position: absolute;
+      top: 0;
+      background: red;
+      height: 100%;
+      left: 0;
+      width: 50%;
+    }
+
+    .pk-people{
+      margin-top: 5px;
+    }
+
+    .pk-red-people{
+      float:left; margin-left:10px; color:red;
+    }
+
+    .pk-blue-people{
+      float:right; color:blue;
+    }
+
+    div[disabled] {
+      background: gray;
+      border: 1px solid gray;
+    }
+
+
+    .write-comment{
+      position: fixed;
+      z-index: 2;
+      bottom: 0;
+      width: 100%;
+      background: #eee;
+      padding: 10px;
+    }
+
+    .write-comment ul{
+      padding-bottom: 10px;
+    }
+
+    .write-comment ul li{
+      float: left;
+      width: 33.3333%;
+      text-align: center;
+    }
+
+    .write-comment ul li.cancel{
+      text-align: left;
+    }
+
+    .write-comment ul li.send{
+      text-align: right;
+    }
+
+    .write-comment .tips{
+      font-weight: bold;
+    }
+
+    .write-comment textarea{
+      width: 100%;
+      padding: 5px;
+      padding-bottom: 10px;
+    }
+
+    .no-data{
+      padding: 10px;
+    }
+
+
+
+
+
+
+
+  </style>
+  <title>话题pk</title>
+</head>
+<body>
+  <div class="wrap">
+    <div id="conDiv" class="hidden">
+      <div class="nice-box border-bottom">
+        <h3 class="border-bottom">本期话题</h3>
+        <div id="pkList">
+          <div class="no-data">暂无话题</div>
+        </div>
+        
+      </div>
+
+      <div class="nice-box border-bottom mt10">
+        <h3 class="border-bottom">历史话题</h3>
+        <div id="historyPk">
+          <div class="no-data">暂无话题</div>
+        </div>
+        
+      </div>
+    </div>
+    
+    
+
+    <div class="write-comment hidden">
+      <ul class="clearfix">
+        <li class="cancel">取消</li>
+        <li class="tips">写跟帖</li>
+        <li class="send">发送</li>
+      </ul>
+      <textarea id="commentText" rows="4"></textarea>
+
+    </div>
+
+
+    <div class="load-page wait"></div>
+
+  </div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+  apiready = function() {
+
+    var page = 1, curPkid = 0, curWhich = 0, curRedCount = 0, curBlueCount = 0;
+    var o, loadCount = 2;
+    var isBegin = false;
+    var isEnd = false, isAjaxing = false;
+    var condicationObj = {
+      'page' : page
+    }
+
+    function getListData(name, params, callback, first) {
+      isAjaxing = true;
+      sendAjax(URLConfig(name), params, function(data, code, msg) {
+        isAjaxing = false;
+        api.refreshHeaderLoadDone();
+        if(code === 0) {
+          callback(data, first);
+        }else{
+          // api.toast({
+          //   msg: msg || '请求失败，稍后再试',
+          //   duration:2000,
+          //   location: 'middle'
+          // });
+        }
+      });
+    }
+    
+    //本期话题
+    getListData('pkList', null, function(data, first) {
+      renderData(data,first,$('#pkList'));
+    }, true);
+
+    //历史话题
+    getListData('historyPkList', condicationObj, function(data, first) {
+      renderData(data,first,$('#historyPk'));
+    }, true);
+    
+    api.setRefreshHeaderInfo({
+        visible: true,
+        loadingImg: 'widget://image/push-down.gif',
+        bgColor: '#fff',
+        textColor: '#ccc',
+        textDown: '下拉刷新...',
+        textUp: '松开刷新...',
+        showTime: true
+    }, function(ret, err){
+       isEnd = false;
+       page = 1;
+       condicationObj = {
+        'page' : 1
+       }
+       isAjaxing = false;
+       //本期话题
+      getListData('pkList', null, function(data, first) {
+        renderData(data,first,$('#pkList'));
+      }, true);
+
+      //历史话题
+      getListData('historyPkList', condicationObj, function(data, first) {
+        renderData(data,first,$('#historyPk'));
+      }, true);
+    });
+ 
+    //下拉加载
+    api.addEventListener({
+      name: 'scrolltobottom'
+    }, function(ret, err){
+      if(!isEnd && !isAjaxing) {
+        showButtonLoadDiv(false, $('#couponList'), '../../images/loadButton.gif');
+        getListData('couponNewList', condicationObj ,renderData);
+      }
+    });
+
+    function renderData(data, first, con) {
+      var htmlStr = '', rate = 0;
+      con = con || $('#historyPk');
+      
+      if(data instanceof Array) {
+        for(var i=0; i<data.length; i++) {
+          htmlStr += '<div class="border-bottom" id="'+data[i]['pk_id']+'">'
+                  +'  <div class="con-box">'
+                  +'    <div class="rows">'
+                  +'      <span>话题已结束</span>'
+                  +'      <span class="r win2" pid="'+data[i]['pk_id']+'"><i class="icon-m icon-mission"></i>获奖名单</span>'
+                  +'    </div>'
+                  +'    <h2 class="border-top mt10 pt10">'+data[i]['title']+'</h2>'
+                  +'    <div><img src="'+data[i]['poster']+'"></div>'
+                  +'    <ul class="pk-con mt10 clearfix">'
+                  +'      <li class="red-team">'
+                  +'        <div class="pk-team"><i class="icon-m icon-level"></i>红方</div>'
+                  +'        <div class="mt10">'+data[i]['pk']['red']['title']+'</div>'
+                  +'      </li>'
+                  +'      <li class="vs">VS</li>'
+                  +'      <li class="blue-team">'
+                  +'        <div class="pk-team"><i class="icon-m icon-level"></i>蓝方</div>'
+                  +'        <div class="mt10">'+data[i]['pk']['blue']['title']+'</div>'
+                  +'      </li>'
+                  +'    </ul>'
+                  +'    <ul class="pk-action border-top clearfix mt10">'
+                  if(data[i]['joined'] == 1) { //支持红方
+                    htmlStr += '<li><div class="ding-checked-red"><i class="icon-m icon-appreciate icon-red"></i></div></li>'
+                  }else{
+                    htmlStr += '<li><div class="ding-red"><i class="icon-m icon-appreciate icon-red"></i></div></li>'
+                  }
+                  
+                  rate = data[i]['pk']['red']['vote']/(Number(data[i]['pk']['red']['vote']) + Number(data[i]['pk']['blue']['vote']))*100;
+
+                  htmlStr += '<li class="ding-process">'
+                  +'        <div class="process-con">'
+                  +'          <div class="process-inner" style="width:'+rate+'%;"></div>'
+                  +'        </div>'
+                  +'        <div class="pk-people">'
+                  +'          <span class="pk-red-people">'+data[i]['pk']['red']['vote']+'</span>'
+                  +'          <span class="pk-blue-people">'+data[i]['pk']['blue']['vote']+'</span>'
+                  +'        </div>'
+                  +'      </li>'
+                  
+                  htmlStr += '<li style="float:right;">'
+                  if(data[i]['joined'] == 2) { //支持蓝方
+                    htmlStr +='<div class="ding-checked-blue">'
+                  }else{
+                    htmlStr +='<div class="ding-blue">'
+                  }
+                  htmlStr += '<i class="icon-m icon-appreciate icon-blue"></i>'
+                  +'        </div>'
+                  +'      </li>'
+                  +'    </ul>'
+                  +'    <div class="mt10">'
+                  +'      <button type="button" class="btn-fill btn-lg">看看热门评论？</button>'
+                  +'    </div>'
+                  +'  </div>'
+                  +'</div>'
+        }
+        
+        if(first) {
+          if(htmlStr) {
+            con.html(htmlStr);
+          }
+        }else{
+          if(htmlStr) {
+            con.append(htmlStr);
+          }
+        }
+
+      }else{
+        // 1投了红方，2投了蓝方
+        htmlStr += '<div class="border-bottom" id="'+data['pk_id']+'">'
+        +'  <div class="con-box">'
+        +'    <div class="rows">'
+        +'      <span class="timer">-:-:-</span>'
+        +'      <span class="r win"><i class="icon-m icon-cash"></i>奖励规则</span>'
+        +'    </div>'
+        +'    <h2 class="border-top mt10 pt10">'+data['title']+'</h2>'
+        +'    <div><img src="'+data['poster']+'"></div>'
+        +'    <ul class="pk-con mt10 clearfix">'
+        +'      <li class="red-team">'
+        +'        <div class="pk-team"><i class="icon-m icon-level"></i>红方</div>'
+        +'        <div class="mt10">'+data['pk']['red']['title']+'</div>'
+        +'      </li>'
+        +'      <li class="vs">VS</li>'
+        +'      <li class="blue-team">'
+        +'        <div class="pk-team"><i class="icon-m icon-level"></i>蓝方</div>'
+        +'        <div class="mt10">'+data['pk']['blue']['title']+'</div>'
+        +'      </li>'
+        +'    </ul>'
+        +'    <ul class="pk-action border-top clearfix mt10">'
+        if(data['joined'] == 2) { //支持蓝方
+          htmlStr += '<li><div class="ding-red"><i class="icon-m icon-appreciate icon-red"></i></div></li>'
+        }else if(data['joined'] == 0){
+          htmlStr += '<li><div name="vote" which="1" redcount="'+data['pk']['red']['vote']+'" bluecount="'+data['pk']['blue']['vote']+'" class="ding-red"><i class="icon-m icon-appreciate icon-red"></i></div></li>'
+        }else{
+           htmlStr += '<li><div class="ding-checked-red"><i class="icon-m icon-appreciate icon-red"></i></div></li>'
+        }
+        if(data['joined'] == 0) {
+          htmlStr += '<li class="ding-txt">你支持哪一方？</li>'
+        }else{ 
+          rate = data['pk']['red']['vote']/(Number(data['pk']['red']['vote']) + Number(data['pk']['blue']['vote']))*100;
+          htmlStr += '      <li class="ding-process">'
+          +'        <div class="process-con">'
+          +'          <div class="process-inner" style="width:'+rate+'%;"></div>'
+          +'        </div>'
+          +'        <div class="pk-people">'
+          +'          <span class="pk-red-people">'+data['pk']['red']['vote']+'</span>'
+          +'          <span class="pk-blue-people">'+data['pk']['blue']['vote']+'</span>'
+          +'        </div>'
+          +'      </li>'
+        }
+        
+        htmlStr += '      <li style="float:right;">'
+        if(data['joined'] == 1) { //支持红方
+          htmlStr +='<div class="ding-blue">'
+        }else if(data['joined'] == 0){
+          htmlStr +='<div name="vote" which="2" redcount="'+data['pk']['red']['vote']+'" bluecount="'+data['pk']['blue']['vote']+'" class="ding-blue">'
+        }else{
+          htmlStr +='<div class="ding-checked-blue">'
+        }
+        htmlStr += '<i class="icon-m icon-appreciate icon-blue"></i>'
+        +'        </div>'
+        +'      </li>'
+        +'    </ul>'
+        +'    <div class="mt10">'
+        +'      <button type="button" class="btn-fill btn-lg color-blue">看看热门评论？</button>'
+        +'    </div>'
+        +'  </div>'
+        +'</div>'
+
+        con.html(htmlStr);
+
+
+        
+        //获得图片，分享
+        api.execScript({
+          name : 'pk_list',
+          script: 'shareFn("'+data['poster']+'","'+data['title']+'","'+data['pk_id']+'");'
+        });
+
+
+        clearInterval(o);
+        if(data['countdown'] > 0) {
+          isBegin = true;
+          showCountDown(Number(data['countdown']));
+        }else{
+          showCountDown(-Number(data['countdown']));
+        }
+
+      }
+      
+      $('.process-con').width(api.winWidth - 10 - 10 - 46 - 10 - 10 - 48 - 10 - 10);
+      
+
+      loadCount--;
+
+      if($('#conDiv').hasClass('hidden')) {
+        showLoadDiv(false, $('#conDiv'));
+      }
+
+
+      showButtonLoadDiv(false, $('#historyPk'), '../../images/loadButton.gif');
+      
+      if(con.attr('id') == 'historyPk') {
+        if(data.length < 15) {
+          isEnd = true;
+        }else{
+          showButtonLoadDiv(true, $('#historyPk'), '../../images/loadButton.gif');
+        }
+      }
+    }
+
+
+
+    function showCountDown(time) {
+       o = setInterval(function() {
+        time--;
+        var leftsecond = parseInt(time); 
+        // var day=Math.floor(leftsecond/(60*60*24)); 
+        // var hour=Math.floor((leftsecond-day*24*60*60)/3600); 
+        // var minute=Math.floor((leftsecond-day*24*60*60-hour*3600)/60); 
+        // var second=Math.floor(leftsecond-day*24*60*60-hour*3600-minute*60); 
+
+
+
+        var day=Math.floor(leftsecond/(60*60*24)); 
+        var hour=Math.floor((leftsecond)/3600); 
+        var minute=Math.floor((leftsecond-hour*3600)/60); 
+        var second=Math.floor(leftsecond-hour*3600-minute*60); 
+
+
+        if(hour == 0 && minute == 0 && second == 0) {
+          //本期话题
+          getListData('pkList', null, function(data, first) {
+            renderData(data,first,$('#pkList'));
+          }, true);
+
+          //历史话题
+          getListData('historyPkList', condicationObj, function(data, first) {
+            renderData(data,first,$('#historyPk'));
+          }, true);
+
+          $('.timer').html('已结束');
+          clearInterval(o);
+        }else{
+
+          if(hour < 10) {
+            hour = '0' + hour;
+          }
+
+          if(minute < 10) {
+            minute = '0' + minute;
+          }
+
+          if(second < 10) {
+            second = '0' + second;
+          }
+
+
+
+          // if(day == 0) {
+            if(isBegin) {
+              $('.timer').html('距离结束:'+hour+'小时'+minute+'分'+second+'秒');
+            }else{
+              $('.timer').html('距离开始:'+hour+'小时'+minute+'分'+second+'秒');
+            }
+
+            
+          // }else{
+          //   $('.timer').html('距离开始:'+day+'天'+hour+'小时'+minute+'分'+second+'秒');
+          // }
+        }
+      },1000);
+
+    }
+
+    
+
+    //投票
+    $(document).on('tap', 'div[name=vote]', function() {
+
+      if(!isBegin) {
+         api.toast({
+          msg: '暂未开始',
+          duration:2000,
+          location: 'middle'
+        });
+
+         return;
+      }
+
+      var userInner = $api.getStorage('user');
+      if($.isEmptyObject(userInner)) {
+        showLoginConfirm('../../index.html');  
+        return;
+      }
+      
+      curWhich = $(this).attr('which');
+      curPkid = $(this).parents('div[id]').attr('id');
+      // 1投了红方，2投了蓝方
+
+      curRedCount = $(this).attr('redcount');
+      curBlueCount = $(this).attr('bluecount');
+
+      writeCommentAction();
+
+
+      sendAjax(URLConfig('vote'),{'pk_id' : curPkid, 'vote_for' : curWhich},  function(data, code, msg) {
+        if(code == 0) {
+        }else{
+          api.toast({
+            msg: msg || '评论失败，稍后再试',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+
+
+    });
+
+
+    function writeCommentAction() {
+      $('.write-comment').removeClass('hidden');
+      if(curWhich == 1) {
+        $('#commentText').attr('placeholder', '您加入了红方阵营，快说说您的观点！');
+      }else if(curWhich == 2) {
+        $('#commentText').attr('placeholder', '您加入了蓝方阵营，快说说您的观点！');
+      }
+    }
+
+    //发送评论
+    $('.send').on('tap',  function() {
+      var commentText = $('#commentText').val();
+      if(commentText.replace(/\s+/g,'') === '') {
+        api.toast({
+          msg: '说说您的观点呗',
+          duration:2000,
+          location: 'middle'
+        });
+        return;
+      }
+      sendAjax(URLConfig('voteComment'),{'pk_id' : curPkid, 'comment' : commentText, 'vote_for' : curWhich},  function(data, code, msg) {
+        if(code == 0) {
+          voteBack();
+        }else{
+          api.toast({
+            msg: msg || '评论失败，稍后再试',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+
+    });
+
+    function voteBack() {
+      $('.write-comment').addClass('hidden');
+      $('#commentText').val('');
+      api.toast({ msg: '投票成功！', duration:2000, location: 'middle'});
+      //改变红蓝方状态
+      var conEl = $('#pkList').find('.pk-action');
+
+      var htmlStr = '';
+
+      if(curWhich == 1) {
+        htmlStr += '<li ><div class="ding-checked-red"><i class="icon-m icon-appreciate icon-red"></i></div></li>'
+        curRedCount++;
+      }else{
+        htmlStr += '<li ><div class="ding-red"><i class="icon-m icon-appreciate icon-red"></i></div></li>'
+        curBlueCount++;
+      }
+      var curRate = curRedCount/(Number(curRedCount) + Number(curBlueCount))*100;
+      var w = api.winWidth - 10 - 10 - 46 - 10 - 10 - 48 - 10 - 10;
+      htmlStr += '<li class="ding-process">'
+      +'  <div class="process-con" style="width:'+w+'px;">'
+      +'    <div class="process-inner" style="width:'+curRate+'%;"></div>'
+      +'  </div>'
+      +'  <div class="pk-people">'
+      +'    <span class="pk-red-people">'+curRedCount+'</span>'
+      +'    <span class="pk-blue-people">'+curBlueCount+'</span>'
+      +'  </div>'
+      +'</li>'
+      +'<li style="float:right;">'
+      if(curWhich == 2) {
+        htmlStr += '  <div class="ding-checked-blue">'
+      }else{
+        htmlStr += '  <div class="ding-blue">'
+      }
+      htmlStr += '    <i class="icon-m icon-appreciate icon-blue"></i>'
+      +'  </div>'
+      +'</li>'
+
+      conEl.html(htmlStr);
+
+
+    }
+
+    
+    $(document).on('tap', '.win', function() {
+      api.openWin({
+        name : 'pk_fqa',
+        url : 'pk_fqa.html'
+      });
+    });
+
+    $(document).on('tap', '.win2', function() {
+      var pid = $(this).attr('pid');
+
+      api.openWin({
+        name : 'pk_people',
+        url : 'pk_people.html',
+        pageParam : {'id' : pid}
+      });
+    });
+
+    //查看热门评论
+    $(document).on('tap', 'button', function() {
+
+      if(!isBegin && $(this).hasClass('color-blue')) {
+         api.toast({
+          msg: '暂未开始',
+          duration:2000,
+          location: 'middle'
+        });
+
+         return;
+      }
+
+      var id = $(this).parents('div[id]').attr('id');
+      api.openWin({
+        name : 'pk_comment',
+        url : 'pk_comment.html',
+        pageParam : {'id' : id}
+      });
+    });
+
+
+    $('.cancel').on('tap',  function() {
+      $('.write-comment').addClass('hidden');
+
+      voteBack();
+    });
+
+    $('#conDiv').on('touchstart', function() {
+      $('.write-comment').addClass('hidden');
+    });
+
+  }
+</script>
+</html>

@@ -1,0 +1,192 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/shop.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <title>钓点_鱼多多_找钓点，就用鱼多多</title>
+  
+</head>
+<body>
+<div class="wrap">
+  <!-- 商店列表 -->
+  <div class="shop-list">
+    <ul id="pondList" class="hidden"></ul>
+  </div>
+  <!-- 商店列表end -->
+  <div class="load-page wait"></div>
+</div>
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+
+    var isAjaxing = false;
+    var page_size = 15;
+    var condicationObj = {
+      'type' : 1
+    }
+
+    api.setFrameAttr({
+      'scrollToTop' : false
+    });
+
+    function getListData(name, params, callback) {
+      isAjaxing = true;
+      sendAjax(URLConfig(name), params, function(data, code, msg) {
+        isAjaxing = false;
+        api.refreshHeaderLoadDone();
+        if(code === 0) {
+          callback(data);
+        }else{
+          api.toast({
+            msg: msg || '请求失败，稍后再试',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+    }
+
+    api.setRefreshHeaderInfo({
+        visible: true,
+        loadingImg: 'widget://image/push-down.gif',
+        bgColor: '#fff',
+        textColor: '#ccc',
+        textDown: '下拉刷新...',
+        textUp: '松开刷新...',
+        showTime: true
+    }, function(ret, err){
+       condicationObj = {
+        'type' : 1
+       }
+
+       isAjaxing = false;
+       getListData('favoriteList', condicationObj, renderData);
+    });
+
+    window.initData = function() {
+      condicationObj = {
+        'type' : 1
+      }
+      isAjaxing = false;
+      $('#pondList').html('');
+      getListData('favoriteList', condicationObj, renderData);
+    }
+    
+    initData();
+    
+    function renderData(data) {
+      //1 免费   3天塘  2斤塘
+      var htmlStr = '', proImg = {};
+      for(var i=0; i<data.length; i++) {
+        
+          var lastUrl = getPicUrl(data[i]['spic'], 97*window.devicePixelRatio, 73*window.devicePixelRatio);
+          // var cacheUrl = getImageCache(lastUrl);
+          var cacheUrl = lastUrl;
+
+          htmlStr += '<li class="border-bottom" id="'+data[i]['id']+'" onclick="enterDetail(this);">'
+                  +'  <div url="'+cacheUrl+'" class="img-box"><i class="icon-m icon-logo"></i></div>'
+                  +'  <div class="info">'
+                  +'    <h3 class="name">'+data[i]['name']+'</h3>'
+                  +'    <div class="price">'
+
+                  if(!data[i]['price']) {
+                    htmlStr += '      未知';
+                  }else{
+                    if(data[i]['discount_price']) {
+                      if(data[i]['charge_type'] == 1) {
+                        htmlStr += '      免费';
+                      }else if(data[i]['charge_type'] == 3){
+                        htmlStr += '      ￥'+data[i]['discount_price']+'<small>/天</small><del>'+data[i]['price']+'/天</del>';
+                      }else if(data[i]['charge_type'] == 2) {
+                        htmlStr += '      ￥'+data[i]['discount_price']+'<small>/斤</small><del>'+data[i]['price']+'/斤</del>';
+                      }else if(data[i]['charge_type'] == 4) {
+                        htmlStr += '      ￥'+data[i]['discount_price']+'<small>/场</small><del>'+data[i]['price']+'/场</del>';
+                      }else{
+                        htmlStr += '      未知';
+                      }
+                    }else{
+                      if(data[i]['charge_type'] == 1) {
+                        htmlStr += '      免费';
+                      }else if(data[i]['charge_type'] == 3){
+                        htmlStr += '      ￥'+data[i]['price']+'<small>/天</small>';
+                      }else if(data[i]['charge_type'] == 2) {
+                        htmlStr += '      ￥'+data[i]['price']+'<small>/斤</small>';
+                      }else if(data[i]['charge_type'] == 4) {
+                        htmlStr += '      ￥'+data[i]['price']+'<small>/场</small>';
+                      }else{
+                        htmlStr += '      未知';
+                      }
+                    }
+                  }
+          
+          if(data[i]['tag'] & 1) {
+              htmlStr += '<span class="text-badge bg-orange">合作</span>';
+            }
+
+            if(data[i]['tag'] & 2) {
+              htmlStr += '<span class="text-badge bg-green">抽券</span>';
+            }
+
+
+          htmlStr += '    </div>'
+                  +'    <div class="addr">'
+
+          if(data[i]['pond_area_name']) { //推广钓点
+            htmlStr += '<span class="text-badge bg-blue">'+data[i]['pond_area_name']+'</span>'
+          }
+
+            
+           htmlStr += '<div class="distance">'+data[i]['dateline']+'</div>'+(data[i]['address'] || '暂无地址')+'</div>'
+            if(data[i]['level'] == 9) {
+              htmlStr += '    <div class="auth-lv1"><i class="icon-m icon-auth"></i>官方认证</div></div></li>'
+            }else if(data[i]['level'] == 5){
+              htmlStr += '    <div class="auth-lv2"><i class="icon-m icon-auth"></i>钓友认证</div></div></li>'
+            }else if(data[i]['level'] == 3) {
+              htmlStr += '      <div class="auth-lv3"><i class="icon-m icon-auth"></i>电话认证</div></div></li>'
+            }else{
+              // htmlStr += '      <div class="auth-lv4"><i class="icon-m icon-auth"></i>未认证</div></li>'
+            }
+
+
+          proImg[cacheUrl] = { 'url' :  cacheUrl};
+
+          
+      }
+
+
+      showLoadDiv(false, $('#pondList'));
+
+      $('#pondList').html(htmlStr);
+
+      getImageSize(proImg);
+    
+      
+      if(data.length === 0) {
+        showNoData($('#pondList'));
+      }
+    }
+
+
+    window.enterDetail = function(el) {
+      api.openWin({
+        name: 'pond_detail',
+        url: './pond-details.html',
+        bounces : false,
+        bgColor : '#fff',
+        pageParam: {'pondId': el.id}
+      });
+    }
+
+  }
+
+</script>
+</html>

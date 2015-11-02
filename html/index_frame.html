@@ -1,0 +1,1219 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../css/feed.css">
+  
+  <title>首页_鱼多多_找钓点，就用鱼多多</title>
+  <style>
+     .focus{
+        position: absolute;
+        left: 50%;
+        bottom: 5px;
+        -webkit-transform: translateX(-50%);
+      }
+
+      .focus i{
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 1000px;
+        background-color: rgba(255,255,255,.5);
+      }
+
+      .focus i+i{
+        margin-left: 10px;
+      }
+
+      .focus i.active{
+        background-color: #fff;
+      }
+
+      .swipe-img-list {
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 100%;
+        overflow: hidden;
+      }
+
+      .swipe-img-list > li{
+        float: left;
+        width: 100%;
+        height: 100%;
+        position: relative;
+      }
+
+
+      .sliders{
+        overflow: hidden;
+        position: relative;
+        /*padding-bottom:100%;*/
+        margin: 0;
+        height: 150px;
+      }
+
+
+    .swipe-wrap{
+      position: absolute;
+      top: 0; bottom:0; left: 0; right: 0;
+      height: 100%;
+    }
+
+
+
+    .tip2{
+      background: #fff;
+      color: #0878ff;
+      width: 220px;
+      text-align: center; 
+      margin:  0 auto;
+      border-radius: 10px;
+    }
+
+    .tip2 li{
+      height: 35px;
+      line-height: 35px;
+    }
+
+    .tip2 .t{
+      color: #000;
+      font-weight: bold;
+      height: 40px;
+      line-height: 40px;
+    }
+
+    .tip2 .c{
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wrap hidden" id="conDiv">
+    <div class="feed-list">
+      <div id="feedList">
+         
+      </div>
+    </div>
+    
+    <!--上传成功 -->
+    <div id="uploadTip" class="note bg-orange"></div>
+    <!--上传成功 -->
+  </div>
+  <div class="load-page wait"></div>
+
+
+
+  <div id="tip2" class="pop hidden" style="top:100px;">
+    <ul class="tip2">
+    </ul>
+    <!-- <div class="mask"></div> -->
+  </div>
+  
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/swipe/swipe.js"></script>
+<!-- <script src="../script/slide.js"></script> -->
+<script src="../script/common.js"></script>
+<!-- <script src="../script/echo.min.js"></script> -->
+<script src="http://webapi.amap.com/maps?v=1.3&key=425928309ed735359972d7edb1534ff1"></script>
+<script src="../script/feedListDoms.js"></script>
+<script>
+
+  apiready = function() {
+    var lastId = 0, curname;
+    var isEnd = false, isAjaxing = false;
+    var user = $api.getStorage('user');
+    var curFeedId = '', atuid = '';
+    var conditionObj = {
+      'lastId' : lastId,
+      'page' : 1
+    }
+    
+
+    
+    
+    function getListData(name, params, callback, first) {
+      var network = $api.getStorage('network');
+      //判断
+      if(!network) {
+        var connectionType = api.connectionType;  //比如: wifi
+        if(connectionType != 'wifi') {
+
+          $api.setStorage('network', true);
+          $('#uploadTip').text('您正在'+connectionType+'环境下操作！').addClass('unfold');
+          setTimeout(function() {
+            $('#uploadTip').text('您正在'+connectionType+'环境下操作！').removeClass('unfold');
+          },3000)
+        }
+      }
+
+
+      if(first) {
+        // showLoadDiv(true, $('#conDiv'));
+      }else{
+        showButtonLoadDiv(true, $('#feedList'), '../images/loadButton.gif');  
+      }
+
+      isAjaxing = true;
+      sendAjax(URLConfig(name), params, function(data, code, msg) {
+        isAjaxing = false;
+        api.refreshHeaderLoadDone();
+        if(code === 0) {
+          callback(data, first);
+        }else{
+          api.toast({
+            msg: msg || '请求失败，稍后再试',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+    }
+
+    function initData(first) {
+
+      //检查图片缓存地址
+      try{
+        CacheData.deleteDataForDays('feedPics', 3);
+      }catch(e){
+        var errmsg = e.message+'   '+JSON.stringify(e);
+        uploadErrLog('exception', errmsg);
+      }
+      
+      getListData('feedList', conditionObj, function(data, first) {
+        try{
+          renderFeedData(data,first);
+        }catch(e){
+          var errmsg = e.message+'   '+JSON.stringify(e);
+          uploadErrLog('exception', errmsg);
+        }
+      }, first);
+    }
+    
+    initData(true);
+    
+    
+    startLocation(function(result) {
+      //填写定位信息
+      var mapInfo = $api.getStorage('mapInfo');
+      var parent_code = parseInt(Number(result['regeocode']['addressComponent']['adcode'])/100)*100;
+      var parent_name = result['regeocode']['addressComponent']['city'] || result['regeocode']['addressComponent']['province'];
+      if(parent_code != mapInfo['parent_code']) {
+        //give tips
+        var firstEnter = $api.getStorage('firstEnter');
+        
+        if(!firstEnter) {
+          api.execScript({
+            name : 'index',
+            script : 'changecity("'+parent_code+'", "'+parent_name+'");'
+          });
+          $api.setStorage('firstEnter', true);
+        }else{
+          api.confirm({
+            title: '系统提示',
+            msg: '当前定位城市为'+parent_name+', 是否切换？',
+            buttons:['取消', '确定']
+          },function(ret,err){
+            if(ret.buttonIndex == 2){
+              api.execScript({
+                name : 'index',
+                script : 'changecity("'+parent_code+'", "'+parent_name+'");'
+              });
+            }
+          });
+        }
+      }
+      
+      //缓存地址
+      $api.setStorage('location', result['regeocode']['formattedAddress']);
+
+
+
+      //tip2 城市选择  napster
+      sendAjax(URLConfig('checkGiftSupport'), null, function(data, code, msg) {
+        if(!data['status'] && code == 0) {
+          var support = data['support'];
+          var htmlStr = '<li class="t">选择城市</li>';
+          $.each(support, function(key, val) {
+            htmlStr += '<li code="'+key+'" class="border-top">'+val+'</li>';
+          });
+          htmlStr += '<li name="cancel" class="border-top c">取消</li>'
+
+          $('#tip2').find('ul').html(htmlStr);
+
+          $('#tip2').removeClass('hidden');
+        }else{
+          giftCheckFn();
+        }
+      });
+
+
+    }, '100m');
+
+
+
+      function giftCheckFn(areaCode) {
+        var options = {};
+        if(areaCode) {
+          options['area_code'] = areaCode;
+        }
+        //礼包检测接口
+        sendAjax(URLConfig('giftCheck'), options,  function(data, code, msg) {
+          if(code === 0) {
+            if(data['gift']['tip']) {
+              api.openFrame({
+                name: 'gif_200_frame1',
+                url : './gif_200_frame1.html',
+                rect:{x:0,y:0,w:'auto',h:'auto'},
+                bgColor: 'rgba(0,0,0,0.0)',
+                bounces : false,
+                pageParam : data,
+                vScrollBarEnabled:true,
+                hScrollBarEnabled:true
+              });
+            }else if(data['free']['tip']) {
+              api.openFrame({
+                name: 'gif_200_frame2',
+                url : './gif_200_frame2.html',
+                rect:{x:0,y:0,w:'auto',h:'auto'},
+                bgColor: 'rgba(0,0,0,0.0)',
+                bounces : false,
+                pageParam : data,
+                vScrollBarEnabled:true,
+                hScrollBarEnabled:true
+              });
+            }
+          }else if(code < 100) {
+            api.toast({
+              msg: msg,
+              duration:5000,
+              location: 'middle'
+            });
+          }
+        });
+      }
+
+
+
+    $('#tip2').on('tap', 'ul li', function() {
+      var code = $(this).attr('code');
+      var name = $(this).attr('name');
+      if(name === 'cancel') {
+        giftCheckFn();
+      }else if(code) {  
+        giftCheckFn(code);
+      }
+
+      setTimeout(function() {
+        if(name === 'cancel' || code) {
+          $('#tip2').addClass('hidden');
+        }
+      },300);
+    });
+
+
+    window.initIndexData = function() {
+      user = $api.getStorage('user');
+      initData(true);
+    }
+
+    //从后台唤醒，检查版本
+    api.addEventListener({
+      name:'resume'
+    },function(ret,err){
+      checkAppVersion('./appupdate.html');
+    });
+    
+    api.setRefreshHeaderInfo({
+        visible: true,
+        loadingImg: 'widget://image/push-down.gif',
+        bgColor: '#fff',
+        textColor: '#ccc',
+        textDown: '下拉刷新...',
+        textUp: '松开刷新...',
+        showTime: true
+    }, function(ret, err){
+       isEnd = false;
+       conditionObj = {
+        'lastId' : 0,
+        'page' : 1
+       }
+       isAjaxing = false;
+       // $('#feedList').html('');
+       getListData('feedList', conditionObj, renderFeedData, true);
+    });
+    
+    //下拉加载
+    api.addEventListener({
+      name: 'scrolltobottom'
+    }, function(ret, err){
+      if(!isEnd && !isAjaxing) {
+        showButtonLoadDiv(false, $('#feedList'), '../../images/loadButton.gif');
+        conditionObj['lastId'] = $('div[name=feedMode]').last().attr('id');
+        conditionObj['page']++;
+        getListData('feedList', conditionObj ,renderFeedData);
+      }
+    });
+
+
+    //点击广告图跳转
+    function openAdWin(el) {
+      var url = $(el).attr('url');
+      if(url.indexOf('news/info') > -1 ) {
+        var infoId = url.split('=')[1];
+        //文章  shanggoula://news/info?id=2
+        api.execScript({
+          name: 'index',
+          script: 'openInfoDetail("'+infoId+'");'
+        });
+      }else if(url.indexOf('http://') > -1){
+        //http
+        if(api.systemType === 'ios') {
+          api.openApp({
+              iosUrl: url
+          },function(ret,err){
+          });
+        }else{
+          api.openApp({
+              androidPkg: 'android.intent.action.VIEW',
+              mimeType: 'text/html',
+              uri: url
+          },function(ret,err){});
+        }
+      }else if(url.indexOf('pond/detail') > -1 ) {
+        //钓点  shanggoula://pond/detail?id=1
+        var pondId = url.split('=')[1];
+        api.openWin({
+          name: 'pond_detail',
+          url: './pond-details.html',
+          bounces : false,
+          pageParam: {'pondId': pondId}
+        });
+      }
+    }
+
+    window.openAdWin = openAdWin;
+
+
+    function initSwipe() {
+      // 轮播图
+      var swipes = document.querySelectorAll('.swipe-wrap');
+      for(var i = 0; i < swipes.length; i++) {
+        Swipe(swipes[i], {
+          // auto: 5000,
+          continuous: false,
+          disableScroll: false,
+          stopPropagation: false,
+          callback: function(index, elem) {
+            $(elem).parent().next().find('i.active').removeClass('active');
+            $(elem).parent().next().find('i').eq(index).addClass('active');
+          },
+          transitionEnd: function(index, elem) {
+          }
+        });
+      }
+    }
+
+
+    function renderFeedData(data, first) {
+      var htmlStr = '';
+
+      for(var i=0; i<data.length; i++) {
+        try{
+          htmlStr += getCurDoms(data[i]);
+        }catch(e){
+          var errmsg = e.message+'   '+JSON.stringify(e);
+          uploadErrLog('exception', errmsg);
+        }
+      }
+
+      var $htmlStr = $(htmlStr);
+      if(first) {
+        $('#feedList').html($htmlStr);
+        $('.wrap').animate({scrollTop: '0px'}, 200);
+      }else{
+        $('#feedList').append($htmlStr);
+      }
+
+      setTimeout(function() {
+        initSwipe();
+      },1200)
+
+
+      // render 头像
+      renderAvatar();
+      // render 图片
+      renderLogo();
+      
+      // api.parseTapmode();
+      if(api.systemType === 'android') {
+        echo.init({
+          offsetTop: 100,
+          throttle: 250,
+          // newDom : $('#'+id)[0],
+          unload: true,
+          callback: function (element, op) {
+            // $(element).css('border','1px solid red');
+            // api.toast({
+            //   msg: op,
+            //   duration:2000,
+            //   location: 'middle'
+            // });
+          }
+        });
+      }
+      
+
+      if(first) {
+        var firstImg = $('div[name=feedMode]').find('img[data-echo]').first();
+        var firstImgUrl = firstImg.attr('data-echo');
+        firstImg.attr('src', firstImgUrl);
+      }
+      
+
+      showLoadDiv(false, $('#conDiv'));
+      showButtonLoadDiv(false, $('#feedList'), '../images/loadButton.gif');
+      
+      if(data.length === 0) {
+        isEnd = true;
+        if(first && data.length === 0) {
+          showNoData($('#conDiv'));
+        }else if(!first){
+          api.toast({
+            msg: '没有更多数据了',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      }else{
+        showButtonLoadDiv(true, $('#feedList'), '../images/loadButton.gif');
+      }
+
+    }
+
+    //调查问卷
+    window.suveryClick = function(el) {
+      var cid = $(el).attr('cid'), mid = $(el).attr('mid');
+      var pel = $(el).parents('div[name=suvery]');
+      pel.hide('slow',  function() {
+        pel.remove();
+        api.toast({msg: '感谢您的参与！', duration:2000,location: 'middle'});
+      });
+      sendAjax(URLConfig('suvery'), {'id' : mid, 'selected' : cid}, function(data, code, msg) {});
+    }
+
+    //广告图点击
+    window.addPicsClick = function(el) {
+      var linkUrl = $(el).attr('linkUrl');
+      var title = $(el).attr('title');
+
+      picsClickFn(linkUrl, title);
+    }
+
+    function picsClickFn(linkUrl, title) {
+      var innerUser = $api.getStorage(user);
+      var uid = '', nickname = '', token = '';
+      if(!$.isEmptyObject(innerUser)) {
+        uid = innerUser['id'] || '';
+        nickname = innerUser['nickname'] || '';
+        token = innerUser['token'] || '';
+      }
+
+      linkUrl = linkUrl.replace(/{{uid}}/, uid)
+      .replace(/{{nickname}}/, encodeURIComponent(nickname))
+      .replace(/{{token}}/, token);
+
+      api.openWin({
+        name: 'adpics',
+        url: 'adpics.html',
+        bounces : false,
+        pageParam: {'url': linkUrl, 'title' : title}
+      });
+    }
+
+    window.addPics2Click = function(el) {
+      var isApp = $(el).attr('isApp');
+      var title = $(el).attr('title');
+      var href = $(el).attr('href');
+      var pageName = $(el).attr('pageName');
+
+      if(isApp != 'undefined') {
+        api.openWin({
+          'name' : pageName,
+          'url' : href,
+          'bounces' : false
+        });
+      }else{
+        picsClickFn(href, title);
+      }
+    }
+
+
+    //新鲜事文章 点击进入详细页
+    window.enterDetail = function(el) {
+      api.execScript({
+        name: 'index',
+        script: 'openInfoDetail("'+el.id+'");'
+      });
+    }
+
+    //应用分享
+    window.shareAppClick = function(el) {
+        // curDatas['info']['title'] = '鱼多多请你去钓鱼，首单不要钱，更多优惠猛戳！';
+        // curDatas['info']['description'] = '全城钓点，一手掌握；风向气压，专业预报；还有好玩的渔获排名；快来给我点赞！';
+       var datas = {};
+       var url = $(el).attr('url') || 'http://www.yddapp.com/';
+       // var desc = '【鱼多多】钓鱼神器，请你免费去钓鱼！全城钓点，一手掌握；风向气压，专业预报；还有好玩的渔获排名！大家都在用！';
+       var desc = '来就送200元钓鱼券，还有免单券抢！';
+       var title = '【鱼多多】钓鱼神器';
+       
+       datas['info'] = {
+        'title' : title,
+        'description' : desc,
+        'content_url' : url,
+        'imageUrl' : 'http://img1.shanggou.la/default/logo.jpg'
+       };
+       
+       sharePop(title, datas);
+    }
+    
+    //开启通讯录
+    window.openMailList = function(el) {
+      api.openWin({
+        'name' : 'invite',
+        'url' : './my/invite.html'
+      });
+    }
+    
+    api.addEventListener({
+      name:'pause'
+    },function(ret,err){
+      var videos = $('video');
+      for(var i=0; i<videos.length; i++) {
+        videos.eq(i)[0].pause();
+      }
+    });
+
+
+    // api.addEventListener({
+    //   name:'resume'
+    // },function(ret,err){
+    //     //operation
+    //   var videos = $('video');
+    //   for(var i=0; i<videos.length; i++) {
+    //     videos.eq(i)[0].pause();
+    //   }
+    // });
+
+
+    //shanggoula://news/info?id=74
+    //shanggoula://user/qrcode?uid=11719
+    //shanggoula://fishing_shop/detail?id=74
+    //shanggoula://pond/detail?id=108198
+    //shanggoula://feed/detail?id=108198
+
+    function insertFeed(backstagePics, backstageParams) {
+      var user = $api.getStorage('user');
+      if($.isEmptyObject(user)) {
+        showLoginConfirm('../index.html');
+        return;
+      }
+      var data = {'type' : 1};
+      var picsArr = [];
+      for(var i=0; i<backstagePics.length; i++) {
+        picsArr.push(backstagePics[i]['path']);
+      }
+
+      data['pics'] = picsArr;
+      data['uid'] = user['id'];
+      data['fish_extra'] = {};
+      data['fish_extra']['species'] = backstageParams['species'];
+      data['fish_extra']['weight'] = backstageParams['weight'];
+      data['fish_extra']['len'] = backstageParams['len'];
+      data['fish_extra']['bait_brand'] = backstageParams['bait_brand'];
+
+      data['pretty_time'] = '刚刚';
+
+      data['avatar'] = user['avatar'];
+      data['uid'] = user['id'];
+      data['uname'] = user['nickname'];
+      data['gender'] = user['gender'];
+      
+      data['p_name'] = backstageParams['pondName'];
+      data['pond_id'] = backstageParams['pond_id'];
+      data['desc'] = backstageParams['desc'];
+
+      data['topic_name'] = backstageParams['topicName'];
+      data['comment_total'] = 0;
+      data['zans'] = 0;
+      var htmlStr = getCurDoms(data, true, true);
+      var firstDom = $('div[name=feedMode]').first();
+      firstDom.before(htmlStr);
+      $('body')[0].scrollTop = 0;
+    }
+    
+    
+    //================后台上传发表渔获======================
+    var noUploadPicAttr = [];
+    var picLoadCount = 0;
+    var backstagePics = {}, backstageParams = {}, backstagePath = [];
+    var rankResultObj = {};
+    var imageFilter = api.require("imageFilter");
+    var mediaScanner = api.require('UIMediaScanner');
+
+    var picCount = 0;
+    var compressPicAttr = [];
+
+    //html页面a：
+    // api.addEventListener({
+    //     name: 'myEvent'
+    // }, function(ret){
+    //     if(ret && ret.value){
+    //         publishFeed();
+    //     }
+    // });
+
+
+    window.publishFeed = function() {
+      picCount = 0;
+      picLoadCount = 0;
+      compressPicAttr = [];
+      backstagePics = $api.getStorage('backstagePics');
+      backstageParams = $api.getStorage('backstageParams');
+
+      
+      uploadErrLog('原数据:', JSON.stringify(backstagePics) +'  '+ JSON.stringify(backstageParams) +'  手机信息>' + api.systemVersion+' '+api.connectionType+' '+api.deviceName);
+      try{
+        if(!$.isEmptyObject(backstageParams)) {
+          if(backstageParams['topic_id']) {
+            api.execScript({
+              name: 'topic_detail',
+              frameName : 'topic_detail',
+              script: 'insertFeed();'
+            });
+          }
+          if(api.systemType === 'ios') {
+            var strSV = api.systemVersion;
+            var numSV = parseInt(strSV,10);
+            if (numSV > 7 ) {
+              insertFeed(backstagePics, backstageParams);
+            }
+          }else{
+            insertFeed(backstagePics, backstageParams);
+          }
+        }
+      }catch(e) {
+        var errmsg = e.message+'   '+JSON.stringify(e);
+        uploadErrLog('exception', errmsg);
+      }
+
+      
+      var cNameAttr = backstagePics[0]['path'].split('/');
+      var cName = cNameAttr[cNameAttr.length - 1];
+      
+      if(cName.indexOf('.gif') > -1) {
+        uploadPhoto(backstagePics[0]['path'], [backstagePics[0]['path']]);
+      }else{
+
+        if(api.systemType === 'ios') {
+          handlePicsForIos(backstagePics);
+        }else{
+          handlePicsForAndroid(backstagePics);
+        }
+      }
+
+    }
+    //苹果路径转换
+    function getIosPath(oldPath, callback) {
+      //路径不能支持问题 2015-10-13
+      if(backstageParams['topic_id'] == 17) {
+        callback(oldPath);
+      }else{
+        mediaScanner.transPath({
+           path: oldPath
+        }, function(ret){
+           callback(ret.path);
+        });
+      }
+    }
+
+    //处理图片 IOS
+    function handlePicsForIos(backstagePics) {
+      var iosPicsArr = [];
+      for(var i=0, len=backstagePics.length; i<len; i++) {
+        getIosPath(backstagePics[i]['path'], function(realPath) {
+          iosPicsArr.push(realPath);
+          if(backstagePics.length === iosPicsArr.length) {
+            getIosRealHandlePics(iosPicsArr);
+          }
+        });
+      }
+    }
+
+    function getIosRealHandlePics(iosPicsArr) {
+      var iosRealPicsObj = {}, count = 0;
+      function roundGet(unitData) {
+        beforeCompressPic(unitData, function(quality, sizeObj) {
+          var cNameAttr = unitData.split('/');
+          var cName = cNameAttr[cNameAttr.length - 1];
+
+          iosRealPicsObj[count] = {
+            quality : quality,
+            size : sizeObj,
+            scale : sizeObj['scale'],
+            name : cName,
+            url : unitData
+          }
+          count++;
+          if(iosPicsArr[count]) {
+            beforeCompressPic(iosPicsArr[count], roundGet(iosPicsArr[count]));
+          }else{
+            //结束
+            getIosCompressPics(iosRealPicsObj)
+          }
+        });
+      }
+
+      roundGet(iosPicsArr[0])
+    }
+
+    function getIosCompressPics(iosPicsObj) {
+      var compressPicArr = [], count = 0;
+      function compressIt(unit) {
+        compressPic(unit, function(uploadPath) {
+          compressPicArr.push(uploadPath);
+          count++;
+          var nextUnit = getUnitForIndex(iosPicsObj, count);
+          if(nextUnit) {
+            compressIt(nextUnit);
+          }else{
+            //结束
+            uploadPhoto(compressPicArr[0], compressPicArr);
+          }
+        });
+      }
+      compressIt(getUnitForIndex(iosPicsObj, 0));
+    }
+
+    function getUnitForIndex(obj, index) {
+      var unit = null, count = 0;
+      for(var i in obj) {
+        if(count === index) {
+          unit = obj[i];
+        }
+        count++;
+      }
+
+      return unit;
+    }
+
+    //处理图片 Android
+    function handlePicsForAndroid(backstagePics) {
+      uploadErrLog('handlePicsForAndroid:', JSON.stringify(backstagePics));
+      var realPicsObj = {}, count = 0, pngCount = 0;
+      function roundGet(unitData) {
+        beforeCompressPic(unitData, function(quality, sizeObj) {
+          var cNameAttr = unitData.split('/');
+          var cName = cNameAttr[cNameAttr.length - 1];
+          realPicsObj[count] = {
+            quality : quality,
+            size : sizeObj,
+            scale : sizeObj['scale'],
+            name : cName,
+            url : unitData
+          }
+          
+          uploadErrLog('>>roundGet>>>>', JSON.stringify(realPicsObj[count]));
+
+          count++;
+          if(backstagePics[count]) {
+            beforeCompressPic(backstagePics[count]['path'], roundGet(backstagePics[count]['path']));
+          }else{
+            //结束
+            getAndroidCompressPics(realPicsObj)
+          }
+          
+        });
+      }
+
+      roundGet(backstagePics[0]['path'])
+    }
+
+
+    function getAndroidCompressPics(androidPicsObj) {
+      uploadErrLog('getAndroidCompressPics:', JSON.stringify(androidPicsObj));
+      var compressPicArr = [], count = 0;
+      var allLen = getObjSize(androidPicsObj);
+      uploadErrLog('getAndroidCompressPics allLen:', allLen);
+      
+      
+      // //test
+      // $.each(androidPicsObj, function(key, val) {
+      //   compressPicArr.push(val['url']);
+      // });
+      // alert('上传前地址>' + compressPicArr[0])
+
+
+      // $('body').html('<img src="'+compressPicArr[0]+'" />');
+      // uploadPhoto(compressPicArr[0], compressPicArr);
+      
+
+      function compressIt(unit) {
+        uploadErrLog('>>>url>>>', unit['url']);
+        if(unit['url'].toLowerCase().indexOf('.png') > -1) {
+          //安卓下png图片不处理
+          count++;
+          compressPicArr.push(unit['url']);
+          if(compressPicArr.length === allLen) {
+            uploadPhoto(compressPicArr[0], compressPicArr);
+          }else{
+            var nextUnit = getUnitForIndex(androidPicsObj, count);
+            compressIt(nextUnit);
+          }
+        }else{
+          compressPic(unit, function(uploadPath) {
+            try{
+              compressPicArr.push(uploadPath);
+              count++;
+              var nextUnit = getUnitForIndex(androidPicsObj, count);
+              if(nextUnit){
+                compressIt(nextUnit);
+              }else{
+                if(compressPicArr.length === allLen) {
+                  //结束
+                  uploadPhoto(compressPicArr[0], compressPicArr);
+                }
+              }
+            }catch(e){
+              uploadErrLog('>>compressPic>>>>', JSON.stringify(e) + '  ' + e.message);
+            }
+
+          });
+        }
+      }
+      
+      try{
+        compressIt(getUnitForIndex(androidPicsObj, 0));
+      }catch(e){
+        uploadErrLog('>>compressIt>>>>', JSON.stringify(e) + '  ' + e.message);
+      }
+
+    }
+    
+    
+    //压缩之前参数配置
+    function beforeCompressPic(path, callback) {
+      imageFilter.getAttr({
+          path: path
+      }, function(ret, err){
+        if(ret.status) {
+          var quality = 1;
+          // <quality>修正值算法： min[90, 原图quality*sqrt(原图长宽乘积/结果图片长宽乘积)]
+          var sizeObj = getRightSize(ret['width'], ret['height']);
+          quality = Math.min(90, 100*Math.sqrt((ret['width']*ret['height'])/(sizeObj['w']*sizeObj['h'])))/100;
+          callback(quality, sizeObj);
+        }else{
+          uploadErrLog('beforeCompressPic Failure>>>' ,JSON.stringify(err) + JSON.stringify(ret)) 
+        }
+      });
+    }
+
+    function compressPic(obj, callback ) {
+      var options = {
+        img: obj['url'],
+        quality: obj['quality'],
+        scale : obj['scale'],
+        save: {
+          imgPath: api.cacheDir,
+          imgName: obj['name']
+        }
+      }
+      // if(!$.isEmptyObject(obj['size'])) {
+      //   options['size'] = {
+      //     w : obj['size']['w'],
+      //     h : obj['size']['h']
+      //   }
+      // }
+
+      imageFilter.compress(options, function(ret, err){
+        if(ret.status) {
+          var uploadPath = api.cacheDir + '/' + obj['name'];
+          callback(uploadPath);
+        }else{
+          //压缩失败，原图返回
+          callback(obj['url']);
+        }
+      });
+    }
+
+    function getRightSize(w, h) {
+      var min = Math.min(w, h);
+      var _w = w;
+      var _h = h;
+      var scale = 1;
+      if (min > 1500 || (min > 640 && min < 960)) {
+          w = _w < _h ? 640 : Math.ceil(_w / _h * 640);
+          h = _w < _h ? Math.ceil(_h / _w * 640) : 640;
+      } else if (min > 960) {
+          w = _w < _h ? 960 : Math.ceil(_w / _h * 960);
+          h = _w < _h ? Math.ceil(_h / _w * 960) : 960;
+      }
+      scale = _w < _h ? w/_w : h/_h;
+
+      return {
+        w : w,
+        h : h,
+        scale:scale
+      }
+    }
+    
+    function uploadPhoto(imgUrl, arrs) {
+      uploadErrLog('imgUrl:', arrs);
+      api.ajax({
+        url: URLConfig('uploadPicForm'),
+        method: 'post',
+        timeout: 30,
+        dataType: 'json',
+        returnAll:false,
+        data:{
+          values: {'tag': 'feed'},
+          files: {'file' : imgUrl}
+        }
+      },function(ret,err){
+        uploadErrLog('uploadPhoto>>>', JSON.stringify(ret) + '   ' + JSON.stringify(err));
+        if(ret) {
+          ++picLoadCount;
+          uploadErrLog('>>线上地址>>>>', ret['response']['data']['src']);
+          backstageParams['pics'].push(ret['response']['data']['src']);
+          if(arrs[picLoadCount]) {
+            uploadPhoto(arrs[picLoadCount], arrs);
+          }else{
+            submitInfo(backstageParams);
+          }
+        }
+      });
+    }
+
+
+      function submitInfo(backstageParams) {
+        //发钓记 字段处理
+        if(backstageParams['topic_id'] && backstageParams['fish_extra'] && backstageParams['topic_id'] == 17) {
+          var djCount = 0, arrs = backstageParams['fish_extra'];
+          for(var i=0; i<arrs.length; i++) {
+            if(arrs[i]['img']) {
+              arrs[i]['img'] = backstageParams['pics'][djCount];
+              djCount++;
+            }            
+          }
+          backstageParams['fish_extra'] = arrs;
+          backstageParams['pics'] = [backstageParams['pics'][0]];
+        }
+        sendAjax(URLConfig('addFeed'), backstageParams, function(data, code, msg) {
+          
+          $api.setStorage('backstagePics', null);
+          $api.setStorage('backstageParams', null);
+
+          noUploadPicAttr = [];
+          picLoadCount = 0;
+          backstagePics = {}, backstageParams = {}, backstagePath = [];
+          rankResultObj = {};
+
+          initIndexData(); //刷新首页
+          
+          //刷新话题列表页
+          api.execScript({
+            name: 'topic_detail',
+            frameName : 'topic_detail',
+            script: 'initdata();'
+          });
+
+          //话题成功提示
+          api.execScript({
+            name: 'topic_detail',
+            frameName : 'topic_detail',
+            script: 'sendSuccess();'
+          });
+          
+          
+          var tips = '您的渔获发布成功！';
+          if(data['pond_rank']){
+            tips = '恭喜！您的渔获排名第'+data['pond_rank']+'，点击查看！';
+            rankResultObj = data;
+          }
+          
+          
+          //卡券奖励检测
+          sendAjax(URLConfig('guaguaTimes'), null, function(datas, codes, msgs) {
+            if(codes === 0 && datas['times'] > 0) {
+              api.openFrame({
+                name: 'guagua_tip',
+                url : 'guagua_tip.html',
+                rect:{x:0,y:0,w:'auto',h:'auto'},
+                bgColor: 'rgba(0,0,0,0.0)',
+                bounces : false,
+                pageParam : {'times' : datas['times'], 'tops' : datas['tops']},
+                vScrollBarEnabled:true,
+                hScrollBarEnabled:true
+              });
+            }
+          });
+
+
+
+          $('#uploadTip').removeClass('unfold');
+          setTimeout(function() {
+            $('#uploadTip').text(tips).addClass('unfold');
+            setTimeout(function() {
+              $('#uploadTip').removeClass('unfold');
+            }, 3000);
+          },500);
+
+        });
+      }
+
+      //点击查看排名
+      $('#uploadTip').on('tap', function() {
+        if(!$.isEmptyObject(rankResultObj)) {
+          api.openWin({
+            'name' : 'ranking',
+            'url' : 'ranking.html',
+            'pageParam' : rankResultObj
+          });
+          rankResultObj = {};
+        }
+      });
+
+    //================后台上传发表渔获======================
+
+
+
+
+    //绑定手机领钓鱼券
+    $(document).on('keyup', '#telNum',  function() {
+      var tel = $(this).val();
+
+      if(!/^\d{11}$/.test(tel)) {
+        // api.toast({
+        //   msg: '手机格式有误！',
+        //   duration:2000,
+        //   location: 'middle'
+        // });
+        $('#getVerCode').removeClass('color-blue');
+      }else{
+        $('#getVerCode').addClass('color-blue');
+      }
+
+    });
+
+
+    var isSend = false, o,count = 60;
+
+
+    $(document).on('tap', '#getVerCode',  function() {
+      if($(this).hasClass('color-blue')) {
+        var tel = $('#telNum').val();
+        if(isSend) return;
+
+        $('#sending').removeClass('hidden');
+        $('#getVerCode').addClass('hidden');
+
+        o = setInterval(function() {
+          count--;
+          if(count >=0) {
+            $('#sending').find('span[name=count]').text(count);
+            isSend = true;
+          }else{
+            isSend = false;
+            $('#sending').addClass('hidden');
+            $('#getVerCode').removeClass('hidden');
+            clearInterval(o);
+            count = 60;
+            $('#sending').find('span[name=count]').text(count);
+          }
+        },1000);
+        
+        sendAjax(URLConfig('sendVerify'), {'mobile' : tel }, function(data, code, msg) {
+          if(code === 0) {
+            
+          }else{
+             api.toast({
+              msg: msg || '请求数据出错',
+              duration:2000,
+              location: 'middle'
+            });
+          }
+        });
+      }
+    });
+
+    $(document).on('keyup', '#verNum', function() {
+      var tel = $('#telNum').val();
+      var verCode = $(this).val();
+      if(/^\d{11}$/.test(tel) && verCode.length === 4) {
+        $('#sureBind').addClass('color-blue');
+      }
+    });
+    
+    $(document).on('tap', '#sureBind',  function() {
+      var tel = $('#telNum').val();
+      var code = $('#verNum').val();
+      if($(this).hasClass('color-blue')) {
+        sendAjax(URLConfig('bindPhone'), {'mobile' : tel , 'verify' : code }, function(data, code, msg) {
+          if(code === 0) {
+            var pel = $('div[mode=bindPhone]');
+            pel.hide('slow',  function() {
+              pel.remove();
+              api.toast({msg: '领取成功！', duration:2000,location: 'middle'});
+
+              //是否去查看您的卡券包
+              api.confirm({
+                title: '提示框',
+                msg: '是否去查看您的卡券包？',
+                buttons:['知道了', '去看看']
+              },function(ret,err){
+                if(ret.buttonIndex == 2){
+                  api.openWin({
+                    'name' : 'coupon',
+                    'url' : './my/coupon.html'
+                  });
+                }
+              });
+
+            });
+          }else{
+            isSend = false;
+            $('#sending').addClass('hidden');
+            $('#getVerCode').removeClass('hidden');
+            clearInterval(o);
+            count = 60;
+            $('#sending').find('span[name=count]').text(count);
+
+            isSend = false;
+             api.toast({
+              msg: msg || '绑定失败，请稍后再试！',
+              duration:2000,
+              location: 'middle'
+            });
+          }
+        });
+      }
+    });
+    
+    //清除三天以前的cache
+    api.clearCache({'timeThreshold' : 3}, function(ret,err){});
+
+
+
+    // api.refreshHeaderLoading();
+  }
+
+</script>
+</html>

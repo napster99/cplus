@@ -1,0 +1,76 @@
+.my-qrcode{
+  background: #373f4a url(../images/ranking-bg.png) repeat;
+  padding: 20px;
+  height: 100%;
+}
+
+
+.my-qrcode .bd{
+  background-color: #fff;
+  border-radius: 5px;
+  padding: 20px;
+  height: 100%;
+}
+
+
+.key-info{ 
+  overflow: hidden; 
+  color: #222;
+}
+
+.key-info .avatar{
+  float: left;
+  width: 65px;
+  height: 65px;
+}
+
+.key-info .name{
+  font-size: 16px;
+  margin: 11px 0 12px 75px;
+}
+
+.key-info .name .icon-m{
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+.key-info .uid{
+  font-size: 14px;
+  margin-left: 75px;
+}
+
+
+.my-qrcode .qrcode{
+  overflow: hidden;
+  margin: 30px auto;
+  padding-bottom: 100%;
+  position: relative;
+}
+
+.my-qrcode .qrcode:before{
+  content: "正在生成二维码...";
+  font-size: 16px;
+  position: absolute;
+  top: 50%; 
+  left: 0; right: 0;
+  text-align: center;
+  -webkit-transform:translateY(-50%);
+}
+
+.my-qrcode .qrcode .in{
+  position: absolute;
+  top: 0;bottom: 0;left: 0; right: 0;
+}
+
+.my-qrcode .desc{
+  color: #aaa;
+  text-align: center;
+}
+
+.my-qrcode .text-tips{
+  margin-top: 20px;
+  color: #aaa;
+  text-align: center;
+}
+
+

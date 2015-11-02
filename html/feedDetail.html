@@ -1,0 +1,126 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <title>详情_鱼多多_找钓点，就用鱼多多</title>
+</head>
+<body>
+<div class="wrap">
+  <!-- 头部 -->
+  <div id="header" class="top-bar gray-style">
+    <div class="l" ontouchstart="api.closeWin();">
+      <div class="icon-text-h">
+        <i class="icon-m icon-arrow-left"></i><span>返回</span>
+      </div>
+    </div>
+
+    <div id="favoriteFeed" feedFavorit="no" class="r">
+      <div class="icon-text-h">
+        <i class="icon-m icon-star"></i><span>收藏</span>
+      </div>
+    </div>
+    <div class="center-part">详情</div>
+  </div>
+  <!-- 头部 end-->
+
+
+</div>
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+    // 设置ios7的标题栏字体变亮，全局用一个就行了
+    api.setStatusBarStyle({
+      style: 'dark'
+    });
+
+    api.addEventListener({
+      name:'viewappear'
+    },function(ret,err){
+      // 设置ios7的标题栏字体变亮，全局用一个就行了
+      api.setStatusBarStyle({
+        style: 'dark'
+      });
+    });
+
+    var header = $api.byId('header');
+    $api.fixIos7Bar(header);
+    var feedId = api.pageParam['id'];
+
+    api.openFrame({
+      name: 'feedDetail',
+      url: './feedDetail_frame.html',
+      bounces: true,
+      opaque: true,
+      vScrollBarEnabled: true,
+      pageParam : {'id' : feedId},
+      rect: {
+        x: 0,
+        y: $('.top-bar').offset().height,
+        w: 'auto',
+        h: 'auto'
+      }
+    });
+
+    window.changeFavoriteStatus = function(status) {
+      if(status == 1) {
+        $('#favoriteFeed').attr('feedFavorit', 'yes');
+        $('#favoriteFeed').find('i').removeClass('icon-star').addClass('icon-star-fill');
+        $('#favoriteFeed').find('span').text('已收藏');
+      }else{
+        $('#favoriteFeed').attr('feedFavorit', 'no');
+        $('#favoriteFeed').find('i').removeClass('icon-star-fill').addClass('icon-star');
+        $('#favoriteFeed').find('span').text('收藏');
+      }
+    }
+
+    //收藏
+    $('#favoriteFeed').on('tap',  function() {
+      var feedFavorit = $(this).attr('feedFavorit') || 'no';
+      var self = this;
+      authInfo(function(data, code, msg) {
+        if(code === 2) {
+          showLoginConfirm('../index.html');  
+        }else if(code === 0){
+          if(feedFavorit === 'no'){
+            //收藏
+            sendAjax(URLConfig('favorite'), {'type' : 4, 'target' : feedId}, function(data, code, msg) {
+              if(code == 0) {
+                //填充 icon-star-fill
+                $(self).find('i').removeClass('icon-star').addClass('icon-star-fill');
+                $(self).find('span').text('已收藏');
+                $(self).attr('feedFavorit', 'yes');
+              }else{
+                api.toast({msg: msg || '请求失败，稍后再试', duration:2000,location: 'middle'});
+              }
+            });
+          }else{
+            //取消收藏
+            sendAjax(URLConfig('cancelFeedFavorit'), {'feed_id' : feedId}, function(data, code, msg) {
+              if(code === 0) {
+                //不填充 icon-star
+                $(self).find('i').removeClass('icon-star-fill').addClass('icon-star');
+                $(self).find('span').text('收藏');
+                $(self).attr('feedFavorit', 'no');
+              }else{
+                api.toast({msg: msg || '请求失败，稍后再试', duration:2000,location: 'middle'});
+              }
+            });
+          }
+
+        }
+      });
+    });
+
+  }
+
+</script>
+</html>

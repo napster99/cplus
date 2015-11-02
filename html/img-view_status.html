@@ -1,0 +1,65 @@
+<!doctype html>
+<html style="background:transparent;">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width,  minimum-scale=1">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../css/scan-guide.css">
+  <title>图片查看器</title>
+  
+</head>
+<body style="background:transparent;">
+
+<div class="wrap">
+  
+  <div class="img-view" style="background:transparent;">
+    <div id="status" class="focus">
+    </div>
+  </div>
+
+</div>
+
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script>
+  apiready = function() {
+
+    var imgArr = api.pageParam['src'];
+    var index = api.pageParam['index'];
+    
+    renderImgDatas();
+    function renderImgDatas() {
+      var pointStr = '';
+      for(var i=0; i<imgArr.length; i++){
+        if(imgArr.length > 1) {
+          pointStr += '<i></i>';
+        }
+      }
+      
+      $('#status').html(pointStr);
+      if(imgArr.length > 1) {
+        $('#status').find('i').first().addClass('active');
+      }
+
+    }
+    
+    window.changeIndex = function(index) {
+      $('#status').find('i.active').removeClass('active');
+      $('#status').find('i').eq(index).addClass('active');
+    }
+
+
+    //如果指定第几张开始显示
+    if(index) {
+      changeIndex(index);
+    }
+
+  }
+</script>
+</html>

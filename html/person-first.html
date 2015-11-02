@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+   <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+   <!-- <meta name="viewport" content="initial-scale=0.5, maximum-scale=0.5, minimum-scale=0.5, user-scalable=no"> -->
+   <!-- <meta name="viewport" content="initial-scale=0.3333333333333333, maximum-scale=0.3333333333333333, minimum-scale=0.3333333333333333, user-scalable=no"> -->
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+
+  <!-- HTML5页面创建图标到IOS桌面 -->
+  <!-- 
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-touch-fullscreen" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <link rel="icon" href="http://ms0.meituan.net/touch/img/icon/favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon-precomposed" sizes="57x57" href="http://ms0.meituan.net/touch/img/startup/apple-touch-icon-57x57-precomposed.png">
+  <link rel="apple-touch-icon-precomposed" sizes="120x120" href="http://ms0.meituan.net/touch/img/startup/apple-touch-icon-120x120-precomposed.png">
+  <link rel="apple-touch-icon-precomposed" sizes="196x196" href="http://ms0.meituan.net/touch/img/startup/apple-touch-icon-196x196-precomposed.png">
+  <link rel="apple-touch-startup-image" href="http://ms0.meituan.net/touch/img/startup/apple-touch-startup-image-640x1096.png" media="(device-height:568px)">
+  <link rel="apple-touch-startup-image" href="http://ms0.meituan.net/touch/img/startup/apple-touch-startup-image-640x920.png" media="(device-height:480px)">
+  -->
+
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/form.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <title>知道_鱼多多_找钓点，就用鱼多多</title>
+</head>
+<body>
+<div class="wrap">
+  <!-- 头部 -->
+  <div id="header" class="top-bar gray-style">
+    <div class="center-part">注册</div>
+  </div>
+  <!-- 头部 end-->
+  
+  <div class="form-page">
+    <!-- 表单 -->
+    <div class="form-row">
+        <input id="nickname" type="text" placeholder="请输入昵称" />
+    </div>
+
+    <div class="form-row main-button">
+        <button id="save" type="button" class="btn primary-button">完成</button>
+    </div>
+    <!-- 表单end -->
+  </div>
+
+
+</div>
+
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+
+    // 设置ios7的标题栏字体变亮，全局用一个就行了
+    api.setStatusBarStyle({
+      style: 'dark'
+    });
+    
+    api.addEventListener({
+      name:'viewappear'
+    },function(ret,err){
+      // 设置ios7的标题栏字体变亮，全局用一个就行了
+      api.setStatusBarStyle({
+        style: 'dark'
+      });
+    });
+
+    var header = $api.byId('header');
+    $api.fixIos7Bar(header);
+
+    // $('#nickname').val(api.pageParam['nickname']);
+
+
+    $('#save').on('click',  function() {
+      var nickname = $('#nickname').val();
+
+      var params = {
+        'nickname' : nickname
+      };
+
+      sendAjax(URLConfig('userModify'), params, function(data, code, msg) {
+        if(code === 0) {
+          api.openWin({
+            'name' : 'index',
+            'url' : '../index-main.html',
+            'bounces' : false,
+            'slidBackEnabled' : false
+          })
+        }else{
+           api.toast({
+            msg: msg,
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+    });
+  }
+  
+</script>
+</html>

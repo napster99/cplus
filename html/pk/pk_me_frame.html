@@ -1,0 +1,451 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <link rel="stylesheet" href="../../css/shop-detail.css">
+  <link rel="stylesheet" href="../../css/feed.css">
+  <style>
+
+    .nice-box{
+      background: #eee;
+    }
+
+    .nice-box h3{
+      background: #fff;
+    }
+
+    .layer-info{
+      padding: 10px;
+    }
+
+    .layer-info .floor{
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .which-block{
+      color: #fff;
+      display: inline-block;
+      margin-top: -3px;
+      padding: 5px 10px;
+      border-radius: 25px; 
+    }
+    
+    .red{
+      background: red;
+    }
+
+    .red:after{
+      content: "红方阵营";
+    }
+
+    .blue{
+      background: blue;
+    }
+
+    .blue:after{
+      content: "蓝方阵营";
+    }
+
+    .no-data{
+      padding: 10px;
+    }
+    
+    .long{
+      color: #007aff;
+    }
+
+    .title-s{
+        background-color: #cd3738;
+        color: #fff;
+        padding: 8px;
+        padding-right: 15px;
+        border-radius: 0 10px 10px 0;
+        margin-left: -15px;
+        font-weight: normal;
+        font-size: 14px;
+    }
+  </style>
+  <title>与我相关</title>
+</head>
+<body>
+  <div class="wrap">
+
+    <div id="conDiv" class="hidden">
+      <div class="nice-box border-bottom mt10">
+        <h3 class="border-bottom"><span class="title-s">与我相关帖子</span></h3>
+        <div id="myList">
+          <div class="no-data">暂无跟帖</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="load-page wait"></div>
+    
+  </div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+  apiready = function() {
+    var id = api.pageParam['id'];
+
+
+
+    var floorCount = api.pageParam['floorCount'];
+    var title = api.pageParam['title'];
+    var url = 'voteList';
+
+
+
+    var page = 1;
+    var isEnd = false, isAjaxing = false;
+    var condicationObj = {
+      'page' : page,
+      'pk_id' : id,
+      'type' : 'my'
+    }
+
+    if(title) {
+      $('.title-s').text(title);
+      url = 'goToFloor';
+      
+      condicationObj['vote_sequence'] = floorCount;
+      
+      delete condicationObj['type'];
+      delete condicationObj['page'];
+    }
+
+
+    function getListData(name, params, callback, first) {
+      isAjaxing = true;
+      sendAjax(URLConfig(name), params, function(data, code, msg) {
+        isAjaxing = false;
+        api.refreshHeaderLoadDone();
+        if(code === 0) {
+          callback(data, first);
+        }else{
+          api.toast({
+            msg: msg || '请求失败，稍后再试',
+            duration:2000,
+            location: 'middle'
+          });
+
+          $('.wait').addClass('hidden');
+        }
+      });
+    }
+    
+    
+
+
+    window.initdata = function() {
+      //与我相关
+      getListData(url, condicationObj, function(data, first) {
+        renderData(data,first,$('#myList'));
+      }, true);
+
+    }
+
+    initdata();
+    
+    api.setRefreshHeaderInfo({
+        visible: true,
+        loadingImg: 'widget://image/push-down.gif',
+        bgColor: '#fff',
+        textColor: '#ccc',
+        textDown: '下拉刷新...',
+        textUp: '松开刷新...',
+        showTime: true
+    }, function(ret, err){
+       isEnd = false;
+       page = 1;
+       condicationObj = {
+        'page' : 1,
+        'type' : 'my',
+        'pk_id' : id
+       }
+       isAjaxing = false;
+       if(url === 'goToFloor') {
+          delete condicationObj['page'];
+          delete condicationObj['type'];
+          condicationObj['vote_sequence'] = floorCount;
+       }
+
+       //与我相关
+      getListData(url, condicationObj, function(data, first) {
+        renderData(data,first,$('#myList'));
+      }, true);
+
+    });
+ 
+    //下拉加载
+    api.addEventListener({
+      name: 'scrolltobottom'
+    }, function(ret, err){
+      if(!isEnd && !isAjaxing) {
+        if(url != 'goToFloor') {
+          showButtonLoadDiv(false, $('#myList'), '../../images/loadButton.gif');
+          condicationObj['page']++;
+          getListData(url, condicationObj ,renderData);
+        }
+      }
+    });
+
+    function renderData(data, first, con) {
+      var htmlStr = '';
+      if(data instanceof Array) {
+        for(var i=0; i<data.length; i++) {
+          var gender = '<i class="icon-m icon-male"></i>';
+
+          if(data[i]['u_sex'] == 2) {
+            gender = '<i class="icon-m icon-female"></i>';
+          }
+
+          htmlStr += '<div class="feed border-top mt10">'
+          +'  <div class="user-info">'
+          if(data[i]['zaned'] == 0 || data[i]['is_admin']) {
+            htmlStr += '<button name="zan" isAdmin="'+data[i]['is_admin']+'" voteId="'+data[i]['vote_id']+'" oldCount="'+data[i]['zan']+'" class="btn-line color-green"><i class="icon-m icon-appreciate"></i><span>'+data[i]['zan']+'</span></button>'
+          }else{
+            htmlStr += '<button class="btn-line"><i class="icon-m icon-appreciate"></i>'+data[i]['zan']+'</button>'
+          }
+          htmlStr += '    <div class="avatar-box" url="'+data[i]['u_avatar']+'" uid="'+data[i]['u_id']+'" onclick="enterProfilePk(this);">'
+          +'      <i class="icon-m icon-user"></i>'
+          +'    </div>'
+          +'    <div class="info">'
+          +'      <div class="name">'+data[i]['u_nickname']+gender+'</div>'
+          +'      <div class="other">'
+          +'        <span class="time"><i class="icon-m icon-time"></i>'+data[i]['vote_time']+'</span>'
+          +'      </div>'
+          +'    </div>'
+          +'  </div>'
+          +'  <div class="content">'
+
+          var comment = analysisFaceToDom(data[i]['comment'], true);
+
+          if(comment.length > 120) {
+            htmlStr += '    <div class="c">'+comment.substring(0, 120)+'</div>'
+            htmlStr += '    <div class="long" allText="'+comment+'" name="showAll">展开</div>'
+          }else{
+            htmlStr += '    <div class="c">'+comment+'</div>'
+          }
+
+          htmlStr += '  </div>'
+          +'  <div class="layer-info border-top">'
+          +'    <span class="floor">'+data[i]['vote_sequence']+'楼</span>'
+          if(data[i]['vote_for'] == 1) {
+            htmlStr += '    <span class="r which-block red"></span>'
+          }else if(data[i]['vote_for'] == 2){
+            htmlStr += '    <span class="r which-block blue"></span>'
+          }
+          htmlStr += '  </div>'
+
+
+
+          htmlStr += '<div class="action-group border-top border-bottom" style="margin-bottom:0;">'
+          +'  <ul>'
+          +'    <li name="comments" voteId="'+data[i]['vote_id']+'" floor="'+data[i]['vote_sequence']+'" avatar="'+data[i]['u_avatar']+'" class="border-right">'
+          +'      <span class="icon-box">'
+          +'        <i class="icon-m icon-comment"></i>'
+          +'      </span>评论'
+          +'    </li>'
+          +'    <li name="share" voteId="'+data[i]['vote_id']+'" floor="'+data[i]['vote_sequence']+'" avatar="'+data[i]['u_avatar']+'" text="'+data[i]['comment']+'" class="border-right">'
+          +'      <span class="icon-box">'
+          +'        <i class="icon-m icon-share"></i>'
+          +'      </span>分享'
+          +'    </li>'
+          +'  </ul>'
+          +'</div>'
+
+
+
+          var commentCount = data[i]['at_vote_num'];
+          var comments = data[i]['at_vote_list'];
+          if(commentCount > 0) {
+            htmlStr += '  <div class="comment-list">'
+            +'    <div class="count">'
+            +'      <i class="icon-m icon-comment"></i><span class="num">'+commentCount+'</span>'
+            +'    </div>'
+            +'    <ul>'
+            for(var j=0; j<commentCount; j++) {
+              htmlStr += '<li class="border-bottom">'
+                      +'   <div class="avatar-box" url="'+comments[j]['u_avatar']+'" uid="'+comments[j]['u_id']+'" onclick="enterProfilePk(this);"><i class="icon-m icon-user"></i></div>'
+                      +'   <div class="dialogue">'
+                      +'       <span class="name">'+comments[j]['u_nickname']+'</span>:<span class="c">'+analysisFaceToDom(comments[j]['comment'], true)+'</span>'
+                      +'   </div>'
+                      +'</li>'
+            }
+            htmlStr += '</ul>'
+            +'  </div>'
+          }
+          
+          htmlStr += '</div>'
+        }
+
+        if(first) {
+          if(htmlStr) {
+            con.html(htmlStr);
+          }
+        }else{
+          if(htmlStr) {
+            con.append(htmlStr);
+          }
+        }
+
+
+        renderAvatar();
+
+      }
+      
+      if($('#conDiv').hasClass('hidden')) {
+        showLoadDiv(false, $('#conDiv'));
+      }
+
+    
+      showButtonLoadDiv(false, $('#myList'), '../../images/loadButton.gif');
+    
+      if(data.length < 15) {
+        isEnd = true;
+      }else{
+        showButtonLoadDiv(true, $('#newList'), '../../images/loadButton.gif');
+      }
+
+    }
+
+
+    //打开个人简介页
+    window.enterProfilePk = function(el) {
+      var uid = $(el).attr('uid')
+      if(!uid) return;
+      api.openWin({
+        'name' : 'profile',
+        'url' : '../profile.html',
+        'bounces' : true,
+        'bgColor' : '#507be7',
+        'pageParam' : {'uid' : uid}
+      });
+
+    }
+
+    //展开
+    $(document).on('tap', 'div.long',  function() {
+      var allText = $(this).attr('allText');
+      if($(this).attr('name') === 'showAll') {
+        $(this).prev().html(allText).css('max-height','none');
+        $(this).text('收起').attr('name','stopAll');  
+      }else{
+        $(this).prev().html(allText.substring(0, 120)).css('max-height','125px');
+        $(this).text('展开').attr('name','showAll');
+      }
+    });
+
+
+    //回复
+    $(document).on('tap', 'li[name=comments]',  function() {
+      var voteId = $(this).attr('voteId');
+      var floor = $(this).attr('floor');
+      replyFn(voteId, floor);
+    });
+
+    //分享
+    $(document).on('tap', 'li[name=share]', function() {
+      var c = $(this).attr('text');
+      var avatar = $(this).attr('avatar');
+      var voteId = $(this).attr('voteId');
+
+      shareFn(c, avatar, voteId);
+    });
+
+
+    //转发
+    function shareFn(descs, avatar, voteId) {
+      var datas = {};
+      datas['info'] = {
+        'title' : descs,
+        'description' : descs,
+        'content_url' : 'http://yuxin.yddapp.com/feed/pk?cid=' + voteId,
+        'imageUrl' : avatar
+      };
+      
+      sharePop('分享一个投票评论',datas);
+
+    }
+
+
+    //回复
+    function replyFn(voteId, floor) {
+      var userInner = $api.getStorage('user');
+      if($.isEmptyObject(userInner)) {
+        showLoginConfirm('../../index.html');  
+        return;
+      }
+      
+      api.execScript({
+        name : 'pk_comment',
+        script: 'showComment("'+voteId+'","'+floor+'");'
+      });
+    }
+
+
+    $('body').on('touchstart',  function() {
+      //重置发表框
+      api.execScript({
+        name : 'pk_comment',
+        script: 'resetComment();'
+      });
+    });
+
+    //点赞
+    $(document).on('tap', 'button[name=zan]', function() {
+      if(!$(this).hasClass('color-green')) return;
+
+      var isAdmin = $(this).attr('isAdmin');
+
+
+      var self = this;
+      var userInner = $api.getStorage('user');
+      if($.isEmptyObject(userInner)) {
+        showLoginConfirm('../../index.html');  
+        return;
+      }
+      var voteId = $(this).attr('voteId');
+
+
+       if(isAdmin == 'true') {
+        var oldCount = Number($(this).attr('oldCount'));
+        oldCount = oldCount + 3;
+        $(this).find('span').text(oldCount);
+      }else{
+        var oldCount = Number($(this).attr('oldCount'));
+        $(this).find('span').text(++oldCount);
+        $(this).removeClass('color-green');  
+      }
+
+      sendAjax(URLConfig('voteZan'), {'vote_id' : voteId},  function(data, code, msg) {
+        if(code == 0){
+
+        }else{
+          $(self).find('span').text(--oldCount);
+          $(self).addClass('color-green');
+          api.toast({
+            msg: msg || '请求失败，稍后再试',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+
+
+
+    });
+  }
+
+</script>
+</html>

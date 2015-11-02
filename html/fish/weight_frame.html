@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+
+
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <title>重量</title>
+</head>
+<body>
+  <div class="wrap">
+    <div class="text-list mt10">
+        <ul class="border-top">
+          <li class="border-bottom">
+            <i id="clearThis" class="icon-m icon-close-fill"></i>
+            <div class="col2">
+              <div class="col" unit="斤">
+                <select id="jinSel">
+                </select>
+              </div>
+              <div class="col" unit="两">
+                <select id="liangSel">
+                </select>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+  </div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+  apiready = function() {
+
+    function initSelectData() {
+      var htmlStr = '<option></option>';
+      for(var i=0; i<500; i++) {
+        htmlStr += '<option value="'+i+'">' + i+'</option>';
+      }
+      $('#jinSel').html(htmlStr);
+
+      htmlStr = '<option></option>';
+      for(var i=0; i<10; i++) {
+        htmlStr += '<option value="'+i+'">' + i+'</option>';
+      }
+      $('#liangSel').html(htmlStr);
+    }
+
+    initSelectData();
+
+    if(api.pageParam['weight']) {
+      var jin = '', liang = '';
+      if(api.pageParam['weight'].replace('斤','').split('.').length > 0) {
+        jin = api.pageParam['weight'].replace('斤','').split('.')[0];
+        liang = api.pageParam['weight'].replace('斤','').split('.')[1];
+      }else{
+        jin = api.pageParam['weight'].replace('斤','');
+      }
+
+      if(jin) {
+        $('#jinSel').find('option').eq(jin)[0].selected = true;  
+      }
+
+      if(liang) {
+       $('#liangSel').find('option').eq(liang)[0].selected = true;   
+      }
+      
+    }
+
+    $('#jinSel, #liangSel').on('change',  function() {
+      var jin  = $('#jinSel').val();
+      var liang  = $('#liangSel').val();
+      if(jin || liang) {
+        api.execScript({
+          name: 'weight',
+          script: 'changeSaveStatus(true);'
+        });
+      }else{
+        api.execScript({
+          name: 'weight',
+          script: 'changeSaveStatus(false);'
+        });
+      }
+
+    });
+
+    $('#clearThis').on('tap', function() {
+      $('#jinSel').find('option').first().get(0).selected = true;
+      $('#liangSel').find('option').first().get(0).selected = true;
+      api.execScript({
+        name: 'weight',
+        script: 'changeSaveStatus(false);'
+      });
+    });
+   
+
+    window.saveWeight = function() {
+      var jin  = $('#jinSel').val();
+      var liang  = $('#liangSel').val();
+
+      weight = Number(jin+'.'+liang);
+      
+      api.execScript({
+        name : 'publish-fishery',
+        frameName: 'publish-fishery',
+        script: 'setWeightInfo("'+weight+'");'
+      });
+
+      api.closeWin();
+    }
+
+  }
+
+</script>
+</html>

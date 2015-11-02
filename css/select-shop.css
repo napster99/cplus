@@ -1,0 +1,17 @@
+.select-shop{
+  height: 100%;
+}
+
+.map-box{
+  height: 50%;
+  overflow: hidden;
+}
+
+.select-box{
+  overflow: auto;
+}
+
+.text-green .field{
+	color: #09bb07 !important;
+}
+

@@ -1,0 +1,195 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <link rel="stylesheet" href="../../css/search.css">
+  <link rel="stylesheet" href="../../css/friend-add.css">
+  <title>邀请好友</title>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="friend-add">
+    <div class="search-box">
+      <div class="right-info" id="search-cancle">取消</div>
+      <div class="input-box disabled">
+        <input type="search" placeholder="搜索多多号/昵称" id="search-input">
+        <i class="icon-m icon-search"></i>
+        <!-- <i class="icon-m icon-close-fill"></i> -->
+      </div>
+    </div>
+  </div>
+
+
+  <div class="content">
+    <div class="actions">
+      <ul id="share">
+        <li name="duanxin" class="border-right">
+          <div class="icon-box bg-brown"><i class="icon-m icon-phone-book"></i></div>
+          <p>短信邀请好友</p>
+        </li>
+        <li name="weixin" class="border-right">
+          <div class="icon-box bg-green"><i class="icon-m icon-wechat"></i></div>
+          <p>微信邀请好友</p>
+        </li>
+        <li name="qq">
+          <div class="icon-box bg-blue"><i class="icon-m icon-qq"></i></div>
+          <p>QQ邀请好友</p>
+        </li>
+      </ul>
+    </div>
+    <h4 class="section-title">通讯录好友</h4>
+    <div class="text-list mt10 border-top border-bottom">
+      <ul id="phoneList">
+        
+      </ul>
+    </div>
+  </div>
+
+
+
+</div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+  apiready = function() {
+    var contact = api.require('contact');
+    var friendsPhones = {};
+    var mobileArr = [];
+    contact.queryContact(function(ret,err) {
+      if(ret.status) {
+        var array = ret.contacts;
+        var len = array.length > 500 ? 500 : array.length;
+
+        if(api.systemType === 'ios') {
+          for(var i=0; i<len; i++){
+            var arrayPho = array[i].phones;
+            friendsPhones[arrayPho[0]['手机']] = {
+              'name' : array[i]['name'],
+              'mobile' : arrayPho[0]['手机']
+            }
+            mobileArr.push(arrayPho[0]['手机']);
+          }
+        }else{
+          for(var i=0; i<len; i++){
+            var arrayPho = array[i].phones;
+            friendsPhones[arrayPho[0]['phone']] = {
+              'name' : array[i]['name'],
+              'mobile' : arrayPho[0]['phone']
+            }
+            mobileArr.push(arrayPho[0]['phone']);
+          }
+        }
+
+        var params = mobileArr.toString();
+        
+        sendAjax(URLConfig('contact'), {'mobile' : params}, function(data, code, msg) {
+          if(code === 0) {
+            try{
+              renderContactData(data);
+            }catch(e){
+              var errmsg = e.message+'   '+JSON.stringify(e);
+              uploadErrLog('exception', errmsg);
+            }
+          }else{
+            api.toast({msg: msg || '请求失败，稍后再试',duration:2000,location: 'middle'});
+          }
+        });
+        
+      } else {
+        api.toast({msg: '通讯录获取失败', duration:2000,location: 'middle'});
+
+        sendAjax(URLConfig('contact'), {'mobile' : ''}, function(data, code, msg) {
+          if(code === 0) {
+            renderContactData(data);
+          }else{
+            api.toast({msg: msg || '请求失败，稍后再试',duration:2000,location: 'middle'});
+          }
+        });
+      }
+    });
+    
+    function renderContactData(data) {
+      var htmlStr = '';
+
+      $.each(friendsPhones, function(key, val) {
+        htmlStr += '<li mobile="'+key+'" selected="no" class="border-bottom">'
+        +'  <span class="field">'+val['name']+'</span>'
+        +'</li>'
+      });
+      $('#phoneList').html(htmlStr);
+    }
+
+    //选中事件
+    $('#phoneList').on('tap', 'li', function() {
+      var p = $(this).attr('mobile');
+      api.sms({
+          numbers: [p],
+          text: '鱼多多请你去钓鱼，首单不要钱！全城钓点，一手掌握；还有好玩的渔获排名；快来给我点赞！点此安装 http://www.yddapp.com/ '
+      },function(ret, err){
+        if(ret.status){
+          api.toast({msg: '发送成功',duration:2000,location: 'middle'});
+        }
+      });
+    });
+    
+    //搜索
+    $('.input-box').on('tap',  function() {
+      api.openWin({
+        name: 'search-pond',
+        url: '../search-pond.html',
+        bounces : false,
+        bgColor : '#fff',
+        pageParam : {'type' : 'people'}
+      });
+    });
+
+    //分享
+    $('#share').on('click', 'li', function() {
+      var name = $(this).attr('name');
+      if(name === 'weixin') {
+          var curDatas = {};
+          var title = '添加微信好友';
+          curDatas['info'] = {
+          'title' : '【鱼多多】钓鱼神器',
+          'description' : '全城钓点，一手掌握；风向气压，专业预报；还有好玩的渔获排名；快来给我点赞！',
+          'content_url' : 'http://www.yddapp.com/',
+          'imageUrl' : 'http://img1.shanggou.la/default/logo.jpg'
+          };
+
+          shareWeixinPop(title, curDatas);
+      }else if(name === 'qq'){
+          var curDatas = {};
+          var title = '添加QQ好友';
+          curDatas['info'] = {
+          'title' : '【鱼多多】钓鱼神器',
+          'description' : '全城钓点，一手掌握；风向气压，专业预报；还有好玩的渔获排名；快来给我点赞！',
+          'content_url' : 'http://www.yddapp.com/',
+          'imageUrl' : 'http://img1.shanggou.la/default/logo.jpg'
+          };
+
+          shareQQPop(title, curDatas);
+      }else if(name === 'duanxin'){
+        api.sms({
+          numbers: [],
+          text: '鱼多多请你去钓鱼，首单不要钱！全城钓点，一手掌握；还有好玩的渔获排名；快来给我点赞！点此安装 http://www.yddapp.com/ '
+        },function(ret, err){
+          if(ret.status){
+            api.toast({msg: '发送成功',duration:2000,location: 'middle'});
+          }
+        });
+      }
+
+    });
+  }
+
+</script>
+</html>

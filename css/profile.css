@@ -1,0 +1,257 @@
+.top-actions{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 10;
+  overflow: hidden;
+  box-sizing: content-box;
+  background-color: #507be7;
+}
+
+.top-actions div{
+  border-radius: 1000px;
+  width: 32px;
+  height: 32px;
+  line-height: 35px;
+  text-align: center;
+  font-size: 20px;
+  color: #fff;
+  margin: 6px 4px;
+  -webkit-transition:.4s linear all;
+}
+
+.top-actions .l{
+  margin-left: 12px;
+}
+.top-actions .r{
+  margin-right: 12px;
+}
+
+.user-info{
+  height: 240px;
+  box-sizing: content-box;
+  padding-bottom: 10px;
+  padding-top: 50px;
+  background-color: #507be7;
+  color: #fff;
+  text-align: center;
+}
+
+.user-info .avatar-box{
+  width: 90px;
+  height: 90px;
+  border: 2px solid rgba(255,255,255,.2);
+  margin: auto;
+}
+
+.user-info .name{
+  margin: 15px 0;
+  font-size: 18px;
+}
+.user-info .name .icon-m{ 
+  vertical-align: text-top;
+  margin-left: 5px;
+}
+
+.user-info .name .icon-male{
+  color: #bfdeff;
+}
+
+.user-info .name .icon-female{
+  color: #febfff;
+}
+
+
+.profile .user-info .btn-fill{
+  margin-bottom: 20px;
+  width: 90px;
+}
+
+
+.data-list ul{
+  overflow: hidden;
+}
+
+
+.data-list li{
+  float: left;
+  width: 33.3333%;
+}
+
+.data-list li p{
+  font-weight: bolder;
+  font-size: 20px;
+}
+
+
+
+
+
+/* 冗余shop-detail */
+
+.user-list,
+.item-list{
+  background-color: #fff;
+}
+
+.user-list li,
+.item-list li{
+  overflow: hidden;
+  margin-left: 10px;
+  padding-right: 10px;
+}
+
+.user-list li:last-child:after,
+.item-list li:last-child:after{
+  display: none;
+}
+
+.user-list .more,
+.item-list .more{
+  height: 40px;
+  line-height: 40px;
+  color: #aaa;
+  font-size: 14px;
+}
+
+
+.user-list li{
+  height: 80px;
+}
+
+.user-list li .img-box{
+  width: 60px;
+  height: 60px;
+  float: right;
+  border-radius: 4px;
+  margin-top: 10px;
+}
+
+.user-list li .keep-time{
+  color: #aaa;
+  margin-left: 5px;
+  font-size: 12px;
+}
+.user-list li .keep-time .icon-m{
+  margin-right: 3px;
+  vertical-align: text-top;
+}
+
+.rank-user{
+  overflow: hidden;
+  margin-right: 70px;
+  height: 60px;
+  margin-top: 10px;
+}
+
+
+/*iphone5以下不显示图片*/
+@media screen and (max-device-width: 320px) {
+  .user-list li .img-box{display: none}
+  .rank-user{ margin-right: 0;}
+}
+
+
+.rank-user [class*="trophy-the-"]{
+  float: left;
+  margin-right: 10px;
+  margin-top: 12px;
+}
+
+.rank-user .avatar-box{
+  height: 50px;
+  width: 50px;
+  float: left;
+  margin-top: 5px;
+}
+
+.rank-user .name{
+  font-size: 16px;
+  color: #222;
+  margin: 10px 0 10px 60px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;  
+
+}
+
+.rank-user .data{
+  margin-left: 60px;
+  font-size: 14px;
+  color: #aaa;
+}
+
+.rank-user [class*="trophy-the-"] ~ .name,
+.rank-user [class*="trophy-the-"] ~ .data{
+  margin-left: 110px;
+}
+
+.rank-user .name .designation{ 
+  margin-left: 5px;
+}
+
+.rank-user .desc{
+  color: #aaa;
+  font-size: 16px;
+  line-height: 60px;
+}
+
+
+/*---*/
+.item-list li{
+  height: 70px;
+}
+
+.item-list .img-box{
+  float: left;
+  width: 80px;
+  height: 45px;
+  margin-top: 12.5px;
+}
+.item-list .data{
+  float: right;
+  text-align: center;
+  font-size: 12px;
+  color: #aaa;
+  margin-top: 17.5px;
+}
+
+.item-list .data .field{
+  float: right;
+  padding: 0 10px;
+}
+
+.item-list .data .big-text{
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+.item-list .info{
+  margin: 15px 70px 0 90px;
+}
+
+.item-list .info .name{
+  font-size: 16px;
+  color: #222;
+  margin-bottom: 10px;
+}
+.item-list .info .desc{
+  color: #aaa;
+  font-size: 14px;
+}
+
+.item-list .info .big-name{
+  padding-top: 12px;
+  font-size: 18px;
+}
+
+
+.empty-info{
+  padding: 50px 10px;
+  line-height: 1.3;
+  font-size: 14px;
+  text-align: center;
+}
+
+
+

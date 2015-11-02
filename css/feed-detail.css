@@ -1,0 +1,197 @@
+.feed-detail .message{
+  padding: 8px 10px;
+  background: #fff;
+}
+.feed-detail .message img{
+  float: left;
+  width: 40px;
+  border-radius: 25px;
+}
+.feed-detail .message .user-name{
+  float: left;
+  margin-left: 10px;
+}
+.feed-detail .message .user-name .name{
+  font-size: 14px;
+}
+.feed-detail .message .user-name .time{
+  color: #aaa;
+}
+.feed-detail .message .green-btn{
+  float: right;
+  margin-top: 7px;
+}
+
+.feed-detail .body{
+  background: #fff;
+}
+
+.feed-detail .title{
+  position: relative;
+  padding: 12px 10px;
+}
+.feed-detail .title .info{
+  float: left;
+  padding-top: 8px;
+}
+.feed-detail .title .level{
+  float: left;
+  font-size: 40px;
+}
+.feed-detail .title .fish-name{
+  margin-left: 50px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+.feed-detail .title .location{
+  margin-left: 50px;
+  color: #aaa;
+}
+.feed-detail .title .ad{
+  float: right;
+}
+.feed-detail .title .ad img{
+  max-width: 81px;
+  max-height: 49px;
+}
+
+.feed-detail .body .pic-box{
+  position: relative;
+}
+.feed-detail .body .page{
+  position: absolute;
+  left: 20px;
+  bottom: 10px;
+  width: 28px;
+  height: 28px;
+  border-radius: 3px;
+  background: #0d0b0a;
+  color: #fff;
+  line-height: 28px;
+  text-align: center;
+  z-index: 999;
+}
+.feed-detail .body .page .now{
+  font-size: 18px;
+}
+
+.feed-detail .content{
+  padding: 6px 10px;
+  line-height: 1.5;
+}
+.feed-detail .content .all-btn{
+  margin-top: 5px;
+  color: #4c76ad;
+}
+
+.feed-detail .tab{
+  margin-top: 10px;
+}
+.feed-detail .tab ul li{
+  float: left;
+  width: 25%;
+  padding: 12px;
+  color: #757575;
+  text-align: center;
+}
+.feed-detail .tab ul li:first-child{
+  width: 25%;
+}
+.feed-detail .tab ul li:last-child{
+  width: 25%;
+}
+
+.feed-detail .praise{
+  padding: 15px 15px 0;
+}
+.feed-detail .praise .icon{
+  float: left;
+  padding-top: 10px;
+}
+.feed-detail .praise ul{
+  margin-left: 30px;
+}
+.feed-detail .praise ul li{
+  float: left;
+  margin-right: 5px;
+}
+.feed-detail .praise ul li img{
+  width: 30px;
+  border-radius: 25px;
+}
+
+.feed-detail .comment{
+  margin-top: 5px;
+  padding:0 15px;
+  font-size: 13px;
+}
+.feed-detail .comment .icon{
+  float: left;
+  padding-top: 10px;
+}
+.feed-detail .comment ul{
+  margin-left:30px;
+}
+.feed-detail .comment ul li{
+  padding: 5px 0;
+}
+.feed-detail .comment ul li img{
+  float: left;
+  width: 30px;
+  margin-right: 5px;
+}
+.feed-detail .comment ul li .name{
+  color: #4570aa;
+  font-weight: bold;
+}
+.feed-detail .comment ul li .dialogue{
+  line-height: 1.3;
+}
+
+.feed-detail .tip{
+  margin-bottom: 15px;
+  padding: 10px 0;
+  color: #4570aa;
+  text-align: center;
+}
+
+.feed-detail .detail{
+  margin-bottom: 15px;
+}
+.feed-detail .detail .title{
+  position: relative;
+  font-weight: 700;
+  font-size: 18px;
+  color: #222;
+}
+.feed-detail .detail .title .line{
+  position: absolute;
+  left: 0;
+  top: 12px;
+  width: 3px;
+  height: 18px;
+  background: #007aff;
+}
+.feed-detail .detail li{
+  margin-left: 15px;
+  padding: 15px 15px 15px 0;
+}
+.feed-detail .detail li span{
+  float: right;
+}
+.feed-detail .detail .fish {
+  height: 79px;
+  vertical-align: middle;
+}
+.feed-detail .detail .fish img{
+  max-width: 81px;
+  max-height: 49px;
+}
+.feed-detail .detail .fish .name{
+  float: left;
+  line-height: 49px;
+}
+
+.feed-detail .map{
+  height: 226px;
+}

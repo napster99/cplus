@@ -1,0 +1,430 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/shop.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <link rel="stylesheet" href="../../css/shop-detail.css">
+  <title>钓点_上钩啦_找钓点，就用上钩啦</title>
+  <style type="text/css">
+    .status{
+      position:absolute; bottom:10px; background-color:rgba(0,0,0,.5); height:20px; line-height:20px; padding:0 15px; border-radius:0 1000px 1000px 0; color:#fff;
+    }
+    .wrap{
+      padding: 0 10px;
+    }
+    .title-name{
+      padding:10px 0;
+    }
+
+    .panel{
+      background: #fff;
+      line-height: 1.6;
+      padding-bottom: 10px;
+    }
+
+    .panel .content{
+      text-indent:2em;
+    }
+
+    .label-filed{
+      font-weight: bold;
+    }
+
+    .color-blue{
+      color: #10aeff ;
+    }
+    .ml10{
+      margin-left: 10px;
+    }
+
+    .address{
+    }
+
+    .navigation{
+
+    }
+    
+    .user-list{
+      /*height: 30px;*/
+    }
+
+    .user-list li{
+      float: left;
+      height: auto;
+      margin: 10px 5px;
+    }
+
+    .avatar-box{
+      width: 30px !important;
+      height: 30px !important;
+    }
+
+    .circle{
+      border-radius: 60px;
+      width: 60px;
+      height: 60px;
+      font-size: 20px;
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      padding: 10px 0 0 10px;
+      color: #fff;
+      z-index: 2;
+    }
+
+    .circle.join-color{
+      background: #EA430E;
+
+    }
+
+    .circle.join-color:after{
+      content: '我要报名'
+    }
+
+    .circle.close-color{
+      background: #6F6B69;
+    }
+
+    .circle.close-color:after{
+      content: '报名关闭'
+    }
+
+    .circle.success-color{
+      background: green;
+    }
+
+    .circle.success-color:after{
+      content: '报名成功'
+    }
+
+    /*.active-flow{
+
+    }
+
+    .active-flow-title{
+      font-weight: bold;
+    }
+
+    .active-flow li{
+      height: 40px;
+      line-height: 40px;
+    }
+
+    .active-flow li span{
+      display: inline-block;
+      width: 33.33%;
+    }*/
+
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    
+    <div class="slider">
+      <div class="swipe-wrap">
+        <ul class="swipe-img-list">
+        </ul>
+      </div>
+      <span class="status">
+        <span id="curPicNum">1</span>/<span id="totalPicNum">-</span>
+      </span>
+    </div>
+
+    <div class="nice-box border-top panel mt10">
+      <h3 id="activityName"></h3>    
+      <div id="shotDesc" class="content">
+      </div>
+    </div>
+
+    <div class="parameter panel mt10 border-bottom">
+      <ul>
+        <li><span class="label-filed">时间：</span><span id="time"></span></li>
+        <li class="border-top"><span class="label-filed">费用：</span><i class="icon-m icon-gold color-blue"></i><span class="color-blue ml10" id="price"></span></li>
+        <li class="border-top"><span class="label-filed">人数：</span><i class="icon-m icon-user-fill color-blue"></i><span class="color-blue ml10" id="p_count"></span></li>
+        <li class="border-top">
+          <span class="label-filed">地点：</span><span class="address" id="address"></span>
+          <span class="r" id="navMap"><i class="icon-m icon-position-fill color-blue"></i><span class="ml10">导航</span></span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="nice-box border-top border-bottom panel mt10">
+      <h3 class="border-bottom">感兴趣的人</h3>    
+      <ul id="userList" class="user-list clearfix">
+      </ul>
+    </div>
+
+    <div id="desc" class="nice-box border-top border-bottom panel mt10" style="padding:10px;">
+      暂无描述
+    </div>
+
+    <div id="status" class="circle"></div>
+  </div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script src="../../script/swipe/swipe.js"></script>
+<script>
+  apiready = function() {
+
+
+    var id = api.pageParam['id'];
+
+    function getListData() {
+      sendAjax(URLConfig('gatherDetail'), {'activity_id' : id}, function(data, code, msg) {
+        if(code == 0) {
+          renderData(data);
+        }else{
+          api.toast({msg: msg || '请求失败，稍后再试', duration:2000,location: 'middle'});
+        }
+      });
+    }
+
+
+    getListData();
+
+    function renderData(data) {
+
+      var picsAttr = data['pic'], htmlStr = '';
+
+      $api.setStorage('gather_share_url', data['share_url']);
+      $api.setStorage('gather_share_desc', data['share_desc']);
+      $api.setStorage('gather_share_title', data['name']);
+      if(typeof picsAttr === 'string'){
+        try{
+          picsAttr = JSON.parse(picsAttr);
+        }catch(e){
+          var errmsg = e.message+'   '+JSON.stringify(e);
+          uploadErrLog('exception', errmsg);
+        }
+      }
+      $api.setStorage('gather_share_img', picsAttr[0]);
+      for(var i=0; i<picsAttr.length; i++) {
+        var lastUrl = getPicUrl(picsAttr[i], api.winWidth*window.devicePixelRatio, api.winWidth*0.75*window.devicePixelRatio);
+
+        htmlStr += '<li><div name="imgBox" view="saveImg" url="'+lastUrl+'" class="img-box"><i class="icon-m icon-logo"></i></div></li>'
+      }
+      if(picsAttr.length > 1){
+        $('.status').removeClass('hidden');
+        $('#totalPicNum').text(picsAttr.length);
+      }else{
+        $('.status').addClass('hidden');
+      }
+      $('.swipe-img-list').html(htmlStr);
+
+      var boxs = $('div[name=imgBox] i.icon-logo');
+      for(var i=0; i<boxs.length; i++) {
+          var logoBox = boxs.eq(i).parent();
+          var imgLogo = logoBox.attr('url');
+          if(imgLogo && !logoBox.find('img')[0]) {
+            logoBox.html('<img src="'+imgLogo+'"/>');
+          }
+      }
+      initSwipe();
+
+
+
+      $('#activityName').text(data['name']);
+      $('#shotDesc').text(data['short_desc']);
+
+      //时间 费用 人数
+      $('#time').text(data['time_duration']);
+      $('#price').text(data['price']+'元');
+      $('#p_count').text(data['attend_num']+'/'+data['max_num']);
+
+      //地点
+      $('#address').text(data['pond']['name']);
+      $('#navMap').attr('lat', data['pond']['location_lat']);
+      $('#navMap').attr('lng', data['pond']['location_lon']);
+      //渲染状态
+      switch(data['status']) {
+        case -1:
+          $('#status').addClass('close-color');
+          break;
+        case 1:
+          $('#status').addClass('success-color');
+          break;
+        case 2:
+          $('#status').remove();
+          break;
+        case 3:
+          $('#status').addClass('join-color');
+          break;
+      }
+
+      var users = data['attend_users'], htmlStr = '';
+      for(var i=0; i<users.length; i++) {
+        htmlStr += '<li><div class="avatar-box" uid="'+users[i]['id']+'" url="'+users[i]['avatar']+'" onclick="enterProfileGather(this);"><i class="icon-m icon-user"></i></div></li>'
+      }
+      $('#userList').html(htmlStr);
+      renderAvatar();
+
+      $('#desc').html(data['desc']);
+
+    }
+
+
+    //我要报名
+    $(document).on('tap', '.join-color',  function() {
+      var userInner = $api.getStorage('user');
+      if($.isEmptyObject(userInner)) {
+        showLoginConfirm('../index.html');  
+        return;
+      }
+      
+      if(!userInner['mobile'] || (userInner['mobile'] && !/^\d{11}$/.test(userInner['mobile']))) {
+        api.openWin({
+          'name' : 'bangding-gatherFish',
+          'url' : 'bangding-gatherFish.html',
+          'pageParam' : {'id' : id}
+        });
+      }else{
+        api.openWin({
+          'name' : 'enroll-gatherFish',
+          'url' : 'enroll-gatherFish.html',
+          'pageParam' : {'id' : id}
+        });
+      }
+      
+    });
+
+
+    var baiduLocation = api.require('baiduLocation');
+    var baiduNavigation = api.require('baiduNavigation');
+    //地图导航
+    $('#navMap').on('tap',  function() {
+        var routeMode = '', systemType = api.systemType;
+
+        var mlat = $(this).attr('lat');
+        var mlon = $(this).attr('lng');
+
+        var buttons = ['推荐路线','高速优先','少走高速'];
+        if(api.systemType === 'android') {  
+          buttons = ['最短时间','最短距离','最少收费','躲避拥堵'];
+        }
+        api.actionSheet({
+            title: '路线选择',
+            cancelTitle: '取消',
+            buttons: buttons
+        },function(ret,err){
+            switch(ret.buttonIndex) {
+              case 1:
+                if(systemType === 'ios') {
+                  routeMode = 'recommend';
+                }else{
+                  routeMode = 'min_time';
+                }
+                break;
+              case 2:
+                if(systemType === 'ios') {
+                  routeMode = 'highway';
+                }else{
+                  routeMode = 'min_dist';
+                }
+                break;
+              case 3:
+                if(systemType === 'ios') {
+                  routeMode = 'noHighway';
+                }else{
+                  routeMode = 'min_toll';
+                }
+                break;
+              case 4:
+                if(systemType === 'android') {
+                  routeMode = 'avoid_trafficJam';
+                }else{
+                  return;
+                }
+                break;
+              case 5:
+                return;
+                break;
+            }
+            
+            baiduLocation.getLocation(function(ret, err){
+              var sta = ret.status;
+              var lat = ret.latitude;
+              var lon = ret.longitude;
+
+              //高德转百度
+              var placeEndObj = GpsEncode['bdEncrypt'](mlon, mlat);
+
+              if(sta){
+                var placeObj = GpsEncode['bdDecrypt'](lon, lat);
+                $api.setStorage('winLat', placeObj['lat']);
+                $api.setStorage('winLon', placeObj['lng']);
+                
+                baiduNavigation.start({
+                  start: { // 起点信息.
+                      position: { // 经纬度，与address配合可为空
+                          lon: lon, // 经度.
+                          lat: lat // 纬度.
+                      },
+                      title: "", // 描述信息
+                      address: "" // 地址信息，与position配合为空
+                  },
+                  routeMode : routeMode,
+                  end: { // 终点信息.
+                      position: { // 经纬度，与address配合可为空
+                      lon: placeEndObj['lng'], // 经度
+                      lat: placeEndObj['lat'] // 纬度
+                      },
+                      title: '', // 描述信息
+                      address: $('#address').text() // 地址信息，与position配合为空
+                  }
+              }, function(ret, err){
+                  
+              }); 
+            }else{
+              callback();
+            }
+          });
+        });
+    });
+
+    window.enterProfileGather = function(el) {
+      var uid = $(el).attr('uid');
+      if(!uid) return;
+      api.openWin({
+        'name' : 'profile',
+        'url' : '../profile.html',
+        'bounces' : true,
+        'bgColor' : '#507be7',
+        'pageParam' : {'uid' : uid}
+      });
+    }
+
+
+    function initSwipe() {
+      // 轮播图
+      var swipes = document.querySelectorAll('.swipe-wrap');
+      for(var i = 0; i < swipes.length; i++) {
+        if($(swipes[i]).data('init')) continue;
+        $(swipes[i]).data('init', true);
+        Swipe(swipes[i], {
+          // auto: 5000,
+          continuous: false,
+          disableScroll: false,
+          stopPropagation: false,
+          callback: function(index, elem) {
+            $('#curPicNum').text(index+1);
+          },
+          transitionEnd: function(index, elem) {
+          }
+        });
+      }
+    }
+
+
+  }
+
+</script>
+</html>

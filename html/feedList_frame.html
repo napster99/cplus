@@ -1,0 +1,198 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../css/feed.css">
+  <title>渔获列表</title>
+  
+</head>
+<body>
+  <div class="wrap">
+    <div id="feedList" class="feed-list hidden">
+    </div>
+    <div class="load-page wait"></div>
+  </div>
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<!-- <script src="../script/jquery1.8.2.js"></script> -->
+<script src="../script/common.js"></script>
+<script src="../script/feedListDoms.js"></script>
+<script>
+apiready = function() {
+
+    var page = 1, lastId = 0, curname;  
+    var isEnd = false, isAjaxing = false;
+    var user = $api.getStorage('user');
+    var pageFeedId = '', atuid = '';
+
+    var uid = api.pageParam['uid'];
+    var pondId = api.pageParam['pondId'];
+    var pageFeedId = api.pageParam['curFeedId'];  //跳到指定feed位置
+
+    var condicationObj = {
+      'lastId' : lastId
+    }
+
+    if(uid) {
+      //传user_id
+      condicationObj['user_id'] = uid;
+    }
+
+    if(pondId) {
+      //钓点id
+      condicationObj['pond_id'] = pondId;
+    }
+
+
+    // bandingActionListener();
+
+    function getListData(name, params, callback, first) {
+      if(!first) {
+        showButtonLoadDiv(true, $('#feedList'));  
+      }
+      
+      isAjaxing = true;
+      sendAjax(URLConfig(name), params, function(data, code, msg) {
+        isAjaxing = false;
+        api.refreshHeaderLoadDone();
+        if(code === 0) {
+          callback(data, first);
+        }else{
+          api.toast({ msg: msg || '请求失败，稍后再试',duration:2000,location: 'middle'});
+        }
+      });
+
+    }
+
+    getListData('feedList', condicationObj, function(data, first) {
+      renderData(data, first);
+    }, true);
+
+    api.setRefreshHeaderInfo({
+        visible: true,
+        loadingImg: 'widget://image/push-down.gif',
+        bgColor: '#fff',
+        textColor: '#ccc',
+        textDown: '下拉刷新...',
+        textUp: '松开刷新...',
+        showTime: true
+    }, function(ret, err){
+       isEnd = false;
+       condicationObj = {
+        'lastId' : 0
+       }
+
+        if(uid) {
+          //传user_id
+          condicationObj['user_id'] = uid;
+        }
+
+        if(pondId) {
+          //钓点id
+          condicationObj['pond_id'] = pondId;
+        }
+
+       isAjaxing = false;
+       getListData('feedList', condicationObj, renderData, true);
+    });
+
+    //下拉加载
+    api.addEventListener({
+      name: 'scrolltobottom'
+    }, function(ret, err){
+      if(!isEnd && !isAjaxing) {
+        showButtonLoadDiv(false, $('#feedList'));
+        condicationObj['lastId'] = $('div[name=feedMode]').last().attr('id');;
+        pageFeedId = '';
+        getListData('feedList', condicationObj ,renderData);
+      }
+    });
+    
+    
+    function renderData(data, first) {
+      //1 免费   3天塘  2斤塘
+      var htmlStr = '', proImg = {};
+      for(var i=0; i<data.length; i++) {
+        if(data[i]['type'] != 1) continue;
+        try{
+          htmlStr += getCurDoms(data[i]);
+        }catch(e){
+          var errmsg = e.message+'   '+JSON.stringify(e);
+          uploadErrLog('exception', errmsg);
+        }
+      }
+
+      
+      if(first) {
+        $('#feedList').html(htmlStr);
+      }else{
+        $('#feedList').append(htmlStr);  
+      }
+
+      //render 头像
+      renderAvatar();
+      //render 图片
+      renderLogo();
+
+      api.parseTapmode();
+      echo.init({
+        offsetTop: 100,
+        throttle: 250,
+        // newDom : $('#'+id)[0],
+        unload: true,
+        callback: function (element, op) {
+          // $(element).css('border','1px solid red');
+        }
+      });
+
+      if(first) {
+        var firstImg = $('div[name=feedMode]').find('img[data-echo]').first();
+        var firstImgUrl = firstImg.attr('data-echo');
+        firstImg.attr('src', firstImgUrl);
+      }
+      
+      
+      if(first) {
+        showLoadDiv(false, $('#feedList'));
+      }
+
+      if(pageFeedId) {
+        var el = $('#'+pageFeedId);
+        setTimeout(function() {
+          var top =el[0].offsetTop;
+          // $('body').animate({'scrollTop' : top},500);
+          $('body')[0].scrollTop = top;
+          // $('.wrap').animate({'scrollTop' : top},300);
+        },500);
+
+        // $('wrap').animate('scrollTop',400,200)
+      }
+
+      showButtonLoadDiv(false, $('#feedList'));
+      if(data.length < 15) {
+        isEnd = true;
+        if(first && data.length === 0) {
+          showNoData($('#feedList'));
+        }else if(!first){
+          api.toast({
+            msg: '没有更多数据了',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+        
+      }else{
+        showButtonLoadDiv(true, $('#feedList'));
+      }
+    }
+
+  }
+</script>
+</html>

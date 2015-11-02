@@ -1,0 +1,222 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <title>附近的人</title>
+</head>
+<body>
+<div class="wrap">
+  <!-- 附近的人 -->
+  <div class="user-sns-list border-bottom">
+    <ul id="nearList">
+      
+    </ul>
+  </div>
+  
+  <!-- 附近的人 End -->
+
+  <div class="load-page wait"></div>
+</div>
+
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script src="http://webapi.amap.com/maps?v=1.3&key=425928309ed735359972d7edb1534ff1"></script>
+<script>
+  apiready = function() {
+    var page_size = 15;
+    var isEnd = false, isAjaxing = false;
+    var user = $api.getStorage('user');
+
+    var condicationObj = {
+      'page' : 1,
+      'page_size' : page_size
+    }
+
+    function getListData(name, params, callback, first) {
+      if(first) {
+        // showLoadDiv(true, $('#nearList'));  
+      }
+      isAjaxing = true;
+      sendAjax(URLConfig(name), params, function(data, code, msg) {
+        isAjaxing = false;
+        api.refreshHeaderLoadDone();
+        if(code === 0) {
+          callback(data, first);
+        }else{
+          api.toast({
+            msg: msg || '请求失败，稍后再试',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+    }
+
+    //重新定位
+    startLocation(function() {
+      getListData('near', condicationObj, function(data, first) {
+        try{
+          renderData(data,first);
+        }catch(e){
+          var errmsg = e.message+'   '+JSON.stringify(e);
+          uploadErrLog('附近的人>>>',errmsg);
+        }
+      }, true);
+    });
+    
+
+    api.setRefreshHeaderInfo({
+        visible: true,
+        loadingImg: 'widget://image/push-down.gif',
+        bgColor: '#fff',
+        textColor: '#ccc',
+        textDown: '下拉刷新...',
+        textUp: '松开刷新...',
+        showTime: true
+    }, function(ret, err){
+       isEnd = false;
+       condicationObj = {
+        'page' : 1,
+        'page_size' : page_size
+       }
+       isAjaxing = false;
+       // $('#nearList').html('');
+      getListData('near', condicationObj, renderData, true);
+    });
+
+    //下拉加载
+    // api.addEventListener({
+    //   name: 'scrolltobottom'
+    // }, function(ret, err){
+    //   if(!isEnd && !isAjaxing) {
+    //     showButtonLoadDiv(false, $('#nearList'), '../images/loadButton.gif');
+    //     ++condicationObj['page'];
+    //     getListData('near', condicationObj ,renderData);
+    //   }
+    // });
+
+    function renderData(data, first) {
+      var htmlStr = '';
+      for(var i=0; i<data.length; i++) {
+        if(!$.isEmptyObject(user) && data[i]['uid'] == user['id']) continue;
+        if(!data[i]['nickname']) continue;
+
+        var avatarImg = data[i]['avatar'];
+        if(avatarImg) {
+          avatarImg = getPicUrl(avatarImg, 90, 90);
+          // avatarImg = getImageCache(avatarImg);
+        }
+
+        htmlStr += '<li class="border-bottom">'
+                +'  <div class="avatar-box" url="'+avatarImg+'" uid="'+data[i]['uid']+'" onclick="enterProfile(this);"><i class="icon-m icon-user"></i></div>'
+                if(data[i]['follow'] == 0) {
+                  htmlStr += '  <div class="btn-box"><button name="follow-btn" uid="'+data[i]['uid']+'" follow="no" class="btn-line color-green">关注</button></div>'
+                }else{
+                  htmlStr += '  <div class="btn-box"><button name="follow-btn" uid="'+data[i]['uid']+'" follow="yes" class="btn-line">已关注</button></div>'
+                }
+                if(data[i]['feed_pic']){
+                  htmlStr += '  <div class="last-photo" uid="'+data[i]['uid']+'" onclick="enterProfile(this);">'
+                  +'    <div url="'+data[i]['feed_pic']+'" name="imgBox" class="img-box" tapmode feedId="'+data[i]['feed_id']+'"  onclick="enterFeedDetail(this);"><i class="icon-m icon-logo"></i></div>'
+                  +'  </div>'
+                }
+                htmlStr += '  <div class="infos" uid="'+data[i]['uid']+'" onclick="enterProfile(this);">'
+                +'    <h3>'+data[i]['nickname']+'</h3>'
+                +'    <div class="info">'
+                +'      <div><i class="icon-m icon-position"></i>'+data[i]['distance']+'km</div>'
+                +'    </div>'
+                +'  </div>'
+                +'</li>'
+        // proImg[data[i]['feed_pic']] = { 'url' :  data[i]['feed_pic']};
+      }
+      // getImageSize(proImg);
+      
+      if(first){
+        $('#nearList').html(htmlStr);
+      }else{
+        $('#nearList').append(htmlStr);
+      }
+
+
+      //render 头像
+      renderAvatar();
+      //render 图片
+      renderLogo();
+
+      showLoadDiv(false, $('#nearList'));
+      if(data.length < page_size) {
+        isEnd = true;
+        if(first && data.length === 0) {
+          showNoData($('#nearList'));
+        }else if(!first){
+          api.toast({
+            msg: '没有更多数据了',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+        
+      }
+    }
+    
+    window.enterFeedDetail = function(el){
+      event.stopPropagation();
+      el = $(el);
+      var feedId = el.attr('feedId');
+      if(!feedId || feedId == 'null') return;
+      api.openWin({
+        'name' : 'feedDetail',
+        'url' : './feedDetail.html',
+        'pageParam' : {'id' : feedId},
+        'bounces':true
+      });
+    }
+
+    
+    //关注
+    $(document).on('tap', 'button[name=follow-btn]', function() {
+      var uid = $(this).attr('uid'), follow = $(this).attr('follow'), self = this;
+      var userInner = $api.getStorage('user');
+      if($.isEmptyObject(userInner)) {
+        showLoginConfirm('../index.html');  
+        return;
+      }
+
+      // authInfo(function(data, code, msg) {
+      //   if(code === 2) {
+      //     showLoginConfirm('../index.html');  
+      //   }else if(code === 0){
+          if(follow === 'no'){
+            //关注
+            $(self).removeClass('color-green').text('已关注').attr('follow', 'yes');
+            sendAjax(URLConfig('follow'), {'uid' : uid}, function(data, code, msg) {
+              if(code != 0) {
+                $(self).addClass('color-green').text('关注').attr('follow', 'no');
+                api.toast({msg: msg || '请求失败，稍后再试',duration:2000,location:'middle'});
+              }
+            });
+          }else{
+            //取消关注
+            $(self).addClass('color-green').text('关注').attr('follow', 'no');
+            sendAjax(URLConfig('cancelFollow'), {'uid' : uid}, function(data, code, msg) {
+              if(code != 0) {
+                $(self).removeClass('color-green').text('已关注').attr('follow', 'yes');
+                api.toast({msg: msg || '请求失败，稍后再试', duration:2000,location: 'middle'});
+              }
+            });
+          }
+      //   }
+      // });
+    });
+
+  }
+
+</script>
+</html>

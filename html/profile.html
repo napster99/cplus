@@ -1,0 +1,458 @@
+﻿<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+   <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../css/profile.css">
+  <style>
+    .tab-head div:nth-child(1).active~.line {
+      left: 0;
+    }
+    .tab-head div:nth-child(2).active~.line {
+      left: 50%;
+    }
+
+  </style>
+
+  <title>个人主页</title>
+</head>
+<body>
+<div class="wrap">
+  <div class="profile">
+    <!-- top-bar -->
+    <div id="header" class="top-actions">
+      <div class="l" onclick="api.closeWin();" tapmode><i class="icon-m icon-back"></i></div>
+    </div>
+    <!-- top-bar End -->
+
+    <!-- user-info -->
+    <div id="header2" class="user-info">
+      <div class="avatar-box" id="avatar"><i class="icon-m icon-user"></i></div>
+      <div class="name"><span id="uname"></span><i id="gender" class="icon-m male"></i></div>
+      <button class="btn-fill color-green" id="follow"></button>
+      <ul class="data-list">
+        <li id="feedListWin" class="border-right">
+          <p id="fish_num"></p>
+          渔获
+        </li>
+        <li id="fansWin" class="border-right">
+          <p id="fans_num"></p>
+          粉丝
+        </li>
+        <li id="attentionWin">
+          <p id="follow_num"></p>
+          关注
+        </li>
+      </ul>
+
+
+    </div>
+    <!-- user-info end -->
+
+    <!-- tab -->
+    <div id="layList" class="tab-head border-top border-bottom">
+      <div url="myFeed" class="active" style="width:50%;"><i class="icon-m icon-imgs"></i>渔获</div>
+      <!-- <div url="baitbox"><i class="icon-m icon-tool2"></i>饵料箱</div> -->
+      <div url="achievement" style="width:50%;"><i class="icon-m icon-medal"></i>成就</div>
+      <span class="line" style="width:50%;"></span>
+    </div>
+    <!-- tab End -->
+
+    <div class="tab-body">
+
+      <div name="myFeed" class="tabc hidden">
+        <div id="feedEmpty" class="empty-info hidden">
+          O_O <span name="gender">他</span>还没发过任何渔获，鄙视浑水摸鱼呀！
+        </div>
+        <ul id="myList"  class="photo-list col3">
+        </ul>
+        <div class="slogan">
+          <div class="trophys">
+            <i class="icon-m icon-trophy trophy-the-second mid-one"></i>
+            <i class="icon-m icon-trophy trophy-the-first big-one"></i>
+            <i class="icon-m icon-trophy trophy-the-third mid-one"></i>
+          </div>
+          <div class="title">成为钓点之王</div>
+          <div class="desc">添加渔获，分享每一次快乐！</div>
+        </div>
+      </div>
+
+      <!-- <div name="baitbox" class="tabc hidden">
+        <div id="baitEmpty" class="empty-info hidden">
+          O_O <span name="gender">他</span>的饵料箱空空如也...
+        </div>
+        <ul id="baitboxList" class="item-list">
+        </ul>
+      </div> -->
+
+      <div name="achievement" class="tabc hidden">
+        <div id="achievementEmpty" class="empty-info hidden">
+          O_O <span name="gender">他</span>尚未取得好名次，继续加油！
+        </div>
+        <div class="nice-box">
+          <ul id="achievementList" class="user-list hidden">
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+
+    var myLoad = false, myBaitboxLoad = false, myAchievementLoad = false;
+    var curShow = '', isEnd = false, isAjaxing = false;
+    var thisAvatar = '', thisNickname = '';
+    var condicationObj = {
+      'page' : 1,
+      'page_size' : 20,
+      'uid' : api.pageParam['uid']
+    }
+    
+    if(api.systemType === 'ios') {
+      $('.user-info').css('padding-top','70px');
+    }
+
+    // 设置ios7的标题栏字体变亮，全局用一个就行了
+    api.setStatusBarStyle({
+      style: 'light'
+    });
+
+    api.addEventListener({
+        name:'viewappear'
+    },function(ret,err){
+        api.setStatusBarStyle({
+          style: 'light'
+        });
+    });
+
+    var header = $api.byId('header');
+    var user = $api.getStorage('user');
+    $api.fixIos7Bar(header);
+
+
+    //管理员封号功能
+    if(!$.isEmptyObject(user) && user['role'] === 'admin') {
+      $('#avatar').on('longTap',  function() {
+        accountAction(api.pageParam['uid']);
+      });
+    }
+    
+
+    api.addEventListener({
+      name: 'viewappear'
+    }, function(ret, err){
+      getDataList('userInfo', null, renderInfoData);
+    });
+
+    getDataList('userInfo', null, renderInfoData);
+
+    function renderInfoData(data) {
+      var avatarImg = data['avatar'];
+      if(avatarImg) {
+        avatarImg = getPicUrl(avatarImg, 90*window.devicePixelRatio, 90*window.devicePixelRatio);
+      }
+      var img = new Image(); 
+      img.src = avatarImg;
+      img.onload = function() {
+        $('#avatar').html('<img src="'+avatarImg+'" />');
+      }
+      thisAvatar = data['avatar'];
+      thisNickname = data['nickname'];
+      $('#uname').text(data['nickname']);
+
+
+      
+      if(data['gender'] == 2) { //女
+        $('#gender').removeClass('icon-male').addClass('icon-female');
+        $('span[name=gender]').text('她');
+      }else{ //男
+        $('#gender').removeClass('icon-female').addClass('icon-male');
+        $('span[name=gender]').text('他');
+      }
+      if(!$.isEmptyObject(user) && user['id'] == data['uid']){
+        $('#follow').addClass('color-green').text('编辑资料').attr('self', true);
+      }else{
+        if(data['following'] == 0) {
+          $('#follow').addClass('color-green').text('关注').attr('follow', 'no');
+        }else{
+          $('#follow').removeClass('color-green').text('已关注').attr('follow', 'yes');
+        }
+      }
+      
+      $('#fish_num').text(String(data['fishery_harvesting']).length > 4? data['fishery_harvesting']/10000+'万' : data['fishery_harvesting']);
+      $('#follow_num').text(String(data['follow']).length > 4? data['follow']/10000+'万' : data['follow']);
+      $('#fans_num').text(String(data['fans']).length > 4 ? data['fans']/10000+'万' : data['fans']);
+    }
+
+    //++++++内容子页面 S ++++++
+    
+    function getDataList(name, condicationObj, callback) {
+      sendAjax(URLConfig(name), condicationObj || {'uid' : api.pageParam['uid']}, function(data, code, msg) {
+        if(code === 0) {
+          callback(data);
+        }else{
+          api.toast({
+            msg: msg || '请求失败，稍后再试',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+    }
+
+    $('#layList').on('tap', 'div', function() {
+        var url = $(this).attr('url');
+        if(curShow === url) return;
+        curShow = url;
+        $('#layList').find('div.active').removeClass('active');
+        $(this).addClass('active');
+
+        $('.tabc').addClass('hidden');
+        $('div[name='+url+']').removeClass('hidden');
+
+        if(url === 'myFeed' && myLoad) return;
+        if(url === 'achievement' && myAchievementLoad) return;
+        if(url === 'baitbox' && myBaitboxLoad) return;
+        if(url === 'myFeed') {
+          getDataList(url, condicationObj, function(data) {
+            renderListData(url, data);
+          });
+        }else{
+          getDataList(url, null, function(data) {
+            renderListData(url, data);
+          });  
+        }
+        
+      
+    });
+    
+    $('#layList').find('div').first().trigger('tap');
+    
+    function renderListData(name, data) {
+      switch(name) {
+        case 'myFeed'://渔获
+          var htmlStr = '', proImg = {};
+          data = data['list'];
+          var len = data.length >= 8 ? 8: data.length;
+          for(var i=0;i<len;i++){
+            var picUrl = data[i]['pic'];
+            if(picUrl) {
+              picUrl = getPicUrl(picUrl, api.winWidth*window.devicePixelRatio/3, api.winWidth*window.devicePixelRatio/3);
+              picUrl = getImageCache(picUrl);
+            }
+
+            htmlStr += '<li id="'+data[i]['id']+'" onclick="enterFeedList(this);" tapmode><div url="'+picUrl+'" class="img-box"><i class="icon-m icon-img"></i></div></li>'
+            proImg[picUrl] = {'url' :  picUrl};
+          }
+          if(data.length > 9) {
+            htmlStr += '<li onclick="enterFeedList();" tapmode><div class="img-box"><i class="icon-m icon-more"></i></div></li>'
+          }
+          if(htmlStr != '') {
+            $('#myList').find('li.nomore').remove();
+            $('#myList').append(htmlStr);
+            $('#feedEmpty').addClass('hidden');
+          }else{
+            $('#feedEmpty').removeClass('hidden');
+          }
+          if(!data['next']) {
+            isEnd = true;
+          }
+
+          //智能填图 
+          getImageSize(proImg);
+
+
+          myLoad = true;
+          break;
+        case 'achievement'://成就
+          var htmlStr = '', fillPicsObj = {};
+          for(var i=0; i<data.length; i++) {
+            htmlStr += '<li class="border-bottom">'
+            +'  <div class="img-box" url="'+data[i]['fish_pic']+'"><i class="icon-m icon-logo"></i></div>'
+            +'  <div class="rank-user">'
+            if(data[i]['rank'] == 1) {
+              htmlStr += '    <i class="icon-m icon-trophy trophy-the-first mid-one"></i>'
+            }else if(data[i]['rank'] == 2){
+              htmlStr += '    <i class="icon-m icon-trophy trophy-the-second mid-one"></i>'
+            }else if(data[i]['rank'] == 3){
+              htmlStr += '    <i class="icon-m icon-trophy trophy-the-third mid-one"></i>'
+            }
+
+            htmlStr += '    <div class="avatar-box"><img src="'+thisAvatar+'"></div>'
+            +'    <div class="name">'+thisNickname+'<span class="keep-time"><i class="icon-m icon-time"></i>蝉联<span>'+data[i]['keep_on']+'</span>天</span></div>'
+            +'    <div class="data">'+data[i]['fish_species']+' '+data[i]['fish_weight']+'斤/'+data[i]['fish_len']+'CM</div>'
+            +'  </div>'
+            +'</li>'
+
+            fillPicsObj[data[i]['fish_pic']] = { 'url' :  data[i]['fish_pic']};
+          }
+          if(htmlStr != '') {
+            $('#achievementList').html(htmlStr);
+            $('#achievementEmpty').addClass('hidden');
+            $('#achievementList').removeClass('hidden');
+          }else{
+            $('#achievementEmpty').removeClass('hidden');
+          }
+          getImageSize(fillPicsObj);
+          myAchievementLoad = true;
+          break;
+        case 'baitbox': //饵料箱
+          var htmlStr = '';
+          for(var i=0; i<data.length; i++) {
+            htmlStr += '<li  id="'+data[i]['id']+'" class="border-bottom">'
+                    +'  <div class="data">'
+                    +'    <div class="field">'
+                    +'    <div class="big-text">'+data[i]['frequency']+'</div>'
+                    +'      使用率'
+                    +'    </div>'
+                    +'  </div>'
+                    +'  <div class="img-box border"><img src="'+data[i]['logo']+'"></div>'
+                    +'  <div class="info">'
+                    +'    <div class="name">'+data[i]['bait_name']+'</div>'
+                    +'    <div class="desc">'+data[i]['bait_type']+'/'+data[i]['bait_brand']+'</div>'
+                    +'  </div>'
+                    +'</li>'
+          }
+          if(htmlStr != '') {
+            $('#baitboxList').html(htmlStr);
+            $('#baitEmpty').addClass('hidden');
+          }else{
+            $('#baitEmpty').removeClass('hidden');
+          }
+          myBaitboxLoad = true;
+          break;
+      }
+      
+    }
+    
+    //++++++内容子页面 E++++++
+    $('#follow').on('click',  function() {
+      if($(this).attr('self')) {
+        api.openWin({
+          'name' : 'home',
+          'url' : './home/home.html'
+        })
+        return;
+      }
+      var uid = api.pageParam['uid'], follow = $(this).attr('follow'), self = this;
+      var userInner = $api.getStorage('user');
+      if($.isEmptyObject(userInner)) {
+        showLoginConfirm('../index.html');  
+        return;
+      }
+
+      // authInfo(function(data, code, msg) {
+      //   if(code === 2) {
+      //     showLoginConfirm('../index.html');
+      //   }else if(code === 0){
+          if(follow === 'no'){
+            //关注
+            $(self).removeClass('color-green').text('已关注').attr('follow', 'yes');
+            //加1
+            var oldCount = Number($('#fans_num').text());
+            $('#fans_num').text(++oldCount);
+            sendAjax(URLConfig('follow'), {'uid' : uid}, function(data, code, msg) {
+              if(code != 0) {
+                $(self).addClass('color-green').text('关注').attr('follow', 'no');
+                $('#fans_num').text(--oldCount);
+                api.toast({msg: msg || '请求失败，稍后再试', duration:2000,location: 'middle'});
+              }
+            });
+          }else{
+            //取消关注
+            $(self).addClass('color-green').text('关注').attr('follow', 'no');
+            //减1
+            var oldCount = Number($('#fans_num').text());
+            if(oldCount === 0) {
+              $('#fans_num').text(0);
+            }else{
+              $('#fans_num').text(--oldCount);
+            }
+            sendAjax(URLConfig('cancelFollow'), {'uid' : uid}, function(data, code, msg) {
+              if(code != 0) {
+                $(self).removeClass('color-green').text('已关注').attr('follow', 'yes');
+                if(oldCount === 0) {
+                  $('#fans_num').text(1);
+                }else{
+                  $('#fans_num').text(++oldCount);
+                }
+                api.toast({msg: msg || '请求失败，稍后再试', duration:2000,location: 'middle'});
+              }
+            });
+          }
+      //   }
+      // });
+    }); 
+
+
+    //渔获列表
+    $('#feedListWin').on('tap',  function() {
+      api.openWin({
+        'name' : 'feedList',
+        'url' : './feedList.html',
+        'scrollToTop' : false,
+        'pageParam' : {'uid' : api.pageParam['uid']},
+        'bounces' : false
+      })
+    });
+
+    //关注列表
+    $('#attentionWin').on('tap',  function() {
+      api.openWin({
+        'name' : 'attention',
+        'url' : './attention.html',
+        'pageParam' : {'uid' : api.pageParam['uid']},
+        'bounces' : false
+      })
+    });
+
+    
+    //粉丝列表
+    $('#fansWin').on('tap',  function() {
+      api.openWin({
+        'name' : 'fans',
+        'url' : './fans.html',
+        'pageParam' : {'uid' : api.pageParam['uid']},
+        'bounces' : false
+      })
+    });
+
+
+    //进入渔获列表页
+    window.enterFeedList = function(el) {
+      if(!el) {
+        api.openWin({
+          'name' : 'feedList',
+          'url' : './feedList.html',
+          'scrollToTop' : false,
+          'pageParam' : {'uid' : api.pageParam['uid']},
+          'bounces':true
+        });
+      }else{
+        var id = el.id; //当前渔获id
+        api.openWin({
+          'name' : 'feedList',
+          'url' : './feedList.html',
+          'scrollToTop' : false,
+          'pageParam' : {'curFeedId' : id, 'uid' : api.pageParam['uid']},
+          'bounces':true
+        });
+      }
+      
+    }
+
+  }
+</script>
+</html>

@@ -1,0 +1,136 @@
+ <widget id="A6989041790790"  version="0.0.1">
+
+  <name>yuduoduo</name>
+
+  <description>
+
+      yuduoduo for fishing
+
+  </description>
+
+  <author email="809270105@qq.com" href="http://www.yddapp.com">
+
+      yuduoduo
+
+  </author>
+
+  <content src="index.html" />
+
+  <access origin="*" />
+
+  <preference name="pageBounce" value="true"/>
+
+	<preference name="appBackground" value="rgba(0,0,0,0.0)"/>
+
+	<preference name="windowBackground" value="rgba(0,0,0,0.0)"/>
+
+	<preference name="frameBackgroundColor" value="rgba(0,0,0,0.0)"/>
+
+	<preference name="hScrollBarEnabled" value="true"/>
+
+	<preference name="vScrollBarEnabled" value="true"/>
+
+	<preference name="autoLaunch" value="false"/>
+
+	<preference name="fullScreen" value="true"/>
+
+	<preference name="autoUpdate" value="true" />
+
+	<preference name="smartUpdate" value="true" />
+
+	<preference name="debug" value="false"/>
+
+	<preference name="iOS7StatusBarAppearance" value="true"/>
+
+	<permission name="readPhoneState" />
+
+  <permission name="call" />
+
+  <permission name="sms" />
+
+	<permission name="camera" />
+
+	<permission name="record" />
+
+	<permission name="location" />
+
+	<permission name="fileSystem" />
+
+	<permission name="internet" />
+
+	<permission name="bootCompleted" />
+
+	<permission name="hardware" />
+
+	<permission name="contact" />
+
+  <preference name="allowKeyboardExtension" value="false" />
+
+  <feature name="qq">
+    <param name="urlScheme" value="tencent1104746182"/>
+    <param name="apiKey" value="1104746182"/>
+  </feature>
+
+<!-- 
+  APP ID:1104687032
+APP KEY:zUbnjFqfGXPsSw0d -->
+
+
+  <feature name="weiXin">
+    <param name="urlScheme" value="wx12089dbe050754df"/>
+    <param name="apiKey" value="wx12089dbe050754df"/>
+    <param name="apiSecret" value="acf431e650350a585c64825b42e4ac86" />
+  </feature>
+
+
+  <!-- <feature name="wx">
+    <param name="urlScheme" value="wxd0d84bbf23b4a0e4"/>
+    <param name="apiKey" value="wxd0d84bbf23b4a0e4"/>
+    <param name="apiSecret" value="a354f72aa1b4c2b8eaad137ac81434cd"/>
+  </feature> -->
+<!-- 
+
+  <feature name="rongCloud">
+    <param name="appKey" value="3argexb6r9bke" />
+	</feature>
+ -->
+
+
+  <feature name="TalkingData">
+    <param name="logEnable" value="false" />
+    <param name="exceptionReportEnabled" value="true" />
+    <param name="channel" value="AppStore" />
+  </feature>
+
+  <feature name="ajpush">
+    <param name="app_key" value="42676002667748200cb32a35" />
+    <param name="channel" value="AppStore" />
+  </feature>
+  
+  <feature name="baiduMap">
+    <param name="android_api_key" value="xMTa7S57HGAQGd7xsOUIlFvP" />
+    <param name="ios_api_key" value="ZOVOmr5lRWQMQiWr3Gtjbb4A" />
+  </feature>
+  
+  <feature name="baiduNavigation">
+    <param name="android_api_key" value="xMTa7S57HGAQGd7xsOUIlFvP" />
+    <param name="ios_api_key" value="ZOVOmr5lRWQMQiWr3Gtjbb4A" />
+  </feature>
+  
+<!-- test -->
+<!-- <feature name="baiduMap">
+    <param name="android_api_key" value="xMTa7S57HGAQGd7xsOUIlFvP" />
+    <param name="ios_api_key" value="KSGRx03icKEUX0qY5oRpMYbG" />
+  </feature>
+  
+  <feature name="baiduNavigation">
+    <param name="android_api_key" value="xMTa7S57HGAQGd7xsOUIlFvP" />
+    <param name="ios_api_key" value="KSGRx03icKEUX0qY5oRpMYbG" />
+  </feature> -->
+
+  <feature name="aliPay">
+      <param name="urlScheme" value="AliPayA6989041790790"/>
+  </feature>
+
+  
+</widget>

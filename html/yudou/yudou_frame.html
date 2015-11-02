@@ -1,0 +1,141 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+    <title>抽奖</title>
+    <link href="./images/style.css" rel="stylesheet"/>
+    <script type="text/javascript">
+        var commonjspath = './images';
+    </script>
+    <script src="./images/commons.js"></script>
+    <style>
+        .clock {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+            margin-bottom: -3px;
+            background-image: url(./images/detail.png);
+            background-repeat: no-repeat;
+            background-position: -3px -3px;
+            background-size: 43px 324px;
+        }
+        .coin {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            margin-bottom: -4px;
+            background-image: url(./images/coin.png);
+            background-repeat: no-repeat;
+        }
+        .content .list ul li .action {
+            float: left;
+            width: 35%;
+            padding-top: 3px;
+        }
+        .content .list ul li .prize1 {
+            float: left;
+            width: 30%;
+            overflow: hidden;
+            font-size: 16px;
+        }
+        .content .list ul li .time1 {
+            float: right;
+            width: 30%;
+        }
+        .yudou_top {
+            text-align: center;
+            position: relative;
+            padding: 10px 0 0 0;
+            color: #f9dc97;
+            background-color: #E33E41;
+        }
+        .yudou_top .profile_logo {
+            width: 30%;
+            border-radius: 100%;
+            -moz-border-radius: 100%;
+            -webkit-border-radius: 100%;
+            border: 2px solid rgba(255,255,255,0.8);
+            vertical-align: middle;
+        }
+        .yudou_top .profile_name {
+            font-size: 20px;
+            margin-top: 10px;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="yudou_top" id="header">
+        <img class="profile_logo" src="./images/free-60-icons-08.png">
+        <div id="yudouCount" class="profile_yudou">-</div>
+    </div>
+    <div class="line"><img src="./images/line.png" /></div>
+    <div class="content">
+        <div class="clr"></div>
+        <div class="mylist">
+            <div class="title"><img src="./images/title_6.png" /></div>
+            <div class="text list">
+                <ul id="yudouList">
+                </ul>
+            </div>
+        </div>
+    </div>
+<div class="line"><img src="./images/line.png" /></div>
+<div class="copyright">杭州鱼游网络科技有限公司</div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+    apiready = function() {
+
+      
+
+      //获取鱼豆
+      sendAjax(URLConfig('rollProducts'), null, function(data, code, msg) {
+        if(code == 0) {
+          var credit = data['credit'];
+          $('#yudouCount').text(credit);
+        }else{
+          api.toast({msg: msg || '获取信息失败，请稍候再试！', duration:2000,location: 'middle'});
+        }
+      });
+
+
+      sendAjax(URLConfig('yudouLogs'), {'page' : 1}, function(data, code, msg) {
+        if(code == 0) {
+          renderData(data);
+        }else{
+          api.toast({msg: msg || '获取鱼豆记录失败，请稍候再试！', duration:2000,location: 'middle'});
+        }
+      });
+
+      function renderData(data) {
+        var logs = data['logs'], htmlStr = '';
+
+        if(logs.length > 0 ) {
+          for(var i=0; i<logs.length; i++) {
+            htmlStr += '<li>'
+            +'    <span class="action">'+logs[i]['behavior_name']+'</span>'
+            +'    <span class="prize1">'+logs[i]['reward']+'<i class="coin"></i></span>'
+            +'    <span class="time1"><i></i>'+logs[i]['pretty_time']+'</span>'
+            +'    <div class="clr"></div>'
+            +'</li>'
+          }
+        }else{
+          htmlStr += '<li>还没有鱼豆纪录<div class="clr"></div></li>';
+        }
+        
+        $('#yudouList').html(htmlStr);
+
+      }
+
+    }
+
+</script>
+</html>

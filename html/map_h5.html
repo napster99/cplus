@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+   <meta name="viewport" content="maximum-scale=1,minimum-scale=1,user-scalable=1,width=device-width,initial-scale=1"/>
+  <meta content="yes" name="apple-mobile-web-app-capable" />
+  <meta content="black" name="apple-mobile-web-app-status-bar-style" />
+  <meta content="telephone=no" name="format-detection" />
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../css/map.css">
+  <title>地图</title>
+ <style type="text/css">
+    
+
+    #header{z-index: 99;}
+ </style>
+</head>
+<body style="background:transparent;">
+
+<div class="wrap">
+  <div class="map-cover">
+    <div id="header" class="data-filter border-bottom">
+      <ul class="clearfix">
+        <li id="goBack" class="border-right"><i class="icon-m icon-arrow-left"></i></li>
+        <li name="condition" id="city" class="border-right"><span id="theCity">全城</span><i class="icon-m icon-fold"></i></li>
+        <li name="condition" id="filter" class="border-right">筛选<i class="icon-m icon-fold"></i></li>
+        <li id="refresh"><i class="icon-m icon-refresh"></i></li>
+      </ul>
+    </div>
+
+    <!-- <div class="bottom-control">
+      <div id="myPos" class="l"><i class="icon-m icon-focus"></i></div>
+    </div> -->
+
+  </div>
+
+    <div class="mask hidden"></div>
+    <!-- 筛选条件 -->
+    <div class="condition-list" style="position:relative; z-index:9999;">
+
+      <!-- 城市下拉 -->
+      <div name="city" class="hidden">
+        <div class="area-list">
+          <div class="bd">
+            <ul class="filter-col-3">
+            </ul>
+          </div>
+          <div  id="switchCity" class="ft border-top">
+            <div class="city-switch border">
+              <div  class="r">
+                更换
+                <i class="icon-m icon-arrow-right"></i>
+              </div>
+              当前城市：<span id="currentCity"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 城市下拉 end-->
+      <!-- 筛选 -->
+      <div name="filter" class="filter-pop hidden">
+        <div id="filterList">
+        </div>
+        <div class="filter-actions">
+          <label id="reset" class="l">重置</label>
+          <label id="done" class="r">完成</label>
+        </div>
+      </div>
+      <!-- 筛选 end-->
+      
+    </div>
+    <!-- 筛选条件 end-->
+
+
+
+</div>
+
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+    apiready = function() {
+
+      var header = $api.byId('header');
+      $api.fixIos7Bar(header);
+      var headerPos = $api.offset(header);
+
+      //flag true 
+      function setFrameHeight(flag) {
+        var frameHeight = flag ? $('.map-cover').height() : api.winHeight;
+        api.setFrameAttr({
+          name : 'map_h5',
+          rect :{
+            'h' : frameHeight
+          }
+        });
+      }
+
+      setFrameHeight(true);
+
+      //返回
+      $('#goBack').on('touchstart', function() {
+        api.closeWin({'name' : 'map'});
+      });
+
+      var curMode = '';
+      $('li[name=condition]').on('click', function() {
+        var id = this.id;
+        $('div[name=city], div[name=filter]').addClass('hidden');
+        if(!curMode) {
+          $('div[name='+id+'], .mask').removeClass('hidden');
+          curMode = true;
+          setFrameHeight();
+        }else{
+          $('div[name='+id+'], .mask').addClass('hidden');
+          curMode = false;
+          setFrameHeight(true);
+        }
+      });
+
+      //刷新
+      $('#refresh').on('touchstart',  function() {
+        // $(this).find('i').addClass('rotate');
+        // map.clearMap();
+        // initData('', true);
+        api.execScript({
+          name: 'map',
+          script: 'initData(null, true);'
+        });
+
+      });
+
+ 
+
+      window.enterDetail = function(id) {
+        api.openWin({
+          name: 'pond_detail',
+          url: './pond-details.html',
+          bounces : false,
+          pageParam: {'pondId': id}
+        });
+      }
+
+   
+
+
+      function getConfigData() {
+       var mapInfo = $api.getStorage('mapInfo');
+       $('#currentCity').text(mapInfo['parent_name']);
+       sendAjax(URLConfig('pondFilter'), {'area_code' : mapInfo['parent_code']}, function(data, code, msg) {
+          if(code === 0) {
+            renderData(data);
+          }else{
+            api.toast({
+              msg: msg || '获取失败，稍后再试',
+              duration:2000,
+              location: 'middle'
+            });
+          }
+        });
+      }
+
+      window.getConfigData = getConfigData;
+
+
+      function renderData(data){
+        $.each(data,  function(k,v) {
+          if(k === 'city') {
+            var ac = v['area_code'], dc = v['distance'],htmlStr = '<li class="border" >全城</li>';
+            for(var i=0; i<dc.length; i++) {
+              htmlStr += '<li class="border" value='+dc[i]['value']+'>'+dc[i]['name']+'</li>'
+            }
+            for(var i=0; i<ac.length; i++) {
+              htmlStr += '<li class="border" area_code='+ac[i]['area_code']+'>'+ac[i]['name']+'</li>'
+            }
+            $('div[name=city]').find('ul').html(htmlStr);
+          }else if(k === 'filter') {
+            var htmlStr = '';
+
+            for(var i=0; i<v.length; i++) {
+              htmlStr += '<dl class="filter-list border-bottom">'
+                      + '<dt>' +v[i]['name']+ '</dt>'
+                      + '<dd>'
+              $.each(v[i],  function(k1, v1) {
+                if(v1 instanceof Array) {
+                  var el = v1[0]['values']?v1[0]['values'] : v1;
+                  for(var j=0; j<el.length; j++) {
+                    htmlStr += '<label><input type="radio" name="'+v1[0]['name']+'" value="'+el[j]['value']+'"><p>'+el[j]['name']+'</p></label>'
+                  }
+                  htmlStr += '</dd></dl>'        
+                }
+              });
+            }
+
+            $('#filterList').html(htmlStr);
+
+          }
+        });
+      }
+
+      $('.mask').on('click',  function() {
+        $('div[name=city], div[name=filter]').addClass('hidden');
+        $(this).addClass('hidden');
+        curMode = false;
+        setFrameHeight(true);
+      });
+
+      //完成  筛选这块
+      $('#done').on('click',  function() {
+        var checkboxs = $('#filterList').find('input:checked'), params = {};
+
+        for(var i=0; i<checkboxs.length; i++) {
+          params[checkboxs.eq(i).attr('name')+''] = checkboxs.eq(i).attr('value');
+        }
+        api.execScript({
+          name: 'map',
+          script: 'changeCondiObj('+JSON.stringify(params)+');'
+        });
+
+
+        $('div[name=city], div[name=filter], .mask').addClass('hidden');
+        curMode = false;
+
+        setFrameHeight(true);
+      });
+
+      //切换城市
+      $('#switchCity').on('click',  function() {
+        api.execScript({
+          name: 'index',
+          script: 'openChangeCityWin();'
+        });
+      });
+
+      //重置 筛选这块
+      $('#reset').on('click',  function() {
+        var checkboxs = $('#filterList').find('input:checked');
+        for(var i=0; i<checkboxs.length; i++) {
+          checkboxs.eq(i)[0].checked = false;
+        }
+
+        api.execScript({
+          name: 'map',
+          script: 'changeCondiObj({});'
+        });
+
+
+      });
+
+      //全城
+      $('div[name=city]').on('click', 'li', function() {
+        var params = {};
+        if($(this).attr('value')) {
+          params['distance'] = $(this).attr('value');
+        }else{
+          params['area_code'] = $(this).attr('area_code');
+        }
+
+
+        $('#theCity').text($(this).text());
+        
+        api.execScript({
+          name: 'map',
+          script: 'changeCurAreaCode('+JSON.stringify(params)+');'
+        });
+
+        $('div[name=city], div[name=filter], .mask').addClass('hidden');
+        curMode = false;
+        setFrameHeight(true);
+      });
+
+      getConfigData();
+
+    }
+</script>
+</html>

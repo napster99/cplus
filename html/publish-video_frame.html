@@ -1,0 +1,263 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <title>发表视频--填写内容</title>
+  <style type="text/css">
+
+  .publish-video{
+    background-color: #fff;
+    padding: 10px;
+  }
+
+
+  .slider{ position: relative; padding-bottom: 75%;}
+  .slider .swipe-wrap,
+  .slider>.img-box,.slider>.video-box{ 
+    position: absolute; top: 0; bottom: 0; left: 0; right: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .slider>.video-box video{
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .control{
+    position: absolute;
+    top: 0; bottom:0;
+    left: 0; right: 0;
+    z-index: 2;
+  }
+
+  .control .icon-m{
+    display: inline-block;
+    font-size: 60px;
+    width: 60px;
+    height: 60px;
+    border-radius: 1000px;
+    color: #fff;
+    position: absolute;
+    top: 50%; left: 50%;
+    -webkit-transform:translate(-50%,-50%);
+    background-color: rgba(0,0,0,.5);
+  }
+
+  .textarea-box{
+    height: 90px;
+  }
+
+  .textarea-box textarea{
+    font-size: 14px;
+    resize: none;
+    width: 100%;
+    height: 100%;
+    padding: 5px;
+
+  }
+
+
+
+  </style>
+  
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 发表渔获 -->
+  <div class="publish-video">
+    <!-- publish -->
+
+    <div class="textarea-box border">
+      <textarea name="videoUrl" placeholder="请粘贴优酷视频页URL"></textarea>
+    </div>
+    
+    <button id="videoInfoBtn" class="btn-fill btn-lg color-blue mt10">获取视频</button>
+
+    <div id="videoSlider" class="slider mt10 hidden">
+      <div class="video-box">
+        
+      </div>
+      <!-- <div class="img-box"><img id="logo" src=""></div> -->
+      <!-- <div class="control"><i id="playIcon" class="icon-m icon-play"></i></div> -->
+    </div>
+
+    <div id="videoDesc" class="textarea-box border mt10 hidden">
+      <textarea name="" placeholder="视频描述"></textarea>
+    </div>
+
+    <div id="tips" style="text-align:center; padding:10px;"><strong class="text-orange">想发炫酷布视频吗？请猛戳</strong></div>
+  </div>
+  <!-- 发表渔获 End -->
+</div>
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+
+    var urlParam = '';
+
+    var source_url,  video_title,  video_seconds,  videoid,  video_vid,   feed_type, pics;
+
+    var topic_id = api.pageParam['topic_id']
+
+    var videoUrl;
+
+    $('#videoInfoBtn').on('tap',  function() {
+
+      videoUrl = $('textarea[name=videoUrl]').val();
+      
+      if(videoUrl.replace(/\s+/g,'') === '') {
+        api.toast({
+          msg: '请输入视频地址',
+          duration:2000,
+          location: 'middle'
+        });
+
+        $('#videoSlider, #videoDesc').addClass('hidden');
+        
+        api.execScript({
+          name: 'publish-video',
+          script: 'changeSendStatus(false);'
+        });
+        return;
+      }
+
+      api.showProgress({
+          style: 'default',
+          animationType: 'fade',
+          title: '正在抓取视频信息...',
+          text: '再耐心等待一会',
+          modal: true
+      });
+
+      sendAjax(URLConfig('videoParse'), {'url' : videoUrl}, function(data, code, msg) {
+          api.hideProgress();
+          
+        if(code === 0) {
+
+            urlParam = data['url']
+
+            $('.video-box').html('<video controls poster="'+data['logo']+'" src="'+data['url']+'" preload="none">您的手机不支持本站视频播放</video>');
+
+            // $('#videoSlider').find('video').attr('src', data['url']).attr('poster', data['logo']);
+            $('#videoDesc').find('textarea').text(data['title']).removeClass('hidden');
+
+            $('#videoSlider, #videoDesc').removeClass('hidden');
+
+            source_url = data['url'];
+            video_title = data['title'];
+            video_seconds = data['seconds'];
+            videoid = data['videoid'];
+            video_vid = data['vid'];
+            pics = data['logo'];
+            feed_type = 2;
+
+            api.execScript({
+              name: 'publish-video',
+              script: 'changeSendStatus(true);'
+            });
+
+        }else{
+          api.toast({
+            msg: msg || '请求失败，稍后再试',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+    });
+    
+    $('#tips').on('tap',  function() {
+      var linkUrl = 'http://mp.weixin.qq.com/s?__biz=MzA4MTA2MTE1Nw==&mid=210623765&idx=1&sn=71f5fec9b859d991df3c0cc39f868673';
+      api.openWin({
+        name: 'adpics',
+        url: './adpics.html',
+        bounces : false,
+        pageParam: {'url': linkUrl, 'title' : '详情'}
+      });
+    });
+    
+    window.sendVideo = function() {
+      api.showProgress({
+        style: 'default',
+        animationType: 'fade',
+        title: '正在发送...',
+        text: '请稍等',
+        modal: false
+      });
+      
+
+      var videoDesc = $('#videoDesc').find('textarea').val();
+      
+      var videoUrl = $('textarea[name=videoUrl]').val();
+
+      var params = {
+        source_url : videoUrl,
+        video_title : videoDesc,
+        video_seconds : video_seconds,
+        videoid : videoid,
+        video_vid : video_vid,
+        feed_type : feed_type,
+        pics : [pics],
+        topic_id : topic_id,
+        video_url : source_url
+      }
+            
+      sendAjax(URLConfig('addFeed'), params, function(data, code, msg) {
+        api.hideProgress();
+        if(code === 0) {
+          //视频发送成功！
+          //刷新视频列表
+          api.execScript({
+            name: 'topic_detail',
+            frameName : 'topic_detail',
+            script: 'initdata();'
+          });
+
+          //卡券奖励检测
+          sendAjax(URLConfig('guaguaTimes'), null, function(datas, codes, msgs) {
+            if(codes === 0 && datas['times'] > 0) {
+              api.openFrame({
+                name: 'guagua_tip',
+                url : 'guagua_tip.html',
+                rect:{x:0,y:0,w:'auto',h:'auto'},
+                bgColor: 'rgba(0,0,0,0.0)',
+                bounces : false,
+                pageParam : {'times' : datas['times'], 'tops' : datas['tops']},
+                vScrollBarEnabled:true,
+                hScrollBarEnabled:true
+              });
+            }
+          });
+
+          api.closeWin();
+
+          
+        }else{
+          api.toast({
+            msg: msg || '发送失败，稍后再试',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+
+
+    }
+
+
+  }
+
+</script>
+</html>

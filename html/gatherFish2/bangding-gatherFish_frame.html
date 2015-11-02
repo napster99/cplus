@@ -1,0 +1,226 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/form.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <title>知道_鱼多多_找钓点，就用鱼多多</title>
+</head>
+<body>
+<div class="wrap">
+  <div class="form-page">
+    <!-- 表单 -->
+    <div class="form-row">
+        <input id="tel" type="tel" maxlength="11"/>
+    </div>
+
+    <div id="verCodeCon" class="form-row clearfix">
+      <div class="l">
+        <button type="button" id="send" class="btn-fill btn-lg color-blue">发送验证码</button>
+        <button type="button" id="sending" class="btn-fill btn-lg hidden"><span id="count">60</span>秒后重新发送</button>
+      </div>
+      <div class="r">
+        <input type="tel" id="verCode"  maxlength="4"/>
+      </div>
+    </div>
+
+    <div class="form-row mt20">
+        <button id="login" type="button" class="btn-fill btn-lg">立即绑定</button>
+    </div>
+
+    <!-- 表单end -->
+  </div>
+</div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+ apiready = function() {
+    // 设置ios7的标题栏字体变亮，全局用一个就行了
+    api.setStatusBarStyle({
+      style: 'dark'
+    });
+
+    api.addEventListener({
+      name:'viewappear'
+    },function(ret,err){
+      // 设置ios7的标题栏字体变亮，全局用一个就行了
+      api.setStatusBarStyle({
+        style: 'dark'
+      });
+      
+      $('#verCode').val('');
+    });
+
+
+    $('#private').on('click', function() {
+      api.openWin({
+        'name' : 'private',
+        'url' : './private.html',
+        'bounces' : false
+      });
+    });
+    
+
+    var header = $api.byId('header');
+    $api.fixIos7Bar(header);
+
+    var id = api.pageParam['id'];
+
+    var t = $api.getStorage('tel');
+    if(!$.isEmptyObject(t)) {
+      $('#tel').val(t);
+    }
+    
+    setTimeout(function() {
+      $('#tel').focus();
+    },500)
+
+    var isSend = false, o,count = 60;
+
+    $('#tel').on('keyup', function() {
+      $api.setStorage('tel', $(this).val());
+    });
+
+    $('#send').on('click',  function() {
+      if(isSend) return;
+      var tel = $('#tel').val();
+
+      if(!/^\d{11}$/.test(tel)) {
+        api.toast({
+          msg: '手机格式有误！',
+          duration:2000,
+          location: 'middle'
+        });
+
+        $('#tel').val('').focus();
+        return;
+      }
+      isSend = true;
+      sendCode(tel);
+    });
+
+    function sendCode(tel) {
+      $('#sending').removeClass('hidden');
+      $('#send').addClass('hidden');
+      $('#verCode').focus();
+      o = setInterval(function() {
+        count--;
+        if(count >=0) {
+          $('#count').text(count);
+        }else{
+          isSend = false;
+          $('#sending').addClass('hidden');
+          $('#send').removeClass('hidden');
+          clearInterval(o);
+          count = 60;
+          $('#count').text(count);
+        }
+      },1000);
+      
+      sendAjax(URLConfig('sendVerify'), {'mobile' : tel }, function(data, code, msg) {
+        if(code === 0) {
+        }else{
+           api.toast({
+            msg: msg || '请求数据出错',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+    }
+
+    $('#tel').blur(function() {
+      var tel = $(this).val();
+      if(/^\d{11}$/.test(tel) && $('#verCode').val()) {
+        $('#login').addClass('color-blue');
+      }else{
+        $('#login').removeClass('color-blue');
+      }
+    });
+
+    $('#tel').keyup(function() {
+      var tel = $(this).val();
+      var verCode = $('#verCode').val();
+      if(/^\d{11}$/.test(tel) && verCode && verCode.length >= 4) {
+        $('#login').addClass('color-blue');
+      }else{
+        $('#login').removeClass('color-blue');
+      }
+    });
+
+
+    $('#verCode').keyup(function() {
+      var tel = $('#tel').val();
+      var verCode = $('#verCode').val();
+      if(/^\d{11}$/.test(tel) && verCode && verCode.length >= 4) {
+        $('#login').addClass('color-blue');
+      }else{
+        $('#login').removeClass('color-blue');
+      }
+    });
+
+
+    $('#login').on('click', function() {
+      if(!$(this).hasClass('color-blue')) return;
+      var rurl = $('#login').attr('redirect_url');
+      if(rurl) {
+        api.openWin({
+          name: 'adpics',
+          url: '../adpics.html',
+          bounces : false,
+          pageParam: {'url': rurl, 'title' : '活动支付'}
+        });
+        return;
+      }
+
+
+      
+
+      sendAjax(URLConfig('bindOtherPhone'), {'mobile' : $('#tel').val() , 'verify' : $('#verCode').val() }, function(data, code, msg) {
+        if(code === 0) {
+          api.toast({
+            msg: '绑定成功',
+            duration:2000,
+            location: 'middle'
+          });
+
+          $('#verCodeCon').addClass('hidden');
+          
+          var params = {
+            'mobile' : $('#tel').val(),
+            'activity_id' : id
+          }
+
+          sendAjax(URLConfig('gatherAttend'), params, function(data, code, msg) {
+            if(code === 0) {
+              $('#login').text('前往支付').attr('redirect_url', data['redirect_url']);
+            }else{
+               api.toast({
+                msg: msg || '请求数据出错',
+                duration:2000,
+                location: 'middle'
+              });
+            }
+          });
+        }else{
+          api.toast({
+            msg: msg || '绑定失败，请稍后再试！',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+    });
+
+
+  }
+  
+</script>
+</html>

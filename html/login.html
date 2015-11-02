@@ -1,0 +1,217 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/form.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <title>知道_鱼多多_找钓点，就用鱼多多</title>
+  
+</head>
+<body>
+<div class="wrap">
+  <!-- 头部 -->
+  <div id="header" class="top-bar gray-style">
+    <div class="l" ontouchstart="api.closeWin();">
+      <div class="icon-text-h">
+        <i class="icon-m icon-arrow-left"></i><span>返回</span>
+      </div>
+    </div>
+    <div class="center-part">手机号登录</div>
+  </div>
+  <!-- 头部 end-->
+
+  <div class="form-page">
+    <!-- 表单 -->
+    <div class="form-row">
+        <input id="tel" type="tel" maxlength="11"/>
+    </div>
+
+    <div class="form-row clearfix">
+      <div class="l">
+        <button type="button" id="send" class="btn-fill btn-lg color-blue">发送验证码</button>
+        <button type="button" id="sending" class="btn-fill btn-lg hidden"><span id="count">60</span>秒后重新发送</button>
+      </div>
+      <div class="r">
+        <input type="tel" id="verCode"  maxlength="4"/>
+      </div>
+    </div>
+
+    <div class="form-row mt20">
+        <button id="login" type="button" class="btn-fill btn-lg">登录</button>
+    </div>
+
+    <p class="center">点击“登录”按钮，即表示您同意</p>
+    <p class="center text-blue" id="private">使用《服务条款和隐私声明》</p>
+    <!-- 表单end -->
+  </div>
+</div>
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+    // 设置ios7的标题栏字体变亮，全局用一个就行了
+    api.setStatusBarStyle({
+      style: 'dark'
+    });
+
+    api.addEventListener({
+      name:'viewappear'
+    },function(ret,err){
+      // 设置ios7的标题栏字体变亮，全局用一个就行了
+      api.setStatusBarStyle({
+        style: 'dark'
+      });
+      
+      $('#verCode').val('');
+    });
+
+
+    $('#private').on('click', function() {
+      api.openWin({
+        'name' : 'private',
+        'url' : './private.html',
+        'bounces' : false
+      });
+    });
+    
+
+    var header = $api.byId('header');
+    $api.fixIos7Bar(header);
+
+    var t = $api.getStorage('tel');
+    if(!$.isEmptyObject(t)) {
+      $('#tel').val(t);
+    }
+    
+    setTimeout(function() {
+      $('#tel').focus();
+    },500)
+
+    var isSend = false, o,count = 60;
+
+    $('#tel').on('keyup', function() {
+      $api.setStorage('tel', $(this).val());
+    });
+
+    $('#send').on('click',  function() {
+      if(isSend) return;
+      var tel = $('#tel').val();
+
+      if(!/^\d{11}$/.test(tel)) {
+        api.toast({
+          msg: '手机格式有误！',
+          duration:2000,
+          location: 'middle'
+        });
+
+        $('#tel').val('').focus();
+        return;
+      }
+      isSend = true;
+      sendCode(tel);
+    });
+
+    function sendCode(tel) {
+      $('#sending').removeClass('hidden');
+      $('#send').addClass('hidden');
+      $('#verCode').focus();
+      o = setInterval(function() {
+        count--;
+        if(count >=0) {
+          $('#count').text(count);
+        }else{
+          isSend = false;
+          $('#sending').addClass('hidden');
+          $('#send').removeClass('hidden');
+          clearInterval(o);
+          count = 60;
+          $('#count').text(count);
+        }
+      },1000);
+      
+      sendAjax(URLConfig('sendVerify'), {'mobile' : tel }, function(data, code, msg) {
+        if(code === 0) {
+          
+        }else{
+           api.toast({
+            msg: msg || '请求数据出错',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+    }
+
+    $('#tel').blur(function() {
+      var tel = $(this).val();
+      if(/^\d{11}$/.test(tel)) {
+        $('#login').addClass('color-blue');
+      }else{
+        $('#login').removeClass('color-blue');
+      }
+    });
+
+
+    $('#login').on('click', function() {
+      if(!$(this).hasClass('color-blue')) return;
+      var code = $('#verCode').val();
+      var tel = $('#tel').val();
+      var registrationId = $api.getStorage('registrationId');
+      sendAjax(URLConfig('login'), {'mobile' : tel , 'verify' : code, 'registration_id' : registrationId }, function(data, code, msg) {
+        isSend = false;
+        $('#sending').addClass('hidden');
+        $('#send').removeClass('hidden');
+        clearInterval(o);
+
+        if(code === 0) {
+          if(!data['nickname']) {
+          //跳转资料
+          api.openWin({
+            'name' : 'complete-info',
+            'url' : './complete-info.html',
+            'bounces' : false,
+            'pageParam' : {'nickname' : data['nickname'], 'avatar' : data['avatar'], 'mobile' : true},
+            'slidBackEnabled' : false
+          });
+          return;
+        }
+
+          $api.setStorage('user', data);
+          api.openWin({
+            'name' : 'index',
+            'url' : '../index-main.html',
+            'bounces' : false,
+            'scrollToTop' : false,
+            'slidBackEnabled' : false
+          });
+          //刷新页面 首页
+          api.execScript({
+            name: 'index',
+            frameName: 'index',
+            script: 'initIndexData();'
+          });
+        }else{
+          isSend = false;
+           api.toast({
+            msg: msg || '登录失败，请稍后再试！',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+
+
+    });
+
+
+  }
+  
+</script>
+</html>

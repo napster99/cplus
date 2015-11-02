@@ -1,0 +1,124 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <link rel="stylesheet" href="../../css/form.css">
+
+  <title>我_鱼多多_找钓点，就用鱼多多</title>
+</head>
+<body>
+<div class="wrap">
+   
+
+    <!-- 菜单列表 -->
+    <div class="text-list mt10 border-top border-bottom">
+      <ul>
+        <li name="version" class="border-bottom">
+          <span class="r"><span class="enter">0.0.0</span></span>
+          <i class="icon-m icon-tool text-green"></i>
+          <span class="field">当前版本</span>
+        </li>
+        <li name="clearCache" class="border-bottom">
+          <span class="r"><span class="enter">立即清除</span></span>
+          <i class="icon-m icon-clear text-blue"></i>
+          <span class="field">清除缓存</span>
+        </li>
+        <li class="border-bottom">
+          <span class="r"><a href="tel:400-905-7020" class="enter">400-905-7020</a></span>
+          <i class="icon-m icon-phone text-red"></i>
+          <span class="field">联系电话</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- 菜单列表 End -->
+    <div class="text-list" style="position: absolute; width: 100%; bottom: 0;">
+     <ul class="border-top bottom-one">
+        <li id="logout" class="border-bottom center">
+          退出登录
+        </li>
+      </ul>
+    </div>
+</div>
+</body>
+
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+  apiready = function() {
+    $('li[name=version]').find('span.enter').text('v'+api.appVersion);
+    $('li[name=clearCache]').on('tap',  function() {
+      if($(this).attr('clear')) return;
+      api.showProgress({
+          style: 'default',
+          animationType: 'fade',
+          title: '正在清除...',
+          text: '请稍等',
+          modal: false
+      });
+
+      api.clearCache(
+          function(ret,err){
+          }
+      );
+
+      setTimeout(function() {
+        api.hideProgress();
+        $('li[name=clearCache]').find('span.enter').text('已清除');
+        $('li[name=clearCache]').attr('clear', true);
+      }, 2000);
+
+    });
+
+
+
+    //登出
+    $('#logout').on('click', function() {
+      sendAjax(URLConfig('logout'), null, function(data, code, msg) {
+        if(code === 0) {
+          api.toast({
+            msg: '退出成功！',
+            duration:1000,
+            location: 'middle'
+          });
+          //清空User数据
+          $api.setStorage('user', null);
+
+          //刷新页面 首页
+          api.execScript({
+            name: 'index',
+            frameName: 'index',
+            script: 'initIndexData();'
+          });
+          
+          setTimeout(function() {
+            api.execScript({
+              name: 'index',
+              script: 'openIndexFrame(true);'
+            });
+            api.closeToWin({
+              name: 'index'
+            });
+          },1000);
+        }else{
+          api.toast({
+            msg: msg || '登出失败，请稍后再试！',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+    });
+
+
+    
+  }
+</script>
+</html>

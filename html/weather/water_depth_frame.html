@@ -1,0 +1,121 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+
+
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <title>水深</title>
+</head>
+<body>
+  <div class="wrap">
+    <div class="text-list mt10">
+        <ul class="border-top">
+          <li class="border-bottom">
+            <i id="clearThis" class="icon-m icon-close-fill"></i>
+            <div class="col2">
+              <div class="col" unit="m">
+                <select id="meter">
+                </select>
+              </div>
+              <div class="col" unit="cm">
+                <select id="centimeter">
+                </select>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+  </div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+  apiready = function() {
+
+    function initSelectData() {
+      var htmlStr = '<option></option>';
+      for(var i=0; i<10; i++) {
+        htmlStr += '<option value="'+i+'">' + i+'</option>';
+      }
+      $('#meter').html(htmlStr);
+
+      htmlStr = '<option></option>';
+      for(var i=0; i<10; i++) {
+        htmlStr += '<option value="'+i+'">' + i +'</option>';
+      }
+      $('#centimeter').html(htmlStr);
+    }
+
+    initSelectData();
+
+    if(api.pageParam['water_depth']) {
+      var meter = '', centimeter = '';
+      meter = api.pageParam['water_depth'].replace('米','').split('.')[0];
+      centimeter = api.pageParam['water_depth'].replace('米','').split('.')[1];
+      
+      var meterOpts = $('#meter').find('option');
+      for(var i=0; i<meterOpts.length; i++) {
+        if(meterOpts.eq(i).val() === meter) {
+          meterOpts.eq(i)[0].selected = true;
+        }
+      }
+
+      var centimeterOpts = $('#centimeter').find('option');
+      for(var i=0; i<centimeterOpts.length; i++) {
+        if(centimeterOpts.eq(i).val() === centimeter) {
+          centimeterOpts.eq(i)[0].selected = true;
+        }
+      }
+      
+    }
+
+    $('#meter, #centimeter').on('change',  function() {
+      var meter  = $('#meter').val();
+      var centimeter  = $('#centimeter').val();
+      if(meter || centimeter) {
+        api.execScript({
+          name: 'water_depth',
+          script: 'changeSaveStatus(true);'
+        });
+      }else{
+        api.execScript({
+          name: 'water_depth',
+          script: 'changeSaveStatus(false);'
+        });
+      }
+
+    });
+
+    $('#clearThis').on('tap', function() {
+      $('#meter').find('option').first().get(0).selected = true;
+      $('#centimeter').find('option').first().get(0).selected = true;
+      api.execScript({
+        name: 'water_depth',
+        script: 'changeSaveStatus(false);'
+      });
+    });
+   
+
+    window.saveWater_depth = function() {
+      var meter  = $('#meter').find(':selected').val();
+      var centimeter  = $('#centimeter').find(':selected').val();
+      api.execScript({
+        name : 'publish-fishery',
+        frameName: 'publish-fishery',
+        script: 'setWater_depthInfo("'+meter+'","'+centimeter+'");'
+      });
+
+      api.closeWin();
+    }
+
+  }
+
+</script>
+</html>

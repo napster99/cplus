@@ -1,0 +1,317 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../css/publish-fishery-photo.css">
+
+  <title>发表渔获--选择图片</title>
+  <style>
+      .opacity-half{
+        opacity: 0.5;
+      }
+      
+      .opacity-null{
+        opacity: 1;
+      }
+
+
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 发表渔获 -->
+  <div class="publish-fishery">
+    <div class="key-feild border-bottom">
+      <div class="photo-list col4">
+        <ul id="picList">
+          <li name="camera">
+            <div class="img-box"><i class="icon-m icon-camare"></i></div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <!-- 发表渔获 End -->
+
+</div>
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+
+    var selectedPicObj = {};
+    
+    api.showProgress({
+      style: 'default',
+      animationType: 'fade',
+      title: '正在读取相册',
+      text: '若照片太多，请多等等',
+      modal: false
+    });
+    var mediaScanner = api.require('UIMediaScanner');
+    mediaScanner.scan({
+        type: 'all',
+        count: 32,
+        sort: {
+            key: 'time',
+            order: 'desc'
+        }
+    }, function(ret,err){
+        if(ret){
+          renderPhotos(ret.list);
+        }
+    });
+    
+    api.addEventListener({
+        name: 'scrolltobottom'
+    }, function(){
+        mediaScanner.fetch(function(ret){
+          renderPhotos(ret.list);
+        });
+    });
+    
+    function renderPhotos(data) {
+      var htmlStr = '';
+      var len = data.length;
+      for(var i=0; i<len;i++) {
+        if(!data[i]['thumbPath']) continue;  //防止某些安卓手机没有缩略图返回
+        var curArr = data[i]['thumbPath'].split('/');
+        var lastName = curArr[curArr.length - 1]
+        .replace('.JPG','')
+        .replace('.PNG','')
+        .replace('.jpg','')
+        .replace('.png','');
+
+        if(lastName.indexOf('-') > -1){
+          var takePic = lastName.split('-');
+          lastName = 'camera'+takePic[takePic.length - 1];
+        }
+        htmlStr += '<li>'
+                +'  <div class="img-box"><img path="'+data[i]['path']+'" src="'+data[i]['thumbPath']+'"></div>'
+                +'  <div class="action" seleted="no" lastName="'+lastName+'" thumbPath="'+data[i]['thumbPath']+'" path="'+data[i]['path']+'"><i class="icon-m icon-check"></i></div>'
+                +'</li>'
+      }
+      api.hideProgress();
+      $('#picList').append(htmlStr);
+      try{
+        checkSelectedPics();
+      }catch(e){
+        var errmsg = e.message+'   '+JSON.stringify(e);
+        uploadErrLog('exception', errmsg);
+      }
+    }
+
+    function checkSelectedPics() {
+      var picsStr = $api.getStorage('photoes');
+      if(!picsStr) return;
+      var arrs = picsStr.split(',');
+
+      for(var i=0; i<arrs.length; i++) {
+        var curArr = arrs[i].split('/');
+        var lastName = curArr[curArr.length - 1]
+        .replace('.JPG','')
+        .replace('.PNG','')
+        .replace('.jpg','')
+        .replace('.png','');
+
+
+        if(lastName.indexOf('-') > -1){
+          var takePic = lastName.split('-');
+          lastName = takePic[takePic.length - 1];
+          lastName = 'camera'+takePic[takePic.length - 1];
+        }
+
+        if($api.getStorage('takePic')){
+          var firstEl = $('.action[lastName]').eq(0);
+          firstEl.addClass('active').attr('seleted', 'yes');
+          var thumbPath = firstEl.attr('thumbPath');
+          //存入selectedPicObj
+          selectedPicObj[thumbPath] = {
+            'path' : firstEl.attr('path'),
+            'thumbPath' : firstEl.attr('thumbPath')
+          }
+
+        }
+        var otherEl = $('.action[lastName='+lastName+']');
+        var thumbPath = otherEl.attr('thumbPath');
+        if(otherEl[0]) {
+          otherEl.addClass('active');
+          otherEl.attr('seleted', 'yes');
+          //存入selectedPicObj
+          selectedPicObj[thumbPath] = {
+            'path' : otherEl.attr('path'),
+            'thumbPath' : otherEl.attr('thumbPath')
+          }
+        }
+
+      }
+      renderResult();
+    }
+
+    $('#picList').on('tap', 'li', function(event) {
+      var name = $(this).attr('name');
+      if(name === 'camera') { //打开照相
+        api.getPicture({
+          sourceType: 'camera',
+          encodingType: 'jpg',
+          mediaValue: 'pic',
+          destinationType: 'url',
+          allowEdit: true,
+          quality: 100,
+          // targetWidth:100,
+          // targetHeight:100,
+          saveToPhotoAlbum: true
+        }, function(ret, err){
+            if(ret && ret.data) {
+              selectedPicObj['takePic'] = {
+                'thumbPath' : ret.data,
+                'path' : ret.data,
+                'takePic' : 'takePic'
+              }
+              $api.setStorage('takePic' , true);
+              completePics(true);
+            }
+        });
+      }else{ //预览图片
+        var curEl = $(event.target);
+        var picsTrueAttr = [], index = 0;
+        if(event.target.nodeName === 'IMG') {
+          if(curEl.parent().next().attr('seleted') == 'no') {
+            picsTrueAttr.push(curEl.attr('path'));
+          }else{
+            if($.isEmptyObject(selectedPicObj)) return;
+            var curImgthumPath = $(event.target).attr('src');  //thumbPath
+            var count = 0;
+            for(var i in selectedPicObj){
+              if(i === curImgthumPath) {
+                index = count;
+              }else{
+                count++;
+              }
+              picsTrueAttr.push(selectedPicObj[i]['path']);
+            }
+          }
+          api.openWin({
+            'name' : 'img-view',
+            'url' : 'img-view_frame.html' ,
+            'bounces': false,
+            'pageParam' : {'src' : picsTrueAttr, 'index' : index},
+            'bgColor': '#000',
+            'vScrollBarEnabled':false,
+            'hScrollBarEnabled':false
+          });
+        }
+      } 
+    });
+    
+
+    //选择 照片
+    $('#picList').on('tap', 'li .action', function() {
+      //Gif图片只允许单独发送
+      var curPath = $(this).attr('path');
+
+      var seleted = $(this).attr('seleted');
+      var lastName = $(this).attr('lastName');
+      var thumbPath = $(this).attr('thumbPath');
+      if(seleted === 'yes') {
+        $(this).removeClass('active');
+        $(this).attr('seleted', 'no');
+
+        //删除 selectedPicObj对应的照片
+        delete selectedPicObj[thumbPath];
+
+      }else{
+        if(curPath.indexOf('.gif') > -1) {
+          if(!$.isEmptyObject(selectedPicObj)) {
+            api.toast({msg: 'Gif图片只允许单独发送！' , duration:2000, location: 'middle'});
+            return;
+          }
+        }
+        
+        var lis = $('#picList').find('.action[seleted=yes]');
+        if(lis.length === 9) {
+          api.toast({msg: '你最多只能选择9张照片' , duration:2000, location: 'middle'});
+          return;
+        }
+        $(this).addClass('active');
+        $(this).attr('seleted', 'yes');
+
+        //增加 selectedPicObj对应的照片
+        selectedPicObj[thumbPath] = {
+          'path' : $(this).attr('path'),
+          'thumbPath' : $(this).attr('thumbPath')
+        }
+
+      }
+
+      renderResult();
+    }); 
+  
+
+    function renderResult() {
+      var lis = $('#picList').find('.action[seleted=yes]');
+      
+      if(lis.length > 0) {
+        api.execScript({
+          frameName: 'publish-fishery-photo_bottom',
+          script: 'renderResult("'+lis.length+'");'
+        });
+      }else{
+        api.execScript({
+          frameName: 'publish-fishery-photo_bottom',
+          script: 'renderResult();'
+        });
+      }
+    }
+
+    window.sendPicsToprview = function() {
+      if($.isEmptyObject(selectedPicObj)) return;
+      var picsTrueAttr = [];
+      var count = 0;
+      for(var i in selectedPicObj){
+        picsTrueAttr.push(selectedPicObj[i]['path']);
+      }
+      api.openWin({
+        'name' : 'img-view',
+        'url' : 'img-view_frame.html' ,
+        'bounces': false,
+        'pageParam' : {'src' : picsTrueAttr},
+        'bgColor': '#000',
+        'vScrollBarEnabled':false,
+        'hScrollBarEnabled':false
+      });
+    }
+
+    window.completePics = function(flag) {
+      if(!flag){
+        $api.setStorage('takePic',null);
+      }
+      api.execScript({
+        name : 'publish-fishery',
+        frameName: 'publish-fishery',
+        script: 'setImages('+JSON.stringify(selectedPicObj)+');'
+      });
+      
+      api.closeWin({
+        name: 'publish-fishery-photo',
+        animation: {
+          type: 'moveoin',
+          subType: 'from_top',
+          duration: 200
+        }
+      });
+    }
+
+
+  }
+</script>
+</html>

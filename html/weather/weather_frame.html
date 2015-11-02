@@ -1,0 +1,114 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <link rel="stylesheet" href="../../css/shop-detail-new.css">
+  <title>天气列表</title>
+  
+</head>
+<body>
+  <div class="wrap">
+    <div class="shop-detail">
+      <div class="fish-kind mb15 border-top body-white">
+        <ul id="fishList" class="border-bottom" >
+          <li class="border-bottom" id="0" name="晴天">'
+             <div class="clearfix">
+               <i class="icon-m icon-weather0"></i>
+               <h4>晴天</h4>
+             </div>
+           </li>
+           <li class="border-bottom" id="5" name="晴转多云">'
+             <div class="clearfix">
+               <i class="icon-m icon-weather5"></i>
+               <h4>晴转多云</h4>
+             </div>
+           </li>
+           <li class="border-bottom" id="4" name="多云">'
+             <div class="clearfix">
+               <i class="icon-m icon-weather4"></i>
+               <h4>多云</h4>
+             </div>
+           </li>
+           <li class="border-bottom" id="9" name="阴天">'
+             <div class="clearfix">
+               <i class="icon-m icon-weather9"></i>
+               <h4>阴天</h4>
+             </div>
+           </li>
+           <li class="border-bottom" id="13" name="小雨">'
+             <div class="clearfix">
+               <i class="icon-m icon-weather13"></i>
+               <h4>小雨</h4>
+             </div>
+           </li>
+           <li class="border-bottom" id="14" name="中雨">'
+             <div class="clearfix">
+               <i class="icon-m icon-weather14"></i>
+               <h4>中雨</h4>
+             </div>
+           </li>
+           <li class="border-bottom" id="15" name="大雨">'
+             <div class="clearfix">
+               <i class="icon-m icon-weather15"></i>
+               <h4>大雨</h4>
+             </div>
+           </li>
+           <li class="border-bottom" id="10" name="阵雨">'
+             <div class="clearfix">
+               <i class="icon-m icon-weather10"></i>
+               <h4>阵雨</h4>
+             </div>
+           </li>
+           <li class="border-bottom" id="11" name="雷阵雨">'
+             <div class="clearfix">
+               <i class="icon-m icon-weather11"></i>
+               <h4>雷阵雨</h4>
+             </div>
+           </li>
+           <li class="border-bottom" id="20" name="雨夹雪">'
+             <div class="clearfix">
+               <i class="icon-m icon-weather20"></i>
+               <h4>雨夹雪</h4>
+             </div>
+           </li>
+           <li class="border-bottom" id="22" name="下雪">'
+             <div class="clearfix">
+               <i class="icon-m icon-weather22"></i>
+               <h4>下雪</h4>
+             </div>
+           </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+  apiready = function() {
+
+    $('#fishList').on('click', 'li',  function() {
+      var id = this.id, name = $(this).attr('name');
+      
+      api.execScript({
+        name : 'publish-fishery',
+        frameName: 'publish-fishery',
+        script: 'setWeatherInfo("'+id+'","'+name+'");'
+      });
+
+      api.closeWin();
+      
+    });
+
+  }
+
+</script>
+</html>

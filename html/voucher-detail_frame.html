@@ -1,0 +1,261 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../css/payment.css">
+
+
+  <title>代金券详情_鱼多多_找钓点，就用鱼多多</title>
+  <style>
+    .myli{position: relative; padding-left: 35px !important;}
+    .myfont{position: absolute;left: 10px; color: #13ae24;}
+  </style>
+</head>
+<div class="wrap">
+
+  <!-- 支付 -->
+  <div class="payment">
+
+    <div class="user-b-info border-bottom">
+      <div class="avatar-box border"><i class="icon-m icon-shop"></i></div>
+      <div class="name" id="pondName"></div>
+      <div class="auth">
+        
+      </div>
+    </div>
+
+
+    <div class="form-list border-top border-bottom">
+      <ul>
+        <li class="border-bottom">
+          <span class="field">费用</span>
+          <div id="plusPrice" class="right-info"  unit="元">-15</div>
+          <div class="widget">
+            <input type="tel" id="totalPrice" placeholder="输入总花费">
+          </div>
+        </li>
+      </ul>    
+    </div>
+
+    <div class="text-list mt10 border-top border-bottom">
+
+      <ul id="couponList">
+        
+        <!-- <li class="border-bottom">
+          <span class="r">
+            <span class="enter"></span>
+          </span>
+          <span class="field"><strong class="text-orange">20元</strong> 代金券<small>（杭州通用）</small></span>
+        </li>  -->     
+      </ul>
+    </div>
+
+    <div class="btn-box">
+      <button id="sureBtn" class="btn-fill btn-lg">提交订单</button>
+    </div>
+
+
+    <p class="center text-blue" id="preferential">《优惠方式说明》</p>
+    
+    
+  </div>
+  <!-- 支付 End -->
+</div>
+</body>
+
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+    
+    var pond_id = api.pageParam['pond_id'];
+    var coupon_idsAttr = [];
+    var couponPrice = 0;
+
+    function getData(name, params, callback) {
+      sendAjax(URLConfig(name), params, function(data, code, msg) {
+        if(code === 0) {
+          renderData(data);
+        }else{
+          api.toast({msg: msg || '请求失败，稍后再试',duration:2000, location: 'middle'});
+        }
+      });
+    }
+
+    getData('getPayInfo', {'pond_id' : pond_id}, renderData);
+    
+    startLocation(function() {}, '100m');
+
+    function renderData(data) {
+      var htmlStr = '';
+      $('#pondName').text(data['name']);
+
+      if(data['level'] == 9) {
+        $('.auth').html('<div class="auth-lv1"><i class="icon-m icon-auth"></i>官方认证</div>');
+      }else if(data['level'] == 5){
+        $('.auth').html('<div class="auth-lv2"><i class="icon-m icon-auth"></i>钓友认证</div>');
+      }else if(data['level'] == 3) {
+        $('.auth').html('<div class="auth-lv3"><i class="icon-m icon-auth"></i>电话认证</div>');
+      }else{
+        $('.auth').html('<div class="auth-lv4"><i class="icon-m icon-auth"></i>未认证</div>');
+      }
+
+      data = data['coupon_list'];
+      for(var i=0; i<data.length; i++) {
+        var price = data[i]['discount'];
+        var name = data[i]['name'];
+        var unit = '元', type = '代金券';
+        if(data[i]['type'] == 0){
+          unit = '折';
+          type = '券';
+        }
+        var organization = '仅限本钓点可用'
+        if(data[i]['pond_id'] == 0) {
+          organization = data[i]['organization'];
+        }
+
+        htmlStr += '<li get="no" cid="'+data[i]['id']+'" class="border-bottom" type="'+data[i]['type']+'" price="'+price+'">'
+        +'  <span class="r">'
+        +'    <span class="enter"><i class="icon-m icon-checkbox"></i></span>'
+        +'  </span>'
+        if(data[i]['type'] == 0 && price == 0){
+          if(name) {
+            htmlStr += '  <span class="field"><strong class="text-orange">'+name+'</strong><small>（'+organization+'）</small></span>'
+          }else{
+            htmlStr += '  <span class="field"><strong class="text-orange">免单券</strong><small>（'+organization+'）</small></span>'
+          }
+          
+        }else{
+          if(name) {
+            htmlStr += '  <span class="field"><strong class="text-orange">'+name+'</strong><small>（'+organization+'）</small></span>'
+          }else{
+            htmlStr += '  <span class="field"><strong class="text-orange">'+price+unit+'</strong>'+type+'<small>（'+organization+'）</small></span>'
+          }
+          
+        }
+
+        htmlStr += '</li>'
+
+      }
+      $('#couponList').html(htmlStr);
+    }
+
+    $('#sureBtn').on('tap', function() {
+      var totalPrice = $('#totalPrice').val();
+      if(totalPrice === '') {
+        api.toast({msg: '请输入总费用！',duration:2000, location: 'middle'});
+        $('#totalPrice').focus();
+        return;
+      }
+      var coupon_id = $('#couponList').find('li[get=yes]').attr('cid');
+      var param = {'pond_id' : pond_id, 'amount' : totalPrice, 'id' : coupon_id}
+      
+      api.confirm({
+          title: '提示框',
+          msg: '是否向'+$('#pondName').text()+'提交订单，￥'+(totalPrice - couponPrice),
+          buttons:['取消', '提交订单']
+      },function(ret,err){
+          if(ret.buttonIndex == 2){
+            sendAjax(URLConfig('pay'), param, function(data, code, msg) {
+              if(code == 0) {
+                api.openWin({
+                  'name' : 'pay-result',
+                  'url' : './pay-result.html',
+                  'pageParam' : {'flag': 'success', 'params' : data, 'pond_id' : pond_id},
+                  'bounces' : false
+                });
+              }else{
+                api.openWin({
+                  'name' : 'pay-result',
+                  'url' : './pay-result.html',
+                  'pageParam' : {'msg': msg},
+                  'bounces' : false
+                });
+              }
+
+              var t = 500
+              if(api.systemType === 'android'){
+                t = 1000;
+              }
+              setTimeout(function() {
+                api.closeWin({'name' : 'voucher-detail'});
+              },t);
+
+            });
+          }
+      });
+    });
+
+
+    $('#totalPrice').on('keyup',  function() {
+
+      changePrice()
+
+      var totalPrice = $('#totalPrice').val();
+      var realPrice = totalPrice - couponPrice;
+      realPrice = realPrice < 0 ? 0 : realPrice;
+      if(totalPrice) {
+        $('#sureBtn').html('提交订单<strong>&yen;'+realPrice+'</strong>').addClass('color-blue');
+      }else{
+        $('#sureBtn').html('提交订单').removeClass('color-blue');
+      }
+    });
+
+    $('#couponList').on('tap', 'li', function() {
+      if(!$(this).find('i').hasClass('text-blue')) {
+        $('#couponList').find('i').removeClass('text-blue');
+        $('#couponList').find('li').attr('get', 'no');
+
+        $(this).find('i').addClass('text-blue');
+        $(this).attr('get','yes');
+      }else{
+        $('#couponList').find('i').removeClass('text-blue');
+        $('#couponList').find('li').attr('get', 'no');
+      }
+
+      changePrice();
+      $('#totalPrice').trigger('keyup');
+    });
+
+    function changePrice() {
+      var li = $('#couponList').find('li[get=yes]'), num=0;
+      var totalNum = Number($('#totalPrice').val());
+      if(li[0]) {
+        var type = li.attr('type');
+        num = Number(li.attr('price'));
+        if(type == 0) {
+          num = totalNum - Math.floor(totalNum * (num/10));
+        }
+      }
+      couponPrice = num;
+      $('#plusPrice').text('-'+num).removeClass('unfold');
+      if(num) {
+        $('#plusPrice').text('-'+num).addClass('unfold');
+      }else{
+        $('#plusPrice').text('-'+num).removeClass('unfold');    
+      }
+
+      
+    }
+
+
+    //
+    $('#preferential').on('tap',  function() {
+      api.openWin({
+        'name' : 'preferential',
+        'url' : './preferential.html',
+        'bounces' : false
+      });
+    })
+
+  }
+
+</script>
+</html>

@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <title>长度</title>
+</head>
+<body>
+  <div class="wrap">
+
+    <div class="text-list mt10">
+        <ul class="border-top">
+          <li class="border-bottom">
+            <i id="clearThis" class="icon-m icon-close-fill"></i>
+            <div class="col" unit="cm">
+              <select>
+              </select>
+            </div>
+          </li>
+        </ul>
+      </div>
+  </div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<!-- <script type="text/javascript" src="http://code.jquery.com/jquery-latest.js"></script> -->
+<script>
+  apiready = function() {
+   function initSelectData() {
+      var htmlStr = '<option></option>';
+      for(var i=1; i<200; i++) {
+        htmlStr += '<option value="'+i+'">' + i+'</option>';
+      }
+      $('select').html(htmlStr);
+    }
+
+    initSelectData();
+
+    if(api.pageParam['len']) {
+      var len  = api.pageParam['len'].replace('CM','');
+      $('select').find('option').eq(len)[0].selected = true;
+    }
+    
+    $('select').on('change',  function() {
+      var value = $(this).val();
+      if(value) {
+        api.execScript({
+          name: 'length',
+          script: 'changeSaveStatus(true);'
+        });
+      }else{
+        api.execScript({
+          name: 'length',
+          script: 'changeSaveStatus(false);'
+        });
+      }
+    });
+
+    $('#clearThis').on('tap', function() {
+      $('select').find('option').first().get(0).selected = true;
+      api.execScript({
+        name: 'length',
+        script: 'changeSaveStatus(false);'
+      });
+    });
+
+
+    window.saveLength = function() {
+      var length = $('select').find(':selected').val();
+      if(!/^\d+(\.\d+)?$/.test(length)) {
+        api.toast({
+          msg: '请输入数字',
+          duration:1000,
+          location: 'middle'
+        });
+        return;
+      }
+      api.execScript({
+        name : 'publish-fishery',
+        frameName: 'publish-fishery',
+        script: 'setLengthInfo("'+length+'");'
+      });
+
+      api.closeWin();
+    }
+   
+
+  }
+
+</script>
+</html>

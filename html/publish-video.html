@@ -1,0 +1,115 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <title>发表视频--填写内容</title>
+  <style>
+    .opacity-half{
+      opacity: 0.5;
+    }
+
+    .opacity-null{
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 头部 -->
+  <div id="header" class="top-bar gray-style">
+    <div class="l" id="back">
+      <div class="icon-text-h">
+        <span>取消</span>
+      </div>
+    </div>
+    <div id="mapIcon" class="icon-text-h r">
+      <span id="sendBtn" class="opacity-half">发送</span>
+    </div>
+  </div>
+  <!-- 头部 end-->
+
+</div>
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+    // 设置ios7的标题栏字体变亮，全局用一个就行了
+    api.setStatusBarStyle({
+      style: 'dark'
+    });
+
+    api.addEventListener({
+      name:'viewappear'
+    },function(ret,err){
+      // 设置ios7的标题栏字体变亮，全局用一个就行了
+      api.setStatusBarStyle({
+        style: 'dark'
+      });
+    });
+
+    $('#back').on('tap',  function() {
+      api.closeWin({
+        name: 'publish-video',
+        animation: {
+          type: 'reveal',
+          subType: 'from_top',
+          duration: 200
+        }
+      });
+    });
+
+
+    var header = $api.byId('header');
+    $api.fixIos7Bar(header);
+    function openFrame() {
+      api.openFrame({
+        name: 'publish-video',
+        url: './publish-video_frame.html',
+        bounces: false,
+        opaque: true,
+        allowEdit : true,
+        vScrollBarEnabled: true,
+        pageParam : {'topic_id' : api.pageParam['topic_id']},
+        rect: {
+          x: 0,
+          y: $('.top-bar').offset().height,
+          w: 'auto',
+          h: 'auto'
+        }
+      });
+    }
+
+    openFrame();
+
+    window.changeSendStatus = function(flag) {
+      if(flag) {
+        $('#sendBtn').removeClass('opacity-half').addClass('opacity-null');
+      }else{
+        $('#sendBtn').removeClass('opacity-null').addClass('opacity-half');
+      }
+    }
+    
+    $('#mapIcon').on('tap', function() {
+      if($('#sendBtn').hasClass('opacity-null')) {
+        api.execScript({
+          frameName: 'publish-video',
+          script: 'sendVideo();'
+        });
+
+      }
+    });
+    
+
+  }
+
+</script>
+</html>

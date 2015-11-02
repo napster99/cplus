@@ -1,0 +1,383 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../css/feed.css">
+  <title>刮奖</title>
+   <style type="text/css">
+      .scratch-box{
+        background-color: #fff;
+        border-radius: 5px;
+        overflow: hidden;
+        margin: 10px;
+      }
+
+      .scratch-box h3{
+        padding: 10px;
+        background-color: #5b5b7b;
+        color: #fff;
+      }
+
+      .scratch-box .canvas-area{
+        height: 150px;
+      }
+
+      .canvas-area .text-mask,.canvas-area .text-bottom{
+        position: absolute;
+        top: 50%; left: 0; right: 0;
+        text-align: center;
+        -webkit-transform:translateY(-50%); 
+        font-size: 26px;
+        font-weight: 700;
+        color: #aaa;
+        text-shadow: #fff 0 1px 0;
+      }
+
+      .roll-tips{
+        height: 36px;
+        line-height: 36px;
+        overflow: hidden;
+      }
+
+      .roll-tips li{
+        padding: 0 10px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+
+      .scratch-box button{
+        font-size: 16px;
+        padding: 10px;
+        text-align: center;
+        display: block;
+        width: 100%;
+        background-color: #10aeff;
+        color: #fff;
+      }
+
+
+      .innerDiv{
+        position: absolute; top: 50%; left: 50%; -webkit-transform: translate(-50%,-50%); line-height:22px; font-size: 18px;
+      }
+
+      #putIn li{background: #fff;}
+
+  </style>
+
+
+</head>
+<body style="overflow:hidden;">
+
+  <div class="wrap" style="overflow:hidden;">
+
+      <div class="roll-tips border-bottom">
+        <ul id="putIn" style="text-align:center;">
+        </ul>
+      </div>
+
+      <div name="con" class="scratch-box">
+        <h3>恭喜！您还有<span class="text-yellow"><span id="guaCount">0</span>次刮奖机会</span>，快来试试手气吧。</h3>  
+        <div class="canvas-area" style="position:relative;">
+          <div class="innerDiv">正在获取刮奖结果...
+          </div>
+          <canvas style="position:absolute; width:100%; height:100%;">你的APP不支持刮奖程序</canvas>
+          <div class="text-mask" style="z-index:2;">刮开图层</div>
+        </div>
+        <button id="theBtn" tapmode></button>
+      </div>
+  </div>
+
+
+  <div class="award-box hidden" >
+    <div class="sham-pic">
+      <div class="trophy">
+        <i class="icon-m icon-trophy"></i>
+        <i class="icon-m s1 icon-star-fill"></i>
+        <i class="icon-m s2 icon-star-fill"></i>
+        <i class="icon-m s3 icon-star-fill"></i>
+        <i class="icon-m s4 icon-star-fill"></i>
+      </div>
+    </div>
+    <div class="title">中奖啦</div>
+    <div class="award">
+      <span class="text-green" id="pondName"></span>-<span class="text-orange" id="things"></span><span>[1张]</span>
+    </div>
+  </div>
+
+
+</body>
+
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script src="../script/guagua.js"></script>
+<script>
+  
+  apiready = function() {
+    try{
+      var clear = false; 
+      var resultBack = false;
+      var isGua = false;
+
+      var times = api.pageParam['times'];
+      var tops = api.pageParam['tops'];
+      // data = {'times' : 0 }
+
+
+      function renderTops() {
+        var htmlStr = '';
+        for(var i=0; i<tops.length; i++) {
+          var price = tops[i]['coupon']['discount'];
+          var name = tops[i]['coupon']['name'];
+          var unit = '元', type = '代金券';
+          var organization = tops[i]['coupon']['organization'];
+          if(tops[i]['coupon']['type'] == 0){
+            unit = '折';
+            type = '券';
+          }
+
+          if(tops[i]['coupon']['discount'] == 0 && tops[i]['coupon']['type'] == 0){
+            unit = '';
+            type = '';
+            price = '免单券';
+          }
+
+          htmlStr += '<li>'
+          +'  <span class="name text-blue">'+tops[i]['nickname']+'</span>'
+          +'  刮中一张'
+          +'  <span class="location text-green">'+organization+'</span>-'
+          if(name) {
+            htmlStr += '  <span class="coupons text-orange">'+name+'</span>'
+          }else{
+            htmlStr += '  <span class="coupons text-orange">'+price+unit+type+'</span>'
+          }
+          htmlStr += '</li>'
+        }
+
+        $('#putIn').html(htmlStr);
+
+        var o;
+
+        if(o) {
+          clearInterval(o);
+        }
+
+        o = setInterval(function() {
+          var el = $('#putIn').find('li').eq(0);
+          turnOn(el);
+        },3000);
+
+      }
+
+      if(tops) {
+        renderTops();
+      }
+   
+      
+
+      $('#guaCount').text(times);
+      
+      if(times == 0) {
+        $('.text-mask').text('暂无刮奖机会');
+        $('#theBtn').text('赶紧去发渔获吧').attr('chance','no');
+        $('canvas').css('background-color','#ddd');
+        $('h3').html('对不起，您<span class="text-yellow">暂无刮奖机会</span>，快去发渔获吧。');
+      }else{
+        scratch.init(api.winWidth,150);
+        $('.text-mask').text('刮开图层');
+        $('#theBtn').text('一键刮开').attr('chance','yes');
+      }
+
+
+      $('.text-mask, canvas').on('touchmove', function() {
+        if($('.text-mask')[0] && times > 0) {
+          $('.text-mask').remove();
+        }else{
+          if(!isGua) {
+            getResultData(renderData);
+            isGua = true;
+          }
+        }
+      });
+
+
+      $('#theBtn').on('tap',  function() {
+        var chance = $(this).attr('chance');
+        if(chance === 'yes') {
+          if(!isGua) {
+            getResultData(renderData);
+            isGua = true;
+            clearAll();
+          }else{
+            clearAll();
+          }
+        }else{
+          api.openWin({
+            'name' : 'publish-fishery',
+            'url' : './publish-fishery.html',
+            'bounces':false,
+            'animation': {
+              'type': 'movein',
+              'subType': 'from_bottom',
+              'duration': 0
+            }
+          });
+        }
+      });
+
+
+      function turnOn(el) {
+        var h = el.height();
+        el.animate({'margin-top':-h+'px'},200,  function() {
+          $('#putIn').append(el);
+          el.css('margin-top',0);
+        });
+      }
+
+
+      function clearAll(flag) {
+        scratch.clearAll();
+        
+        if($('.text-mask')[0] || flag) {
+          $('.text-mask').remove();
+          getResult(flag);
+        }
+      }
+
+      function showResultTip() {
+        $('.award-box').removeClass('hidden');
+      }
+
+
+      window.getResult = function(flag) {
+        if(!clear) {
+          showResultTip();
+          clear = true;
+          setTimeout(function() {
+            $('.award-box').addClass('hidden');
+            if(flag) {
+              setTimeout(function() {
+                api.closeWin();
+              },1000);
+            }
+          },2000);
+        }
+      }
+
+      window.closeIt = function() {
+        if(isGua && resultBack) {
+          if(clear) {
+            api.closeWin();
+          }else{
+            clearAll(true);
+          }
+        }else{
+          api.closeWin();
+        }
+      }
+
+      function renderData(data) {
+        var id = data['id'];
+        var price = data['coupon']['discount'];
+        var name = data['coupon']['name'];
+        var unit = '元', type = '代金券';
+        if(data['coupon']['type'] == 0){
+          unit = '折';
+          type = '券';
+        }
+
+        if(data['coupon']['discount'] == 0 && data['coupon']['type'] == 0){
+          unit = '';
+          type = '';
+          price = '免单券';
+        }
+        
+        var organization = data['coupon']['organization'];
+
+        var cardId = data['card_id'];
+
+        var htmlStr = '';
+
+        if(data['type'] == 0 && price == 0) {
+          if(name) {
+            htmlStr += '  <span class="location text-green">'+organization+'</span>-'
+            +'<span class="coupons text-orange">'+name+'</span>'
+          }else{
+            htmlStr += '  <span class="location text-green">'+organization+'</span>-'
+            +'<span class="coupons text-orange">免单券</span>'
+          }
+          
+        }else{
+          if(name) {
+            htmlStr += '<span class="location text-green">'+organization+'</span>-'
+          +'<span class="coupons text-orange">'+name+'</span>&nbsp;'
+          }else{
+            htmlStr += '<span class="location text-green">'+organization+'</span>-'
+          +'<span class="coupons text-orange">'+price+unit+'</span>&nbsp;' + type
+          }
+          
+        }
+
+        $('.innerDiv').html(htmlStr);
+      }
+
+
+      function getResultData(callback) {
+        sendAjax(URLConfig('guagua'), null,  function(data, code, msg) {
+          
+          //  data = {
+          //   'times' : 2,
+          //   'id' : 2355,
+          //   'coupon' : {
+          //     'discount' : '8',
+          //     'type' : 0,
+          //     'organization' : '鱼多多'
+          //   },
+          //   'card_id' : 3423525
+          // }
+          
+          // code = 0;
+          
+          
+          if(code === 0) {
+
+            //渲染弹窗信息
+            $('#pondName').text(data['coupon']['organization']);
+
+
+            $('#things').text(data['coupon']['name']);
+
+            //更改刮奖次数
+            if(times == 1) {
+              $('h3').html('对不起，您<span class="text-yellow">暂无刮奖机会</span>，快去发渔获吧。');
+            }else if(times > 1) {
+              var rt = times - 1;
+              $('#guaCount').text(rt);
+            }
+            
+            resultBack = true;
+            callback(data);
+          }else{
+            isGua = false;
+            resultBack = false;
+            $('.innerDiv').html(msg);
+          }
+        });
+      }
+
+
+    }catch(e){
+      var errmsg = e.message+'   '+JSON.stringify(e);
+      uploadErrLog('刮刮卡>>>', errmsg);
+    }
+  }
+
+</script>
+</html>

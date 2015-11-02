@@ -1,0 +1,177 @@
+.voucher-list{
+  padding: 10px;
+}
+
+.voucher-list li{
+  margin-bottom: 10px;
+  min-height: 60px;
+  background-color: #fff;
+  padding: 10px 0;
+  position: relative;
+  overflow: hidden;  
+}
+
+.voucher-list li .superscript{
+  font-size: 12px;
+  color: #aaa;
+  background-color: #eee;
+  -webkit-transform:rotate(45deg);
+  padding: 3px 20px;
+  text-align: center;
+  position: absolute;
+  right: -18px; top: 10px;
+}
+
+.voucher-list li .superscript.active{
+  color: #FFF;
+  background-color: #FF8A00;
+}
+
+.voucher-list li .dot{
+  width: 0;
+  height: 100%;
+  border-right: 1px dotted #ddd;
+  position: absolute;
+  left: 80px; top: 0;
+  z-index: 3;
+}
+
+.voucher-list li .dot:before,
+.voucher-list li .dot:after,
+.voucher-list li div[class^="stamp"] i{
+  content: "";
+  display: block;
+  width: 6px; height: 6px;
+  border-radius: 1000px;
+  border: 1px solid #ddd;
+  background-color: #eee;
+}
+
+.voucher-list li .dot:before{
+  position: absolute;
+  top: -3px;
+  left: -3px;
+}
+
+.voucher-list li .dot:after{
+  position: absolute;
+  bottom: -3px;
+  left: -3px;
+}
+
+.voucher-list li div[class^="stamp"]{
+  position: absolute;
+  z-index: 3;
+  top: 0; bottom: 0;
+  padding-top: 1px;
+}
+
+.voucher-list li .stamp-left{
+  left: -3px;
+}
+.voucher-list li .stamp-right{
+  right: -3px;
+}
+
+.voucher-list li div[class^="stamp"] i{
+  margin-top: 3px;
+}
+
+
+
+.voucher-list .left-box{
+  width: 60px;
+  position: absolute;
+  left: 11px; top: 50%;
+  -webkit-transform: translateY(-50%);
+  text-align: center;
+}
+
+.voucher-list .img-box{
+  width: 40px;
+  height: 40px;
+  border-radius: 1000px;
+  background-color: #f4f4f4;
+  overflow: hidden;
+  display: inline-block;
+}
+
+.voucher-list .img-box .icon-m{
+  font-size: 30px;
+}
+
+.voucher-list .shop{
+  font-size: 14px;
+  padding: 5px 0;
+  line-height: 1.2;
+}
+
+
+
+.voucher-list .info{
+  margin: 0 10px 0 95px;
+  line-height: 1;
+  text-align: left;
+  min-height: 80px;
+  overflow: hidden;
+}
+
+.voucher-list .info .action{
+  font-size: 12px;
+  color: #09bb07;
+  padding: 8px 5px 0;
+  float: right;
+}
+
+
+.voucher-list .info .name{
+  font-size: 18px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding-top: 3px;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+.voucher-list .name strong{
+  font-size: 24px;
+}
+
+
+
+.voucher-list .info .time,
+.voucher-list .info .condition,
+.voucher-list .info .code{
+  color: #aaa;
+  font-size: 12px;
+  padding: 4px 0;
+}
+
+.voucher-list .info .time:before{
+  content: "有效期："
+}
+.voucher-list .info .condition:before{
+  content: "激活条件："
+}
+.voucher-list .info .code:before{
+  content: "券码："
+}
+
+/*.voucher-list .info .code{
+  font-size: 16px;
+  text-align: right;
+  float: right;
+  margin-top: 20px;
+  font-style: italic;
+  padding-right: 5px;
+}
+
+.voucher-list .info .code:before{
+  content: "券码：";
+  font-size: 12px;
+  color: #aaa;
+}*/
+
+
+

@@ -1,0 +1,1151 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="./css/base.css">
+  <link rel="stylesheet" href="./css/component.css">
+  <link rel="stylesheet" href="./css/index.css">
+  <link rel="stylesheet" href="./css/article.css">
+  <link rel="stylesheet" href="./css/font-icon.css">
+
+  <title>首页_鱼多多_找钓点，就用鱼多多</title>
+
+  <style>
+
+    /*数据过滤*/
+    .data-filter li{
+      float: left;
+      width: 33.333333%;
+      height: 41px;
+      line-height: 41px;
+      background-color: #fff;
+      font-size: 13px;
+      color: #888;
+      text-align: center;
+    }
+
+    .data-filter li .icon-m{
+      vertical-align: -1px;
+    }
+
+      #conditionList li.active,  #conditionList li.active .icon-m{color: #007aff;}
+ 
+  </style>
+</head>
+<body>
+  <!-- 头部 -->
+  <div id="header" class="top-bar clearfix">
+    <!-- 城市选择 -->
+    <div id="scan" name="scan" class="l" >
+      <div class="icon-text-v">
+        <i class="icon-m icon-scan"></i>
+        <div>扫一扫</div>
+      </div>
+    </div>
+
+    <div class="l hidden" id="changeCity">
+      <!-- <span id="curCity">--</span><i class="icon-m icon-fold"></i> -->
+      <div class="icon-text-h">
+        <span id="curCity">--</span><i class="icon-m icon-fold"></i>
+      </div>
+
+    </div>
+    
+    <!-- 消息 -->
+    <div id="message" class="r" name="message">
+      <div class="icon-text-v">
+        <i class="icon-m icon-message"><i id="newMsg" class="new-msg hidden"></i></i>
+        <div>消息</div>
+      </div>
+    </div>
+      
+    <div name="map" class="r hidden">
+      <div id="mapIcon" class="icon-text-h">
+        <i class="icon-m icon-map"></i><span>地图</span>
+      </div>
+      <!-- <div id="mapList" class="hidden"><i class="icon-m icon-list"></i>列表</div> -->
+    </div>
+    
+    <!-- 搜索 -->
+    <div id="feedTitle" class="center-part hidden">
+      <div class="tab">
+        <ul>
+          <li class="active">渔获</li>
+          <li>话题</li>
+        </ul>
+      </div>
+    </div>
+
+    <div id="pondTitle" class="center-part hiddens">
+      <div class="tab">
+        <ul>
+          <li class="active">钓点</li>
+          <li>收藏</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <!-- 头部 end-->
+
+  <!-- 筛选条件 -->
+  <div id="conditionList" class="data-filter border-bottom hidden">
+    <ul class="col-3 clearfix">
+      <li class="border-right" name="city"><span id="placeTitle">全城</span><i class="icon-m icon-arrow-down"></i></li>
+      <li class="border-right" name="sort"><span id="sortTitle">智能排序</span><i class="icon-m icon-arrow-down"></i></li>
+      <li name="filter">筛选<i class="icon-m icon-arrow-down"></i></li>
+    </ul>
+  </div>
+  <!-- 筛选条件 end-->
+
+  <!-- 头部-资讯 hidden -->
+  <div id="found" class="top-bar hidden">
+    <div class="center-part">发现</div>
+  </div>
+  <!-- 头部-资讯 end-->
+
+
+  <!-- 头部-我 hidden -->
+  <div id="my" class="top-bar hidden" style="position:relative;">
+
+    <div name="scan" class="l">
+      <div class="icon-text-v">
+        <i class="icon-m icon-scan"></i>
+        <div>扫一扫</div>
+      </div>
+    </div>
+    <!-- 签到 -->
+
+    <div id="addNewFriend" class="r">
+      <div class="icon-text-v">
+        <i class="icon-m icon-user-add"></i>
+        <div>加好友</div>
+      </div>
+    </div>
+
+    <div class="center-part">我</div>
+  </div>
+  <!-- 头部-我 end-->
+
+  <!-- 底部 -->
+  <div id="footer" class="footer-bar">
+    <ul class="border-top">
+      <li name="index">
+        <div class="icon-box">
+          <i class="icon-m icon-linear icon-home"></i>
+          <i class="icon-m icon-home-fill"></i>
+        </div>
+        <div>渔获</div>
+      </li>
+  
+
+      <li name="pond">
+        <div class="icon-box">
+          <i class="icon-m icon-linear icon-here"></i>
+          <i class="icon-m icon-here-fill"></i>
+        </div>
+        <div>钓点</div>
+      </li>
+      <li name="addFeed" class="publish">
+        <i class="icon-m icon-add"></i>
+      </li>
+      <li name="found">
+        <div class="icon-box">
+          <i class="icon-m icon-linear icon-compass"></i>
+          <i class="icon-m icon-compass-fill"></i>
+        </div>
+        <div>发现</div>
+      </li>
+      <li name="my">
+        <div class="icon-box">
+          <i class="icon-m icon-linear icon-user"></i>
+          <i class="icon-m icon-user-fill"></i>
+        </div>
+        <div>我</div>
+      </li>
+    </ul>
+  </div>
+  <!-- 底部 -->
+
+<div id="allmap"></div>
+
+</body>
+<script src="./script/api.js"></script>
+<script src="./script/zepto.min.js"></script>
+<script src="./script/common.js"></script>
+<!-- <script src="http://api.map.baidu.com/api?type=quick&ak=hPT9U6iFzQbk9tuytSAqIQLe&v=1.0"></script> -->
+<script src="http://webapi.amap.com/maps?v=1.3&key=425928309ed735359972d7edb1534ff1"></script>
+
+<script>
+
+// 425928309ed735359972d7edb1534ff1
+  /* 首页头部和底部 */
+  apiready = function() {
+    api.removeLaunchView();
+   
+    // 设置ios7的标题栏字体变亮，全局用一个就行了
+    api.setStatusBarStyle({
+      style: 'light'
+    });
+
+    api.addEventListener({
+      name:'viewappear'
+    },function(ret,err){
+      // 设置ios7的标题栏字体变亮，全局用一个就行了
+      api.setStatusBarStyle({
+        style: 'light'
+      });
+    });
+
+    
+
+
+
+    var o1;
+
+    //轮询获取消息
+    if(o1){
+      clearInterval(o1);
+    }
+    
+    o1 = setInterval(function() {
+      sendAjax(URLConfig('msgNew'), null, function(data, code, msg) {
+        if(code == 0) {
+          var newsCount = Number(data);
+          if(newsCount > 0) {
+            $('#newMsg').removeClass('hidden');
+          }else{
+            $('#newMsg').addClass('hidden');
+          }
+        }
+      });
+    },10*1000);
+    
+    //填写定位信息
+    var mapInfo = $api.getStorage('mapInfo');
+    if(!$.isEmptyObject(mapInfo)){
+      var fontLen = mapInfo['parent_name'].length;
+
+      // $('#curCity').text(fontLen*16);      
+
+      $('#curCity').text(mapInfo['parent_name']);
+    }else{
+      $('#curCity').text('未知');
+    }
+
+
+    var header = $api.byId('header');
+    var found = $api.byId('found');
+    var my = $api.byId('my');
+    $api.fixIos7Bar(header);
+    $api.fixIos7Bar(found);
+    $api.fixIos7Bar(my);
+
+    var headerPos = $api.offset(header);
+
+    
+
+    var footer = $api.byId('footer');
+    var footerPos = $api.offset(footer);
+    var conditionList = $api.byId('conditionList');
+    
+    var mainPosH = api.winHeight - headerPos.h - footerPos.h;
+    var curName = '';
+    var frameOpend = {};
+    var curCondiName = '';
+    
+    //资讯详情
+    var infoDetailPageOpened = false, curInfoId = '';
+
+    var y = headerPos.h;
+
+    api.addEventListener({
+      name:'keyback'
+    },function(ret,err){
+      api.closeWidget({
+        id: 'A6989041790790',
+        retData: {name:'closeWidget'},
+        animation: {
+            type: 'flip',
+            subType: 'from_bottom',
+            duration: 500
+        }
+      });
+    })
+
+    $('#footer').on('touchstart',  'li',  function(event, param) {
+      var name = $(this).attr('name');
+      if(name === 'addFeed') {
+        authInfo(function(data, code, msg) {
+          if(code === 2) {
+            showLoginConfirm();  
+          }else if(code === 0){
+
+            var firstSendFeed = $api.getStorage('firstSendFeed');
+
+            if(!firstSendFeed && api.systemType === 'ios') {
+              api.confirm({
+                title: '相册权限被禁用？',
+                msg: '在发表之前确保该应用已对相册有访问权限，若未允许请在iPhone的“设置-隐私-照片和相机”中允许鱼多多访问？',
+                buttons:['知道了']
+              },function(ret,err){
+                if(ret.buttonIndex == 1){
+                  $api.setStorage('firstSendFeed', true);
+                  api.openWin({
+                    'name' : 'publish-fishery',
+                    'url' : './html/publish-fishery.html',
+                    'bounces':false,
+                    'animation': {
+                      'type': 'movein',
+                      'subType': 'from_bottom',
+                      'duration': 0
+                    }
+                  });
+                }
+              });
+            }else{
+              api.openWin({
+                'name' : 'publish-fishery',
+                'url' : './html/publish-fishery.html',
+                'bounces':false,
+                'animation': {
+                  'type': 'movein',
+                  'subType': 'from_bottom',
+                  'duration': 0
+                }
+              });
+            }
+
+            
+
+
+          }
+        });
+        return;
+      }
+
+      if(name === 'index') {
+
+        $('#feedTitle').find('li.active').removeClass('active');
+        $('#feedTitle').find('li').first().addClass('active');
+        
+        api.setFrameAttr({
+          'name' : 'topic',
+          'hidden' : true
+        });
+        api.setFrameAttr({
+          'name' : 'index',
+          'hidden' : false
+        });
+      }
+
+      var user = $api.getStorage('user');
+      if(name === 'my' && $.isEmptyObject(user) && !param) {
+        showLoginConfirm();
+        return;
+      }
+
+      if(name !== curName) {
+        initFooterStyle();
+        $(this).addClass('active');
+      }
+
+      if(name !== curName) {
+        api.setFrameAttr({
+          'name' : 'index',
+          'hidden' : true
+        });
+
+        api.setFrameAttr({
+          'name' : 'found',
+          'hidden' : true
+        });
+
+        api.setFrameAttr({
+          'name' : 'pond',
+          'hidden' : true
+        });
+
+        //重置按钮
+        $('#feedTitle').find('li.active').removeClass('active');
+        $('#feedTitle').find('li').first().addClass('active');
+        $('#pondTitle').find('li.active').removeClass('active');
+        $('#pondTitle').find('li').first().addClass('active');
+
+        api.setFrameAttr({
+          'name' : 'topic',
+          'hidden' : true
+        });
+
+        api.setFrameAttr({
+          'name' : 'pond-my',
+          'hidden' : true
+        });
+
+        // api.setFrameAttr({
+        //   'name' : 'tools',
+        //   'hidden' : true
+        // });
+
+        api.setFrameAttr({
+          'name' : 'my',
+          'hidden' : true
+        });
+        switchFrame($(this).index(), name, param);
+        curName = name;
+      }
+
+    })
+
+    function initFooterStyle() {
+      $('#footer').find('li.active').removeClass('active');
+    }
+
+
+
+
+    window.openIndexFrame = function(data) {
+      if(data) {
+        $('#footer').find('li[name=index]').trigger('touchstart',{'logout':true});
+      }else{
+        //默认打开首页
+        $('#footer').find('li[name=index]').trigger('touchstart');
+      }
+
+      initFooterStyle();
+      $('#footer').find('li[name=index]').addClass('active');
+    }
+
+    openIndexFrame();
+
+
+
+    // // api.setWinAttr({
+    // //   bounces: false,
+    // //   bgColor: '#fff',
+    // //   vScrollBarEnabled:true,
+    // //   hScrollBarEnabled:true,
+    // //   scaleEnabled:true,
+    // //   slidBackEnabled:false
+    // // });
+
+    // var pondPageOpend = false;
+    
+    /* 切换Frame */
+    function switchFrame(index, name, param) {
+      //关闭放鱼头条frame
+      api.closeFrame({
+        'name' : 'putin'
+      });
+
+      //关闭精选优惠frame
+      api.closeFrame({
+        'name' : 'favorable'
+      });
+
+      //关闭地图
+      // $('#mapList').trigger('click');
+      $('#header, #found, #pond, #my, #conditionList').addClass('hidden');
+      $('#scan, #changeCity').addClass('hidden');
+      switch(index) {
+        case 0:   //首页
+          $('#header, div[name=message]').removeClass('hidden');
+          $('div[name=map]').addClass('hidden');
+          $('#feedTitle').removeClass('hidden');
+          $('#pondTitle').addClass('hidden');
+          $('#scan').removeClass('hidden');
+          break;
+        case 2: //资讯
+          // $('#found').removeClass('hidden');
+          break;
+        case 1:  // 钓点
+          $('#header, div[name=map]').removeClass('hidden');
+          $('div[name=message]').addClass('hidden');
+          $('#conditionList').removeClass('hidden');
+          $('#feedTitle').addClass('hidden');
+          $('#pondTitle').removeClass('hidden');
+          $('#changeCity').removeClass('hidden');
+          pondPageOpend = true;
+          break;
+        case 3: //工具
+          $('#found').removeClass('hidden');
+          break;
+        case 4: //个人中心
+          $('#my').removeClass('hidden');
+          break;
+      }
+      
+
+      var rect = {};
+      if(index === 1) {
+        var condiPos = $api.offset(conditionList);
+        api.setFrameAttr({
+          'name' : 'index',
+          'hidden' : true
+        })
+        rect = {x:0, y:headerPos.h + condiPos.h, w:'auto', h:mainPosH - condiPos.h};
+      }else {
+        rect = {x:0, y:y, w:'auto', h:mainPosH}
+      }
+      if(!frameOpend[name]) {
+        var options = {
+          name: name,
+          url : 'html/'+name+'_frame.html',
+          rect:rect,
+          bgColor: 'rgba(0,0,0,0)',
+          pageParam : param,
+          vScrollBarEnabled:true,
+          hScrollBarEnabled:true
+        }
+
+        if(index === 3) {
+          options['bounces'] = false;
+        }
+
+        options['scrollToTop'] = false;
+
+        if(name === 'index' || name === 'pond') {
+          options['scrollToTop'] = true;
+        }
+
+        api.openFrame(options);
+
+        frameOpend[name] = true;
+
+        if(name === 'pond') {
+          var options = {
+            name: 'condition',
+            url: './html/condition.html',
+            rect:{
+                x:0,
+                y:headerPos.h + $('#conditionList').height(),
+                w:'auto',
+                h:'auto'
+            },
+            bounces: false,
+            bgColor: 'rgba(0,0,0,0.5)',
+            vScrollBarEnabled:false,
+            hScrollBarEnabled:false
+          }
+          //打开筛选条件面板
+  		    api.openFrame(options);
+
+  		    api.setFrameAttr({
+  		      'name' : 'condition',
+  		      'hidden' : true
+  		    });
+
+        }
+      }else{
+        api.setFrameAttr({
+          'name' : name,
+          'hidden' : false
+        });
+
+        //触发天气界面初始化
+        if(index === 3) {
+          api.execScript({
+            name: 'tools',
+            script: 'fishNum();'
+          });
+        }
+      }
+
+    }
+
+    // authInfo(function(data, code, msg) {
+    //   if(code === 0) {
+    //     $api.setStorage('user', data);
+    //   }
+    // });
+
+
+    //打开资讯详情
+    window.openInfoDetail = function(id) {
+
+      if(infoDetailPageOpened) {
+
+        if(curInfoId != id) {
+          //通知文章详情页 更新记录
+          api.execScript({
+            name: 'detail',
+            script: 'updateContent("'+id+'");'
+          });
+
+          curInfoId = id;
+        }
+        
+      }
+
+
+      api.openWin({
+        name: 'detail',
+        url: './html/found-details.html',
+        pageParam: {'id': id},
+        bounces :false
+      });
+
+      infoDetailPageOpened = true;
+
+      
+      
+    }
+
+
+    
+    //钓点列表筛选 napster
+    $('#conditionList').on('tap', 'li', function() {
+      var name = $(this).attr('name');
+      $('#conditionList').find('li.active').removeClass('active');
+      if(name != curCondiName) {
+        $(this).parents('.condition-list').find('li').removeClass('active');
+        $(this).addClass('active');
+        curCondiName = name;
+        api.execScript({
+          frameName: 'condition',
+          script: 'openCondition("'+$(this).attr('name')+'");'
+        });
+        api.setFrameAttr({
+          'name' : 'condition',
+          'hidden' : false
+        });
+      }else{
+        closeConditionPanel();
+      } 
+
+    });
+
+    function closeConditionPanel() {
+      api.setFrameAttr({
+        'name' : 'condition',
+        'hidden' : true
+      });
+      $(this).removeClass('active');
+      curCondiName = '';
+    }
+
+    //筛选反馈
+    window.condiBack = function() {
+      $('#conditionList').find('li.active').removeClass('active');
+      curCondiName = '';
+    }
+
+
+    $('#clearInput').on('touchstart', function() {
+      $('#search').val('');
+      $(this).addClass('hidden');
+    });
+
+    //搜索
+    $('#search').on('keyup',  function(event) {
+      var q = $(this).val(), which = event.keyCode || event.which;
+
+      if($(this).val() != '') {
+        $('#clearInput').removeClass('hidden');
+      }else{
+        $('#clearInput').addClass('hidden');
+      }
+
+      if(event.keyCode === 13) {
+        //关闭地图
+        // $('#mapList').trigger('click');
+
+        $('#footer').find('li[name=pond]').trigger('touchstart',{'search' :  true, 'q' : q});
+
+        initFooterStyle();
+        // $('#footer').find('li[name=pond]').addClass('active');
+     
+
+
+        if(pondPageOpend) { //打开过的
+          api.execScript({
+            frameName: 'pond',
+            script: 'searchFunc("'+q+'");'
+          })
+        }
+      }
+    }).on('click',  function() {
+      //关闭筛选
+      closeConditionPanel();
+    });
+
+
+    //精选优惠
+    window.openFavorableFrame = function() {
+      api.openFrame({
+        name: 'favorable',
+        url: './html/favorable.html',
+        rect:{x:0, y:y, w:'auto', h:mainPosH},
+        // pageParam: {'id': id},
+        bounces: false,
+        bgColor: 'rgba(0,0,0,0)',
+        vScrollBarEnabled:true,
+        hScrollBarEnabled:true
+      });
+    }
+
+    //知道列表
+    window.openInfoFrame = function() {
+      $('#footer').find('li[name=found]').trigger('touchstart');
+      initFooterStyle();
+      $('#footer').find('li[name=found]').addClass('active');
+    }
+
+    var isMapOpend = false;
+    
+    
+    //显示地图
+    $('div[name=map]').on('touchstart',  function() {
+      api.openWin({
+        'name' : 'map',
+        'url' : './html/map.html',
+        'bounces' : false,
+        'vScrollBarEnabled' : false,
+        'hScrollBarEnabled' : false
+      });
+      return false;
+    });
+    
+    window.showSignReward = function() {
+      //++++++++++++++奖励++++++++++++++
+      var signReward = $api.getStorage('signReward');
+      if(!$.isEmptyObject(signReward)) {
+        if(signReward['exp']) {
+          openRewarbTip({
+            'gold' : signReward['gold'],
+            'exp' : signReward['exp'],
+            'tasks' : signReward['tasks'],
+            'name' : '签到奖励'
+          }, './html/rewarbTip_frame.html')
+        }
+        $api.setStorage('signReward', null);
+      }
+      //++++++++++++++奖励++++++++++++++
+    }
+
+    
+
+
+    //检测是否签到，自动弹出
+    if(!api.pageParam['guangguang']) {
+      initSignAgain(true);
+    }
+    
+    // function initSignFunc(auto) {
+
+    //   //卡券奖励检测
+    //   sendAjax(URLConfig('checkAward'), null, function(datas, codes, msgs) {
+    //     if(codes === 0) {
+    //       var price = datas['coupon']['discount'];
+    //       var unit = '元', type = '代金券';
+    //       if(datas['coupon']['type'] == 0){
+    //         unit = '折';
+    //         type = '券';
+    //       }
+
+    //       if(datas['coupon']['discount'] == 0 && datas['coupon']['type'] == 0){
+    //         type = '';
+    //         unit = '';
+    //         price = '免单券';
+    //       }
+
+    //       var text = '恭喜获取了一张 '+price+unit+' '+type+'，到卡券包看看~';
+    //       api.confirm({
+    //           title: '提示框',
+    //           msg: text,
+    //           buttons:['取消', '确定']
+    //       },function(ret,err){
+    //           if(ret.buttonIndex == 2){
+    //             api.openWin({
+    //               'name' : 'coupon',
+    //               'url' : './html/my/coupon.html'
+    //             });
+    //             initSignAgain(auto);
+    //           }else{
+    //             initSignAgain(auto);
+    //           }
+    //       });
+    //     }else{
+    //       initSignAgain(auto);
+    //     }
+    //   });
+    
+    // }
+    
+    function initSignAgain(auto) {
+      sendAjax(URLConfig('sign'), null, function(data, code, msg) {
+        if(!auto || ( auto &&　code === 0)) {
+          var user = $api.getStorage('user');
+          if(!$.isEmptyObject(user)) {
+            api.openFrame({
+              name: 'sign',
+              url : './html/sigin_frame.html',
+              rect:{x:0,y:0,w:'auto',h:'auto'},
+              bgColor: 'rgba(0,0,0,0.0)',
+              pageParam : data,
+              bounces : false,
+              vScrollBarEnabled:true,
+              hScrollBarEnabled:true
+            });
+          }
+        }
+      });
+    }
+
+
+    $('#message').on('click',  function() {
+      authInfo(function(data, code, msg) {
+        if(code === 2) {
+          showLoginConfirm();  
+        }else if(code === 0){
+          $('#newMsg').addClass('hidden');
+          api.openWin({
+            'name' : 'message',
+            'url' : './html/message.html',
+            'vScrollBarEnabled' : true,
+            'hScrollBarEnabled' : true
+          });
+        }
+      });
+    });
+
+
+    //切换城市
+    //http://api.map.baidu.com/geocoder/v2/?ak=d1BySee8iOi6NzP06jmgfFOU&location=29.897445,120.331398&output=json&qq-pf-to=pcqq.group
+    $('#changeCity').on('touchstart',  function() {
+      var mapInfo = $api.getStorage('mapInfo');
+      var curCity = $.isEmptyObject(mapInfo) ?  '上海' : mapInfo['parent_name'];
+
+      api.openWin({
+        name : 'changecity',
+        url : './html/changecity.html',
+        pageParam : {'currentCity' : curCity},
+        bounces : false,
+        vScrollBarEnabled : false,
+        animation: {
+          type: 'movein',
+          subType: 'from_bottom',
+          duration: 0
+        }
+      });
+
+
+      //关闭筛选
+      closeConditionPanel();
+
+    });
+    
+    //切换城市
+    //http://api.map.baidu.com/geocoder/v2/?ak=d1BySee8iOi6NzP06jmgfFOU&location=29.897445,120.331398&output=json&qq-pf-to=pcqq.group
+
+    window.openChangeCityWin = function(flag) {
+
+      var mapInfo = $api.getStorage('mapInfo');
+      var curCity = $.isEmptyObject(mapInfo) ?  '上海' : mapInfo['parent_name'];
+
+      api.openWin({
+        name : 'changecity',
+        url : './html/changecity.html',
+        pageParam : {'currentCity' : curCity},
+        bounces : false,
+        vScrollBarEnabled : false,
+        animation: {
+          type: 'movein',
+          subType: 'from_bottom',
+          duration: 0
+        }
+      });
+      if(!flag){
+        //关闭筛选
+        closeConditionPanel();
+      }
+
+    }
+
+    window.changecity = function(code, city) {
+      $('#curCity').text(city);
+      $api.setStorage('mapInfo', {
+        'parent_code' : code,
+        'parent_name' : city,
+        'area_code' : code,
+        'area_name' : city
+      });
+      
+      $('#placeTitle').text('全城');
+      
+      //刷新钓点列表
+      api.execScript({
+        frameName : 'pond',
+        script : 'initPondData();'
+      });
+
+      //刷新钓点
+      api.execScript({
+        frameName : 'condition',
+        script : 'getConfigData();'
+      });
+
+      //刷新地图钓点
+      api.execScript({
+        name : 'map',
+        frameName : 'map_h5',
+        script : 'getConfigData();'
+      });
+
+      //刷新首页
+      api.execScript({
+        frameName: 'index',
+        script: 'initIndexData();'
+      });
+
+      //刷新天气 TODO
+      api.execScript({
+        name : 'tools',
+        script : 'initTools();'
+      });   
+
+      //刷新精选优惠
+      api.execScript({
+        frameName : 'favorable',
+        script : 'favorableInit();'
+      });      
+    }
+
+
+    //添加好友
+    $('#addNewFriend').on('tap',  function() {
+      api.openWin({
+        'name' : 'invite',
+        'url' : './html/my/invite.html'
+      });
+    });
+
+    //扫一扫
+    $('div[name=scan]').on('tap',  function() {
+      var scanner = api.require('FNScanner');
+      var scanner2 = api.require('scanner');
+      if(scanner) {
+        scanner.openScanner({
+            sound: 'widget://res/saoma.wav',
+            autoLight: false,
+            saveToAlbum: false,
+            saveImg: {
+                path: '',
+                w: 200,
+                h: 200
+            }
+        },function(ret,err) {
+          if(ret.eventType == 'success') {
+            scannerFn(ret['content']);
+          }
+        });
+      }else{
+        scanner2.open(function(ret,err) {
+          scannerFn(ret.msg)
+        });
+      }
+      
+  
+    });
+
+
+    function scannerFn(path) {
+      sendAjax(URLConfig('qrDecode'), {'qrcode' : path}, function(data, code, msg) {
+            if(code === 0) {
+              if(data.indexOf('shanggoula://') > -1 && data.indexOf('user/qrcode') > -1) {
+                //推广
+                var uid = data.split('=')[1];
+                sendAjax(URLConfig('getNo'),{'uid' : uid},  function(data, code, msg) {
+                  if(code === 0) {
+                    var no = data.no;
+                    api.openWin({
+                      'name' : 'my-qrcode',
+                      'url' : './html/home/my-qrcode.html',
+                      'bounces' : false,
+                      'pageParam' : {'no':no}
+                    });
+                  }else{
+                    api.toast({
+                      msg: msg || '多多号获取失败，请稍后再试！',
+                      duration:2000,
+                      location: 'middle'
+                    });
+                  }
+                });
+
+              }else if(data.indexOf('http://') > -1){
+                //http
+                if(api.systemType === 'ios') {
+                  api.openApp({
+                      iosUrl: data
+                  },function(ret,err){
+                  });
+                }else{
+                  api.openApp({
+                      androidPkg: 'android.intent.action.VIEW',
+                      mimeType: 'text/html',
+                      uri: data
+                  },function(ret,err){});
+                }
+              }else if(data.indexOf('pond/detail') > -1 ) {
+                //核销  shanggoula://pond/detail?id=1&from=QR 
+                var pondId = getValueByName(data)['id'];
+                sendAjax(URLConfig('pondDetail'), {'pond_id' : pondId}, function(data, code, msg) {
+                  if(code == 0) {
+                    // if(data['is_following'] == 1) {
+                      //关注了直接跳支付
+                      api.openWin({
+                        'name' : 'voucher-detail',
+                        'url' : './html/voucher-detail.html',
+                        'pageParam' : {'pondId':pondId}
+                      });
+                    // }else{
+                    //   //未关注跳转向导页
+                    //   api.openWin({
+                    //     'name' : 'scan-guide',
+                    //     'url' : './html/scan-guide.html',
+                    //     'pageParam' : {'data':data}
+                    //   });
+                    // }
+                  }else{
+                    api.toast({msg: '获取钓点信息失败',duration:2000,location: 'middle'});
+                  }
+                });
+              }else if(data.indexOf('fishing_shop/detail') > -1) {
+                //渔具店
+                var shopId = getValueByName(data)['id'];
+                sendAjax(URLConfig('shopDetail'), {'id' : shopId}, function(data, code, msg) {
+                  if(code == 0) {
+                    api.openWin({
+                      'name' : 'scan-shop',
+                      'url' : './html/scan-shop.html',
+                      'pageParam' : {'data':data}
+                    });
+                  }else{
+                    api.toast({msg: '获取渔具店信息失败',duration:2000,location: 'middle'});
+                  }
+                });
+              }
+            }
+          });
+    }
+
+      
+    //钓点和收藏的钓点
+    $('#pondTitle').on('tap', 'ul li', function(){
+      var self = this;
+      authInfo(function(data, code, msg) {
+        var index =  $(self).index();
+        $('#pondTitle').find('li.active').removeClass('active');
+        $(self).addClass('active');
+
+        if(index === 0) { //钓点
+          api.setFrameAttr({
+            'name' : 'pond-my',
+            'hidden' : true
+          });
+          api.setFrameAttr({
+            'name' : 'pond',
+            'hidden' : false
+          });
+        }else{ //收藏的钓点
+          if(code === 2) {
+            $('#pondTitle').find('li.active').removeClass('active');
+            $('#pondTitle').find('li').first().addClass('active');
+
+            showLoginConfirm();  
+          }else if(code === 0){
+            
+            
+            
+            api.setFrameAttr({
+              'name' : 'pond',
+              'hidden' : true
+            });
+
+            var options = {
+              name: 'pond-my',
+              url: './html/pond_frame_my.html',
+              rect:{
+                  x:0,
+                  y:headerPos.h,
+                  w:'auto',
+                  h:mainPosH
+              },
+              bounces: false,
+              vScrollBarEnabled:false,
+              hScrollBarEnabled:false
+            }
+            api.openFrame(options);
+
+            api.setFrameAttr({
+              'name' : 'condition',
+              'hidden' : true
+            });
+            
+          }
+        }
+      });
+    });
+
+    //设置排序
+    window.sortTitleFn = function(title){
+      $('#sortTitle').text(title);
+    }
+
+    //设置城市
+    window.placeTitleFn = function(place){
+      $('#placeTitle').text(place);
+    }
+
+
+    //渔获和话题
+    $('#feedTitle').on('tap', 'ul li', function(){
+      var self = this;
+      var index =  $(self).index();
+      $('#feedTitle').find('li.active').removeClass('active');
+      $(self).addClass('active');
+      if(index === 0) { //渔获
+        
+        api.setFrameAttr({
+          'name' : 'topic',
+          'hidden' : true
+        });
+        api.setFrameAttr({
+          'name' : 'index',
+          'hidden' : false
+        });
+      }else{ //话题
+        api.setFrameAttr({
+          'name' : 'index',
+          'hidden' : true
+        });
+
+        var options = {
+          name: 'topic',
+          url: './html/topic_frame.html',
+          rect:{
+              x:0,
+              y:headerPos.h,
+              w:'auto',
+              h:mainPosH
+          },
+          vScrollBarEnabled:false,
+          hScrollBarEnabled:false
+        }
+        api.openFrame(options);
+        
+      }
+
+
+    });
+
+    
+  }
+  
+
+
+</script>
+</html>

@@ -1,0 +1,233 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+
+
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <link rel="stylesheet" href="../../css/search.css">
+  <title>钓点列表</title>
+  
+</head>
+<body>
+  <div id="divCon" class="wrap ">
+    <div class="select-shop" style="overflow:hidden;">
+      <div class="map-box" id="map-box" style="height:250px;">
+      </div>
+      <div class="select-box border-top" id="select-box" style="overflow:auto;">
+        <div class="text-list border-top">
+          <ul id="pondList"></ul>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+  <div class="load-page wait"></div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+  apiready = function() {
+    var map = api.require('baiduMap');
+    var mapInfo = $api.getStorage('mapInfo');     
+    var baiduLocation = api.require('baiduLocation');
+    var oldPond = $api.getStorage('curPond');
+    var gatherFish = api.pageParam['gatherFish'];
+
+
+    var y = 44 + 50;
+    if (api.systemType == 'ios') {
+        var strSV = api.systemVersion;
+        var numSV = parseInt(strSV,10);
+        var fullScreen = api.fullScreen;
+        var iOS7StatusBarAppearance = api.iOS7StatusBarAppearance;
+        if (numSV >= 7 && !fullScreen && iOS7StatusBarAppearance) {
+           y += 20;
+        }
+    }
+
+
+    if($.isEmptyObject(oldPond) || gatherFish) {
+      baiduLocation.getLocation(function(ret, err){
+        var sta = ret.status;
+        var lat = ret.latitude;
+        var lon = ret.longitude;
+        if(sta){
+          //基本地图加载
+          map.open({
+              x: 0,
+              y:  y,
+              w: api.winWidth,
+              h: 250
+          },function(ret,err){
+            if(ret.status) {
+              map.setCenter({
+                lon:lon,
+                lat:lat
+              });
+              map.setZoomLevel({
+                level:12
+              });
+            }
+          });
+        }
+      });
+    }else{
+      //基本地图加载
+      map.open({
+          x: 0,
+          y: y,
+          w: api.winWidth,
+          h: 250
+      },function(ret,err){
+        if(ret.status) {
+          map.setCenter({
+            lon:oldPond['lon'],
+            lat:oldPond['lat']
+          });
+          map.setZoomLevel({
+            level:12
+          });
+        }
+      });
+    }
+        
+
+    map.setMapListener (function(ret,err){
+      var cLng = ret.lon;
+      var cLat = ret.lat;
+      var cZoom = ret.zoom;
+      var placeObj = GpsEncode['bdDecrypt'](cLng, cLat);
+      
+      var params = {
+        'lat' : placeObj['lat'],
+        'lon' : placeObj['lng'],
+        'zoom' : cZoom,
+        'area_code' : mapInfo['area_code']
+      }
+      getAreaData(params);
+
+    });
+
+    function getAreaData(params){
+      sendAjax(URLConfig('pondList'), params, function(data, code, msg) {
+        if(code === 0) {
+          renderData(data)
+        }else{
+          api.toast({
+            msg: msg || '请求失败，稍后再试',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+        
+      });
+    }
+
+    function getListData(name, params, callback ) {
+      sendAjax(URLConfig(name), params, function(data, code, msg) {
+        if(code === 0) {
+          callback(data);
+        }else{
+          api.toast({msg: msg || '请求失败，稍后再试', duration:2000, location: 'middle'});
+        }
+      });
+    }
+
+
+    getListData('nearPonds', null, function(data) {
+      renderData(data);
+    });
+
+
+    function renderData(data) {
+      var htmlStr = '';
+      for(var i=0; i<data.length; i++) {
+         htmlStr += '<li id="'+data[i]['id']+'" name="'+data[i]['name']+'" class="border-bottom">'
+         +'     <div class="r"><span class="distance">'+ data[i]['distance']+ '</span></div>'
+         +'     <span class="field">'+data[i]['name']+'</span>'
+         +' </li>'
+      }
+      $('#pondList').html(htmlStr);
+      showLoadDiv(false, $('#divCon'));
+    }
+
+    $('#pondList').on('tap', 'li',  function() {
+      var id = this.id, name = $(this).attr('name');
+      api.execScript({
+        name : 'publish-fishery',
+        frameName: 'publish-fishery',
+        script: 'setFishPondInfo("'+id+'","'+name+'");'
+      });
+
+      api.execScript({
+        name : 'publish-diaoji',
+        frameName: 'publish-diaoji',
+        script: 'setFishPondInfo("'+id+'","'+name+'");'
+      });
+
+      api.execScript({
+        name : 'setup-gatherFish',
+        frameName: 'setup-gatherFish',
+        script: 'setFishPondInfo("'+id+'","'+name+'");'
+      });
+      
+      api.closeWin();
+    });
+
+
+
+    window.setCurrentPond = function(){
+      var curPond = $api.getStorage('curPond');
+      if(!$.isEmptyObject(curPond)) {
+
+        var annoArray = [{
+          'id' :curPond['id'],
+          // 'img' : icon,
+          'subTitle' : '',
+          'title' : curPond['name'],
+          'lon' : curPond['lon'],
+          'lat' : curPond['lat']
+        }];
+
+        map.removeAnnotations({
+            idArray:curDataIdsAttr
+        });
+
+
+        map.addAnnotations({
+          annoArray: annoArray
+        },function(ret,err){
+            
+        });
+
+        map.setCenter({
+          lon:curPond['lon'],
+          lat:curPond['lat']
+        });
+
+        var params = {
+          'lat' : curPond['lat'],
+          'lon' : curPond['lon'],
+          'pond_id' : curPond['id']
+        }
+
+        getAreaData(params);
+
+      }
+
+
+
+
+    }
+
+  }
+
+</script>
+</html>

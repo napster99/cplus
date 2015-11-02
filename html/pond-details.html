@@ -1,0 +1,131 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../css/shop-detail.css">
+  <link rel="stylesheet" href="../css/comment-list.css">
+  <title>钓点详情</title>
+</head>
+<body>
+  <div class="wrap">
+    <!-- 添加渔获 -->
+    <div class="user-action">
+      <ul>
+        <li id="addFeed"><i class="icon-m icon-add"></i>发渔获</li>
+        <li id="payMoney"><i class="icon-m icon-pay-way"></i>去付款</li>
+      </ul>
+    </div>
+    <!-- 添加渔获 -->
+  </div>
+</body>
+
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  
+  apiready = function() {
+
+    var pondId = api.pageParam['pondId']; 
+    var pondRank = api.pageParam['pondRank']; 
+    var pondName = '';
+
+    // 设置ios7的标题栏字体变亮，全局用一个就行了
+    api.setStatusBarStyle({
+      style: 'dark'
+    });
+
+    api.addEventListener({
+      name:'viewappear'
+    },function(ret,err){
+      // 设置ios7的标题栏字体变亮，全局用一个就行了
+      api.setStatusBarStyle({
+        style: 'dark'
+      });
+    });
+
+    getData('pondInfo', {'id' : pondId},  renderData);
+
+    var user = $api.getStorage('user');
+
+    function getData(name, params, callback) {
+      sendAjax(URLConfig(name), params, function(data, code, msg) {
+        datas = data;
+        if(code === 0) {
+          callback(data);
+        }else{
+          api.toast({
+            msg: msg || '请求失败，稍后再试',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+    }
+
+    var addFeed   = $api.byId('addFeed');
+    var addFeedPos = $api.offset(addFeed);
+
+    api.openFrame({
+      name: 'pond-details-con',
+      url: 'pond-details_frame.html',
+      rect:{x:0, y:0, w:'auto', h:api.winHeight - addFeedPos.h},
+      pageParam : {'pondId' : pondId, 'pondRank' : pondRank},
+      bounces : true,
+      vScrollBarEnabled:true,
+      hScrollBarEnabled:true
+    });
+
+
+    function renderData(data) {
+      pondName = data['name'];
+      //添加渔获
+      $('#addFeed').on('tap', function() {
+
+          authInfo(function(data, code, msg) {
+            if(code === 2) {
+              showLoginConfirm('../index.html');  
+            }else if(code === 0){
+              api.openWin({
+                'name' : 'publish-fishery',
+                'url' : './publish-fishery.html',
+                'bounces':false,
+                'pageParam' : {'pondId':pondId, 'pondName' : pondName},
+                'animation': {
+                  'type': 'movein',
+                  'subType': 'from_bottom',
+                  'duration': 0
+                }
+              });
+            }
+          });
+
+      });
+    };
+
+
+    //去扫码付款
+    $('#payMoney').on('tap',  function() {
+        api.openWin({
+          'name' : 'voucher-detail',
+          'url' : './voucher-detail.html',
+          'pageParam' : {'pondId':pondId}
+        });
+    });
+
+
+
+
+
+
+  }
+
+  
+</script>
+</html>

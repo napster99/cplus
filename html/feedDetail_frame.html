@@ -1,0 +1,309 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../css/feed.css">
+  <link rel="stylesheet" href="../css/module.css">
+  <title>详情</title>
+  
+</head>
+<body>
+<div class="wrap">
+  <div id="conDiv" class="hidden">
+
+    <!-- 详情 -->
+    <div class="feed-detail">
+
+      <div class="feed border-top mt10">
+        <div id="feedList"></div>
+      </div>
+
+      <div id="infoTitle" class="tab-head col2 border-top border-bottom mt10">
+        <div name="main" class="active"><i class="icon-m icon-mission"></i>主要</div>
+        <div name="other"><i class="icon-m icon-note"></i>其他</div>
+        <span class="line"></span>
+      </div>
+
+      <div class="tab-body">
+        <div name="main" class="tabc hidden">
+          <div class="text-list">
+            <ul class="border-bottom">
+              <li class="border-bottom elastic hidden">
+                <span class="r">
+                  <div class="litimg">
+                    <div class="img-box border"><img id="img_species" src="../temp/2.jpg"></div>
+                  </div>
+                </span>
+                <i class="icon-m icon-fish"></i>
+                <span class="field">鱼类</span>
+              </li>
+              <li class="border-bottom hidden">
+                <span class="r"><span class="val" id="weight"></span></span>
+                <i class="icon-m icon-weight"></i>
+                <span class="field">重量</span>
+              </li>
+              <li class="border-bottom hidden">
+                <span class="r"><span class="val" id="fishLen"></span></span>
+                <i class="icon-m icon-rule"></i>
+                <span class="field">长度</span>
+              </li>
+              <li class="border-bottom hidden">
+                <span class="r"><span class="val" id="pond_name"></span></span>
+                <i class="icon-m icon-position"></i>
+                <span class="field">钓点</span>
+              </li>
+              <li class="border-bottom elastic hidden">
+                <div class="map-wrap">
+                  <div class="img-box"><i class="icon-m icon-map"></i></div>
+                </div>
+              </li>
+              <li class="border-bottom elastic hidden">
+                <span class="r">
+                  <div class="litimg">
+                    <div class="img-box border"><img id="img_bait" src="../temp/2.jpg"></div>
+                  </div>
+                </span>
+                <i class="icon-m icon-bait"></i>
+                <span class="field">饵料</span>
+              </li>
+            </ul>
+
+            <ul class="border-bottom">
+              <li class="border-bottom hidden">
+                <span class="r"><span class="val" id="setFree"></span></span>
+                <i class="icon-m icon-release"></i>
+                <span class="field">放生</span>
+              </li>
+              <li class="border-bottom hidden">
+                <span class="r"><span class="val" id="curTime"></span></span>
+                <i class="icon-m icon-time"></i>
+                <span class="field">时间</span>
+              </li>
+              <li class="border-bottom hidden">
+                <span class="r"><span class="val">2.5米</span></span>
+                <i class="icon-m icon-deepth"></i>
+                <span class="field">水深</span>
+              </li>
+              <li class="border-bottom hidden">
+                <span class="r"><span class="val">调4钓2</span></span>
+                <i class="icon-m icon-float"></i>
+                <span class="field">调漂</span>
+              </li>
+              <li class="border-bottom hidden">
+                <span class="r"><span class="val">频繁</span></span>
+                <i class="icon-m icon-speed"></i>
+                <span class="field">咬钩速度</span>
+              </li>
+              <li class="border-bottom hidden">
+                <span class="r"><span class="val">极好</span></span>
+                <i class="icon-m icon-visibility"></i>
+                <span class="field">水质</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div name="other" class="tabc hidden">
+          <div class="text-list mt10">
+            <ul class="border-top">
+              <li class="border-bottom hidden">
+                <span class="r"><span class="val" id="weather"></span></span>
+                <i class="icon-m icon-weather"></i>
+                <span class="field">天气</span>
+              </li>
+              <li class="border-bottom hidden">
+                <span class="r"><span class="val" id="temperature"></span></span>
+                <i class="icon-m icon-temperature"></i>
+                <span class="field">气温</span>
+              </li>
+              <li class="border-bottom hidden">
+                <span class="r"><span class="val" id="pressure"></span></span>
+                <i class="icon-m icon-pressure"></i>
+                <span class="field">气压</span>
+              </li>
+              <li class="border-bottom hidden">
+                <span class="r"><span class="val" id="wind"></span></span>
+                <i class="icon-m icon-wind"></i>
+                <span class="field">风</span>
+              </li>
+              <li class="border-bottom hidden">
+                <span class="r"><span class="val" id="humidity"></span></span>
+                <i class="icon-m icon-humidity"></i>
+                <span class="field">湿度</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 详情 End -->
+
+  </div>
+
+  <div class="load-page wait"></div>
+</div>
+
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script src="../script/feedListDoms.js"></script>
+<script>
+  apiready = function() {
+    var feedId = api.pageParam['id'];
+    var user = $api.getStorage('user');
+    var curUid, curShow, atuid, curname;
+    var curFeedId = feedId;
+
+    getDetailData();
+    
+    function getDetailData() {
+      sendAjax(URLConfig('feedDetail'), {'feed_id' : feedId}, function(data, code, msg) {
+        if(code === 0) {
+          renderData(data);
+        }else{
+          api.toast({msg: msg || '请求失败，稍后再试', duration:2000,location: 'middle'});
+        }
+      });
+    }
+    
+    function renderData(data) {
+      api.execScript({
+        name: 'feedDetail',
+        script: 'changeFavoriteStatus("'+data['is_favorite']+'");'
+      });
+
+      $('#avator').attr('src', data['avator']);
+      $('#uname').text(data['uname']);
+      $('#pretty_time').text(data['pretty_time']);
+      
+      curUid = data['uid'];
+      var htmlStr = '';
+      
+      data['type'] = 1;
+      try{
+        htmlStr += getCurDoms(data, true);
+      }catch(e){
+        var errmsg = e.message+'   '+JSON.stringify(e);
+        uploadErrLog('exception', errmsg);
+      }
+      
+      $('#feedList').html(htmlStr);
+
+      //render 头像
+      renderAvatar();
+      //render 图片
+      renderLogo();
+
+
+      showLoadDiv(false, $('#conDiv'));
+      
+      
+      var fish_extra = data['fish_extra'];
+      if(typeof fish_extra === 'string'){
+        try{
+          fish_extra = JSON.parse(fish_extra);
+        }catch(e){
+          var errmsg = e.message+'   '+JSON.stringify(e);
+          uploadErrLog('exception', errmsg);
+        }
+      }
+
+      if(fish_extra['species']) {
+        $('#species').text(fish_extra['species']).parents('li').removeClass('hidden');
+      }
+      if(fish_extra['img_bait']) {
+       $('#img_bait').attr('src', fish_extra['img_bait']).parents('li').removeClass('hidden'); 
+      }
+
+      if(fish_extra['img_species']) {
+       $('#img_species').attr('src', fish_extra['img_species']).parents('li').removeClass('hidden'); 
+      }
+      
+      if(fish_extra['weight']){
+        $('#weight').text(fish_extra['weight']+'斤').parents('li').removeClass('hidden');
+      }
+
+      if(fish_extra['len']){
+        $('#fishLen').text(fish_extra['len']+'CM').parents('li').removeClass('hidden');
+      }
+
+      if(data['fishing_time']){
+        $('#curTime').text(data['fishing_time']).parents('li').removeClass('hidden');
+      }
+
+      if(fish_extra['bait_brand']){
+        $('#bait_brand').text(fish_extra['bait_brand']).parents('li').removeClass('hidden');
+      }
+      
+      if(data['pond_name']){
+        $('#pond_name').text(data['pond_name']).parents('li').removeClass('hidden');
+      }
+
+      if(data['fish_extra']['set_free']) {
+        $('#setFree').text('是').parents('li').removeClass('hidden');
+      }
+      
+      if(!data['wether_info']) return;
+
+      var wether_info = data['wether_info'];
+      if(typeof wether_info === 'string'){
+        try{
+          wether_info = JSON.parse(wether_info);
+        }catch(e){
+          var errmsg = e.message+'   '+JSON.stringify(e);
+          uploadErrLog('exception', errmsg);
+        }
+      }
+
+
+      if(wether_info['text']) {
+        $('#weather').text(wether_info['text']).parents('li').removeClass('hidden');
+      }
+      if(wether_info['wind']) {
+        $('#wind').text(wether_info['wind']).parents('li').removeClass('hidden');
+      }
+      if(wether_info['temperature']) {
+        $('#temperature').text(wether_info['temperature']+'℃').parents('li').removeClass('hidden');
+      }
+      if(wether_info['pressure']) {
+        $('#pressure').text(wether_info['pressure']+'HPA').parents('li').removeClass('hidden');
+      }
+      if(wether_info['humidity']) {
+        $('#humidity').text(wether_info['humidity']+'%').parents('li').removeClass('hidden');
+      }
+
+    }
+
+    
+   
+    
+
+
+
+    //Tab切换
+    $('#infoTitle').on('tap', 'div', function() {
+      var name = $(this).attr('name');
+      if(curShow === name) return;
+      curShow = name;
+      $('#infoTitle').find('div.active').removeClass('active');
+      $(this).addClass('active');
+
+      $('.tabc').addClass('hidden');
+      $('div[name='+name+']').removeClass('hidden');
+    });
+
+    $('#infoTitle').find('div[name=main]').trigger('tap');
+  }
+</script>
+
+</html>
+
+
+

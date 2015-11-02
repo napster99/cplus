@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <title>任务_鱼多多_找钓点，就用鱼多多</title>
+  
+</head>
+<body style="background-color:transparent;">
+<div class="wrap">
+
+<div class="pop">
+  <div class="pop-c">
+    <div class="award-box">
+      <div class="sham-pic">
+        <div class="trophy">
+          <i class="icon-m icon-trophy"></i>
+          <i class="icon-m s1 icon-star-fill"></i>
+          <i class="icon-m s2 icon-star-fill"></i>
+          <i class="icon-m s3 icon-star-fill"></i>
+          <i class="icon-m s4 icon-star-fill"></i>
+        </div>
+      </div>
+      <div class="title" id="missionName"></div>
+      <div class="award">
+        <span id="exp"><i class="icon-m icon-level"></i>+<span></span></span>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+    $('body').on('touchstart', function() {
+      api.closeFrame();
+    });
+
+    // var gold = api.pageParam['gold']; 
+    var exp = api.pageParam['exp']; 
+    var name = api.pageParam['name']; 
+
+    $('#missionName').text(name);
+    
+    // if(gold){
+    //   $('#gold').find('span').text(gold);
+    // }else{
+    //   $('#gold').addClass('hidden');
+    // }
+
+    if(exp){
+      $('#exp').find('span').text(exp);
+    }else{
+      $('#exp').addClass('hidden');
+    }
+
+    setTimeout(function() {
+      $('body').trigger('touchstart');
+    }, 2000);
+    
+
+  }
+</script>
+</html>

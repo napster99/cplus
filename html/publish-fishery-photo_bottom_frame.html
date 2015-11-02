@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../css/publish-fishery-photo.css">
+
+  <title>发表渔获--选择图片</title>
+  <style>
+      .opacity-half{
+        opacity: 0.5;
+      }
+
+      .opacity-null{
+        opacity: 1;
+      }
+
+
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="bottom-bar border-top">
+    <div name="preview" class="l">预览</div>
+    <div name="complete" class="r">完成</div>
+  </div>
+</div>
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+
+
+    function renderResult(len) {
+      if(len && len > 0) {
+        $('div[name=preview], div[name=complete]').addClass('active');
+        $('div[name=complete]').html('<span class="count" id="complete">'+len+'</span>完成');
+      }else{
+        $('div[name=preview], div[name=complete]').removeClass('active');
+        $('div[name=complete]').html('完成');
+      }
+    }
+
+    window.renderResult = renderResult;
+
+    //点击预览
+    $('div[name=preview]').on('tap',  function() {
+        api.execScript({
+          frameName: 'publish-fishery-photo',
+          script: 'sendPicsToprview();'
+        });
+    });
+
+
+    //完成
+    $('div[name=complete]').on('tap', function() {
+      if($(this).hasClass('active')) {
+        api.execScript({
+          frameName: 'publish-fishery-photo',
+          script: 'completePics();'
+        });
+      }
+    });
+
+    
+  }
+</script>
+</html>

@@ -1,0 +1,19 @@
+.discover.mt10{
+  margin-top: 10px;
+}
+.discover .icon{
+  float: left;
+  padding: 10px;
+  font-size: 25px;
+}
+.discover .info{
+  margin-left: 50px;
+  padding: 16px 10px 16px 0;
+  font-size: 16px;
+  color: #222;
+}
+.discover .info span{
+  color: #aaa;
+  font-size: 12px;
+}
+

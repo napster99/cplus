@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+   <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../css/profile.css">
+
+  <title>个人主页</title>
+</head>
+<body>
+
+
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+    var url = api.pageParam['url'];
+    api.toast({
+        msg: '鱼多多APP正式版已上线，点击免费安装下载',
+        duration:2000,
+        location: 'middle'
+      });
+    $('body').html('<iframe src="'+url+'" width="100%" height="100%" style="border:none;"></iframe>');
+  }
+</script>
+</html>

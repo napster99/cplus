@@ -1,0 +1,224 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/form.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <link rel="stylesheet" href="../../css/shop-detail.css">
+  <title>知道_鱼多多_找钓点，就用鱼多多</title>
+  <style>
+    .set{
+      font-weight: normal;
+      font-size: 16px;
+      color: #aaa;
+    }
+
+    .con{
+      text-align: center;
+      padding-top: 90px;
+    }
+
+    .sham-pic{
+      height: 85px;
+      padding: 5px;
+    }
+
+   .sham-pic .trophy{
+      margin: auto;
+      width: 55px;
+      height: 55px;
+      position: relative;
+      border-radius: 1000px;
+      background-color: #235b87;
+    }
+
+     .sham-pic .icon-trophy{
+      font-size: 62px;
+      color: #f2d03b;
+      position: absolute;
+      left: 50%; bottom: 2px;
+      -webkit-transform:translateX(-50%);
+    }
+
+     .sham-pic .icon-star-fill{
+      position: absolute;
+      color: rgba(0,0,0,.17);
+    }
+
+     .sham-pic .s1{
+      font-size: 14px;
+      left: 50%; top: 3px;
+      -webkit-transform:translateX(-50%);
+    }
+     .sham-pic .s2{
+      font-size: 15px;
+      bottom: 14px;
+      left: -39px;
+      -webkit-transform:rotate(45deg);
+    }
+     .sham-pic .s3{
+      font-size: 22px;
+      right: -30px;
+      bottom: 6px;
+      -webkit-transform:rotate(45deg);
+    }
+     .sham-pic .s4{
+      right: -36px;
+      top: -10px;
+      font-size: 14px;
+      -webkit-transform:rotate(45deg);
+    }
+
+    .succees-text{
+      color: #10aeff;
+    }
+
+    .succees-text:after{
+      content: "报名成功";
+    }
+
+    .error-text{
+      color: #aaa;
+      margin-top: 20px;
+    }
+
+    .error-text:after{
+      content: "报名失败";
+    }
+
+    .text-tip{
+      margin-top: 15px;
+      color: #aaa;
+      display: inline-block;
+    }
+
+    .btn-fill{
+      position: absolute;
+      bottom: 0;
+    }
+
+    .error-tip{
+
+    }
+
+    .error-tip i.icon-close-fill{
+      font-size: 50px;
+      color: #B10000;
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="con">
+    <div class="sham-pic hidden">
+      <div class="trophy">
+        <i class="icon-m icon-trophy"></i>
+        <i class="icon-m s1 icon-star-fill"></i>
+        <i class="icon-m s2 icon-star-fill"></i>
+        <i class="icon-m s3 icon-star-fill"></i>
+        <i class="icon-m s4 icon-star-fill"></i>
+      </div>
+    </div>
+
+    <div class="error-tip hidden">
+      <i class="icon-m icon-close-fill"></i>
+    </div>
+    <h1></h1>
+    <span class="text-tip hidden">请关注活动时间，以免错过活动</span>
+  </div>
+  <div id="notify" class="nice-box border-top panel mt10 hidden">
+    <h3>活动提醒
+      <span class="r"><span class="set">点击设置</span><i class="icon-m icon-arrow-right"></i></span>
+    </h3>    
+  </div>
+
+
+  <button id="shareRank" class="btn-fill btn-lg color-blue  hidden">立刻分享到朋友圈</button>
+</div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+ apiready = function() {
+    
+  var type = api.pageParam['type'];
+  var order_id = api.pageParam['order_id'];
+  
+  if(type === 'success') {
+    $('.sham-pic, #notify, .text-tip').removeClass('hidden');
+    $('h1').addClass('succees-text');
+  }else{
+    $('h1').addClass('error-text');
+    $('.error-tip').removeClass('hidden');
+  }
+  
+
+  //刷新本周列表页
+  api.execScript({
+    name: 'gatherFish2',
+    frameName : 'list-gatherFish_this_frame',
+    script: 'initData();'
+  });
+  
+  //刷新本周列表页
+  api.execScript({
+    name: 'gatherJoin',
+    frameName : 'gatherJoin_frame',
+    script: 'initData();'
+  });
+
+  var timeArrs = ['12小时','8小时','4小时','1小时','30分钟']
+
+  $('#notify').on('tap',  function() {
+    var options = {
+      cancelTitle: '取消',
+      buttons : timeArrs
+    }
+    api.actionSheet(options, function(ret,err){
+      if(ret.buttonIndex === 6) return;
+      var params = {
+        interval : ret.buttonIndex,
+        order_id : order_id
+      }
+
+      sendAjax(URLConfig('gatherNotifiy'), params, function(data, code, msg) {
+        if(code === 0) {
+          api.toast({msg: '操作成功',duration:2000,location: 'middle'});
+          $('.set').text(timeArrs[ret.buttonIndex - 1]);
+        }
+      });
+    });
+  });
+
+  var share_url = $api.getStorage('gather_share_url');
+  var share_desc = $api.getStorage('gather_share_desc');
+  var share_name = $api.getStorage('gather_share_title');
+  var share_img = $api.getStorage('gather_share_img');
+
+  if(share_url) {
+    $('#shareRank').removeClass('hidden');
+  }
+
+  $('#shareRank').on('tap', function() {
+      var shareDatas = {};
+      shareDatas['info'] = {
+        'title' : '鱼多多-同城约钓'+share_name,
+        'description' : share_desc,
+        'content_url' : share_url,
+        'imageUrl' : share_img
+      };
+      
+      sharePop('分享该活动', shareDatas);
+  });
+
+  
+ }
+  
+</script>
+</html>

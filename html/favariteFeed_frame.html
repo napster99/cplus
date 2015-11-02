@@ -1,0 +1,157 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../css/feed.css">
+  <title>收藏</title>
+</head>
+<body>
+  <div class="wrap">
+    <div id="feedList" class="feed-list hidden">
+    </div>
+    <div class="load-page wait"></div>
+  </div>
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script src="../script/feedListDoms.js"></script>
+<script>
+  apiready = function() {
+
+
+    var isEnd = false, isAjaxing = false;
+    var condicationObj = {
+      'page' : 1
+    }
+
+
+    // bandingActionListener();
+    
+    function getListData(name, params, callback, first) {
+      if(first) {
+        // showLoadDiv(true, $('#feedList'));
+      }else{
+        showButtonLoadDiv(true, $('#feedList'), '../../images/loadButton.gif');  
+      }
+      isAjaxing = true;
+      sendAjax(URLConfig(name), params, function(data, code, msg) {
+        isAjaxing = false;
+        api.refreshHeaderLoadDone();
+        if(code === 0) {
+          callback(data, first);
+        }else{
+          api.toast({
+            msg: msg || '请求失败，稍后再试',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+    }
+
+
+    getListData('favoriteFeeds', condicationObj, function(data, first) {
+      renderData(data,first);
+    }, true);
+
+    api.setRefreshHeaderInfo({
+        visible: true,
+        loadingImg: 'widget://image/push-down.gif',
+        bgColor: '#fff',
+        textColor: '#ccc',
+        textDown: '下拉刷新...',
+        textUp: '松开刷新...',
+        showTime: true
+    }, function(ret, err){
+       isEnd = false;
+       condicationObj = {
+        'page' : 1
+       }
+       isAjaxing = false;
+       // $('#feedList').html('');
+      getListData('favoriteFeeds', condicationObj, renderData, true);
+    });
+
+    //下拉加载
+    api.addEventListener({
+      name: 'scrolltobottom'
+    }, function(ret, err){
+      if(!isEnd && !isAjaxing) {
+        showButtonLoadDiv(false, $('#feedList'), '../../images/loadButton.gif');
+        ++condicationObj['page'];
+        getListData('fans', condicationObj ,renderData);
+      }
+    });
+
+    function renderData(data, first) {
+      var htmlStr = '', proImg = {};
+      for(var i=0; i<data.length; i++) {
+        try{
+          htmlStr += getCurDoms(data[i]);
+        }catch(e){
+          var errmsg = e.message+'   '+JSON.stringify(e);
+          uploadErrLog('exception', errmsg);
+        }
+      }
+
+      if(first) {
+        $('#feedList').html(htmlStr);
+      }else{
+        $('#feedList').append(htmlStr);  
+      }
+
+      //render 头像
+      renderAvatar();
+      //render 图片
+      renderLogo();
+
+
+      api.parseTapmode();
+
+      echo.init({
+        offsetTop: 100,
+        throttle: 250,
+        unload: true,
+        callback: function (element, op) {
+        }
+      });
+      if(first) {
+        var firstImg = $('div[name=feedMode]').find('img[data-echo]').first();
+        var firstImgUrl = firstImg.attr('data-echo');
+        firstImg.attr('src', firstImgUrl);
+      }
+      
+
+
+      showLoadDiv(false, $('#feedList'));
+      showButtonLoadDiv(false, $('#feedList'), '../../images/loadButton.gif');
+      if(data.length < 15) {
+        isEnd = true;
+        if(first && data.length === 0) {
+          showNoData($('#feedList'));
+        }else if(!first){
+          api.toast({
+            msg: '没有更多数据了',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+        
+      }else{
+        showButtonLoadDiv(true, $('#feedList'), '../../images/loadButton.gif');
+      }
+    }
+
+
+
+  }
+
+</script>
+</html>

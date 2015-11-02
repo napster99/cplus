@@ -1,0 +1,240 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <link rel="stylesheet" href="../../css/order.css">
+  <link rel="stylesheet" href="../../css/voucher.css">
+
+  <title>我的订单</title>
+  
+</head>
+<body>
+<div class="wrap">
+  <div id="orderList" class="hidden">
+  </div>
+  <div class="load-page wait"></div>
+</div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+  apiready = function() {
+    var lastId = 0;
+    var isEnd = false, isAjaxing = false;
+    var condicationObj = {
+      'lastId' : lastId
+    }
+    
+    function getListData(name, params, callback, first) {
+      if(first) {
+        // showLoadDiv(true, $('#fansList'));  
+      }else{
+        showButtonLoadDiv(true, $('#orderList'), '../images/loadButton.gif');  
+      }
+      isAjaxing = true;
+      sendAjax(URLConfig(name), params, function(data, code, msg) {
+        isAjaxing = false;
+        api.refreshHeaderLoadDone();
+        if(code === 0) {
+          callback(data, first);
+        }else{
+          api.toast({
+            msg: msg || '请求失败，稍后再试',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+    }
+
+    getListData('orderList_new', condicationObj, function(data, first) {
+      renderData(data,first);
+    }, true);
+
+    api.setRefreshHeaderInfo({
+        visible: true,
+        loadingImg: 'widget://image/push-down.gif',
+        bgColor: '#fff',
+        textColor: '#ccc',
+        textDown: '下拉刷新...',
+        textUp: '松开刷新...',
+        showTime: true
+    }, function(ret, err){
+       isEnd = false;
+       lastId = 0;
+       condicationObj = {
+        'lastId' : lastId
+       }
+
+       isAjaxing = false;
+       // $('#fansList').html('');
+      getListData('orderList_new', condicationObj, renderData, true);
+    });
+
+    //下拉加载
+    api.addEventListener({
+      name: 'scrolltobottom'
+    }, function(ret, err){
+      if(!isEnd && !isAjaxing) {
+        showButtonLoadDiv(false, $('#orderList'), '../images/loadButton.gif');
+        lastId = $('#orderList').find('.order-block').last().attr('id');
+        condicationObj['lastId'] = lastId;
+        getListData('orderList_new', condicationObj ,renderData);
+      }
+    });
+
+    function renderData(data, first) {
+      var htmlStr = '', proImg = {};
+      for(var i=0; i<data.length; i++) {
+        var id = data[i]['id'];
+        var cardId = data[i]['card_id'].replace(/(.{4})/g,'$1 ');
+        var name = data[i]['pond']['name'];
+        var discount = data[i]['amount']['discount'];
+        var total = data[i]['amount']['total'];
+        var real = data[i]['amount']['real'];
+        var dateline = data[i]['dateline'];
+        var level = data[i]['pond']['level'];
+        var tradeNo = data[i]['trade_no'].replace(/(.{4})/g,'$1 ');
+        var coupon = data[i]['coupon'];
+
+        htmlStr += '<div id="'+id+'" class="order-block">'
+        +'  <div class="hd">'
+        +'    <div class="img-box"><i class="icon-m icon-shop"></i></div>'
+        +'    <div class="name">'+name+'</div>'
+        +'  </div>'
+        +'  <div class="text-list mt10 border-top">'
+        +'    <ul>'
+        +'      <li class="border-bottom">'
+        +'        <span class="r">'
+        +'          <span class="val text-orange">'+real+'元</span>'
+        +'        </span>'
+        +'        <span class="field">实付金额</span>'
+        +'      </li>'
+        +'      <li class="border-bottom">'
+        +'        <span class="r">'
+        +'          <span class="val">'+total+'元</span>'
+        +'        </span>'
+        +'        <span class="field">应付金额</span>'
+        +'      </li>'
+        +'      <li class="border-bottom">'
+        +'        <span class="r">'
+        +'          <span class="val">-'+discount+'元</span>'
+        +'        </span>'
+        +'        <span class="field">使用卡券包</span>'
+        +'      </li>'
+
+        if(coupon) {
+          var time = '永久';
+          var price = data[i]['coupon']['discount'];
+          var name = data[i]['coupon']['name'];
+          var unit = '元', type = '代金券';
+          if(data[i]['coupon']['type'] == 0){
+            unit = '折';
+            type = '券';
+          }
+          price = price + unit;
+
+          if(data[i]['coupon']['discount'] == 0 && data[i]['coupon']['type'] == 0){
+            unit = '';
+            type = '';
+            price = '免单券';
+          }
+
+
+          
+          var organization = data[i]['coupon']['organization'];
+          var started = data[i]['coupon']['started'];
+          var expired = data[i]['coupon']['expired'];
+
+          var started = new Date(started*1000).Format("M月d日");
+          var expired = new Date(expired*1000).Format("M月d日");
+
+          
+          if(data[i]['coupon']['expired']) {
+            time = started + '-' + expired;
+          }
+
+          htmlStr += '<li class="border-bottom elastic">'
+          +'        <div class="voucher-list">'
+          +'          <ul>'
+          +'            <li class="border">'
+          +'                <div class="img-box"><i class="icon-m icon-shop"></i></div>'
+          +'                <div class="info">'
+
+          if(name) {
+            htmlStr += '                  <h3 class="name"><strong class="text-orange">'+name+'</strong><small>（'+organization+'）</small></h3>'
+          }else{
+            htmlStr += '                  <h3 class="name"><strong class="text-orange">'+price+'</strong> '+type+'<small>（'+organization+'）</small></h3>'
+          } 
+
+          htmlStr += '                  <div class="time">'+time+'</div>'
+          +'                </div>'
+          +'                <div class="dot"></div>'
+          +'                <div class="stamp-left"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>'
+          +'                <div class="stamp-right"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>'
+          +'            </li>'
+          +'          </ul>'
+          +'        </div>'
+          +'      </li>'
+        }
+
+        htmlStr += '      <li class="border-bottom">'
+        +'        <span class="r">'
+        +'          <span class="val">'+dateline+'</span>'
+        +'        </span>'
+        +'        <span class="field">时间</span>'
+        +'      </li>'
+        +'      <li class="border-bottom">'
+        +'        <span class="r">'
+        +'          <span class="val">'+cardId+'</span>'
+        +'        </span>'
+        +'        <span class="field">券码</span>'
+        +'      </li>'
+        +'      <li class="border-bottom">'
+        +'        <span class="r">'
+        +'          <span class="val">'+tradeNo+'</span>'
+        +'        </span>'
+        +'        <span class="field">流水号</span>'
+        +'      </li>'
+        +'    </ul>'
+        +'  </div>'
+        +'</div>'
+      }
+      
+      if(first){
+        $('#orderList').html(htmlStr);
+      }else{
+        $('#orderList').append(htmlStr);
+      }
+
+      showLoadDiv(false, $('#orderList'));
+      showButtonLoadDiv(false, $('#orderList'), '../../images/loadButton.gif');
+      if(data.length === 0) {
+        isEnd = true;
+        if(first && data.length === 0) {
+          showNoData($('#orderList'));
+        }else if(!first){
+          api.toast({
+            msg: '没有更多数据了',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      }else{
+        showButtonLoadDiv(true, $('#orderList'), '../../images/loadButton.gif');
+      }
+    }
+
+
+  }
+  
+  
+</script>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="format-detection" content="address=no">
+    <link rel="stylesheet" href="../css/base.css">
+    <link rel="stylesheet" href="../css/component.css">
+    <link rel="stylesheet" href="../css/font-icon.css">
+    <title>首页_鱼多多_找钓点，就用鱼多多</title>
+</head>
+<body style="background-color:transparent">
+  <!-- 弹层-签到 -->
+
+
+<!-- 
+<div class="mask"></div> -->
+<div class="pop">
+  <div class="pop-c">
+    <div class="sign-in">
+      <ol id="dragonBall" class="dragon-ball">
+      </ol>
+      <div class="info">
+        <span id="five">连续签到<strong name="days-level"></strong>天可点亮</span>
+        <span id="seven" class="hidden">您已连续签到<strong name="days"></strong>天</span>
+      </div>
+
+      <div class="desc hidden">
+        <span name="fansTitle">“铁杆粉”</span>勋章持续点亮中，<br>
+        断签会丢失，记得每天回来签到
+      </div>
+
+      <div class="decorative hidden">
+        <div name="fansTitle" class="title-badage"></div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+
+  <!-- 弹层-签到end -->
+
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+    
+    $('body').on('touchstart', function() {
+
+      // api.execScript({
+      //   name : 'index',
+      //   script: 'showSignReward();'
+      // });
+      
+      api.closeFrame();
+    });
+    
+    setTimeout(function() {
+      $('body').trigger('touchstart');
+    }, 2000);
+    
+    renderData();
+    
+    function renderData() {
+      var data = api.pageParam;
+      var days = data['sequence'], htmlStr = '';
+      $('div[name=fansTitle]').text(days>=5? '核心粉':'铁杆粉');
+      $('strong[name=days-level]').text(days<5? 5 : 7);
+      $('strong[name=days]').text(days);
+      if(days <= 7) {
+        for(var i=0; i<7; i++) {
+          // if(i < days) {
+            // htmlStr += '<li class="active">'+(i+1)+'</li>';
+          // }else{
+            htmlStr += '<li>'+(i+1)+'</li>';
+          // }
+        }
+        $('#dragonBall').html(htmlStr);
+
+        for(var i=0; i<days; i++) {
+          $('#dragonBall').find('li').eq(i).addClass('active');          
+        }
+
+        $('.decorative').removeClass('hidden');
+      }else{
+        $('.desc').removeClass('hidden');
+        $('span[name=fansTitle]').text('“核心粉”');
+        $('#five, .decorative').addClass('hidden');
+        $('#seven').removeClass('hidden');
+      }
+
+      if(data['gold']) {
+        $api.setStorage('signReward', data);
+      }
+
+    }
+
+  }
+  
+</script>
+</html>

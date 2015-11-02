@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <title>我的卡券包_鱼多多_找钓点，就用鱼多多</title>
+</head>
+<body>
+<div class="wrap">
+  <!-- 头部 -->
+  <div id="header" class="top-bar gray-style">
+    <div class="l" ontouchstart="api.closeWin();">
+      <div class="icon-text-h">
+        <i class="icon-m icon-arrow-left"></i><span>返回</span>
+      </div>
+    </div>
+    <div class="center-part">我的卡券包</div>
+  </div>
+  <!-- 头部 end-->
+  
+  <!-- 数据过滤 -->
+  <div class="tab-head col3 border-bottom">
+    <div name="title" status="0"><i class="icon-m icon-ticket"></i>未使用</div>
+    <div name="title" status="1"><i class="icon-m icon-time"></i>已使用</div>
+    <div name="title" status="2"><i class="icon-m icon-hourglass"></i>已过期</div>
+    <span class="line"></span>
+  </div>
+  <!-- 数据过滤end -->  
+
+</div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+  apiready = function() {
+
+
+    // 设置ios7的标题栏字体变亮，全局用一个就行了
+    api.setStatusBarStyle({
+      style: 'dark'
+    });
+
+    api.addEventListener({
+      name:'viewappear'
+    },function(ret,err){
+      // 设置ios7的标题栏字体变亮，全局用一个就行了
+      api.setStatusBarStyle({
+        style: 'dark'
+      });
+    });
+
+    var header = $api.byId('header');
+    $api.fixIos7Bar(header);
+
+    var couponOpendObj = {};
+
+    function openFrame(status) {
+      var name = 'coupon'+status+'_frame';
+      api.openFrame({
+        name: name,
+        url: './'+name+'.html',
+        bounces: false,
+        opaque: true,
+        vScrollBarEnabled: true,
+        rect: {
+          x: 0,
+          y: $('.top-bar').offset().height + $('.tab-head').offset().height,
+          w: 'auto',
+          h: 'auto'
+        }
+      });
+    }
+
+    $('div[name=title]').on('tap', function() {
+      var status = 'status'+$(this).attr('status');
+      $('div.active').removeClass('active');
+      $(this).addClass('active');
+
+      api.setFrameAttr({
+        'name' : 'status0',
+        'hidden' : true
+      });
+
+      api.setFrameAttr({
+        'name' : 'status1',
+        'hidden' : true
+      });
+
+      api.setFrameAttr({
+        'name' : 'status2',
+        'hidden' : true
+      });
+
+      if(couponOpendObj[status]) {
+        api.setFrameAttr({
+          'name' : status,
+          'hidden' : false
+        });
+      }else{
+        openFrame($(this).attr('status'));
+      }
+
+
+    });
+
+    $('div[name=title]').eq(0).trigger('tap');
+
+  }
+
+</script>
+</html>

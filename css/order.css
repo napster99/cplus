@@ -1,0 +1,52 @@
+.order-block{
+  border-radius: 5px;
+  margin: 15px 10px 0;
+  background-color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+.order-block:before{
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0; right: 0;
+  height: 3px;
+  background-color: #007aff;
+}
+
+.order-block .hd{
+  padding: 10px;
+}
+
+.order-block .hd .name{
+  font-size: 20px;
+  color: #222;
+  margin: 10px 10px 0 50px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.order-block .hd .img-box{
+  float: left;
+  width: 40px;
+  height: 40px;
+  border-radius: 1000px;
+  background-color: #f4f4f4;
+  color: #ddd;
+}
+
+.order-block .voucher-list{
+  padding: 5px;
+  background-color: #eee;
+}
+
+.order-block .voucher-list li{
+  margin-bottom: 0;
+}
+
+
+
+
+

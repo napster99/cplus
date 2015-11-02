@@ -1,0 +1,133 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../css/feed.css">
+  <style type="text/css">
+  .publish-diaoji{
+    position: relative;
+    height: 100%;
+    background-color: #fff;
+  }
+
+  .content{
+    padding: 10px 10px 50px;
+  }
+
+  .content img{
+    border-radius: 4px;
+  }
+
+  .c-wrap{
+    position: relative;
+    border-radius: 4px;
+    padding: 5px;
+    margin-bottom: 15px;
+  }
+
+  .c-wrap.active{
+    border:1px dashed #ffd200;
+  }
+
+  .c-wrap p{
+    position: relative;
+    font-size: 16px;
+    line-height: 1.3;
+  }
+
+  </style>
+  <title>发表渔获--填写内容</title>
+  
+</head>
+<body style="background:#fff;">
+  <div class="wrap"style="background:#fff;" >
+    <!-- 发表钓记 -->
+    <div id="conDiv" class="publish-diaoji ">
+      <div id="contentList" class="content">
+        
+      </div>
+    </div>
+    <!-- 发表钓记 End -->
+  </div>
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script src="../script/feedListDoms_diaoji.js"></script>
+<script>
+  apiready = function() {
+      var feedId = api.pageParam['id'];
+      var user = $api.getStorage('user');
+      getDetailData();
+      
+      
+      function getDetailData() {
+        sendAjax(URLConfig('feedDetail'), {'feed_id' : feedId}, function(data, code, msg) {
+          if(code === 0) {
+            renderData(data);
+          }else{
+            api.toast({msg: msg || '请求失败，稍后再试', duration:2000,location: 'middle'});
+          }
+        });
+      }
+      
+      function renderData(data) {
+        api.execScript({
+          name: 'feedDetail',
+          script: 'changeFavoriteStatus("'+data['is_favorite']+'");'
+        });
+        var htmlStr = '';
+        try{
+          htmlStr += getCurDoms(data);
+        }catch(e){
+          var errmsg = e.message+'   '+JSON.stringify(e);
+          uploadErrLog('exception', errmsg);
+        }
+        $('#contentList').html(htmlStr);
+
+
+        //钓记显示装备===========
+        var fish_extra = data['fish_extra'];
+        if(typeof fish_extra === 'string'){
+          try{
+            if(fish_extra) {
+              fish_extra = JSON.parse(fish_extra);
+            }else{
+              fish_extra = {};
+            }
+          }catch(e){
+            var errmsg = e.message+'   '+JSON.stringify(e);
+            uploadErrLog('exception', errmsg);
+          }
+        }
+
+        for(var i=0; i<fish_extra.length; i++) {
+          $.each(fish_extra[i],  function(k, v) {
+            $('li[name='+k+']').find('.r').text(v);
+            $('li[name='+k+']').removeClass('hidden');
+          });
+        }
+
+        //钓记显示装备============
+
+
+        //render 头像
+        renderAvatar();
+        //render 图片
+        renderLogo();
+
+
+        
+        
+
+      }
+
+  }
+</script>
+</html>

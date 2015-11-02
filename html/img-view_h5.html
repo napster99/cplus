@@ -1,0 +1,151 @@
+<!doctype html>
+<html style="background:transparent;">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width,  minimum-scale=1">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../css/scan-guide.css">
+  <title>图片查看器</title>
+  
+</head>
+<body style="background:transparent;">
+
+<div class="wrap">
+  
+  <div class="img-view">
+    <div class="slider">
+      <div class="swipe-wrap">
+        <ul class="swipe-img-list">
+          <li>
+            <div class="img-box">
+              <img id="thumbImg" src="">
+              <i class="icon-m icon-refresh2 rotate"></i>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+
+</div>
+
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script src="../script/swipe/swipe.js"></script>
+<script>
+  apiready = function() {
+
+    var imgArr = api.pageParam['src'];
+    var index = api.pageParam['index'];
+
+    var thumbImg = api.pageParam['thumbImg'];
+
+    if(thumbImg) {
+      $('#thumbImg').attr('src', thumbImg);
+    }
+
+    if(thumbImg && thumbImg.indexOf('isgif=1') > -1) {
+      var img = new Image();
+      img.src = imgArr[0];
+      img.onload = function() {
+        $('#thumbImg').attr('src', img.src);
+        $('.rotate').remove();
+        img.onload = null;
+      }
+    }else{
+      // if(thumbImg) {
+      //   var img = new Image();
+      //   img.src = thumbImg;
+      //   img.onload = function() {
+      //     img.onload = null;
+      //     renderImgDatas();
+      //   }
+      // }else{
+      //   renderImgDatas();
+      // }
+      renderImgDatas();
+    }
+
+    
+    function renderImgDatas() {
+      var htmlStr = '', pointStr = '';
+      for(var i=0; i<imgArr.length; i++){
+        var lastUrl = getPicUrl(imgArr[i], api.winWidth, api.winHeight, false, true);
+        if(lastUrl.indexOf('isgif=1') > -1) {
+          htmlStr += '<li><div class="img-box"><img src="'+imgArr[i]+'" /></div></li>'
+        }else{
+          if(lastUrl.indexOf('.qiniu.') > -1) {
+            htmlStr += '<li><div class="img-box"><img src="'+lastUrl+'" /></div></li>'
+          }else{
+            htmlStr += '<li><div class="img-box"><img src="'+imgArr[i]+'" /></div></li>'
+          }   
+        }
+      }
+      
+      var img = new Image();
+      img.src = imgArr[0];
+      img.onload = function() {
+        $('.swipe-img-list').html(htmlStr);
+        $('.swipe-img-list').find('img').fadeIn(1000, function() {})
+        initSwipe();
+      }
+      
+
+
+      
+    }
+
+
+    api.openFrame({
+      'name' : 'img-view_status',
+      'url' : 'img-view_status.html',
+      'bounces': false,
+      'rect' : {'x' : 0, 'y' : api.winHeight - 50, 'w' : 'auto', 'h' : 50},
+      'pageParam' : {'src' : imgArr, 'index' : index},
+      'bgColor': 'rgba(0,0,0,0)',
+      'scaleEnabled' : true,
+      'vScrollBarEnabled':false,
+      'hScrollBarEnabled':false
+    });
+
+
+    function initSwipe() {
+      // 轮播图
+      var swipes = document.querySelectorAll('.swipe-wrap');
+      for(var i = 0; i < swipes.length; i++) {
+        if($(swipes[i]).find('ul li').length <= 1) continue;
+        if($(swipes[i]).data('init')) continue;
+        $(swipes[i]).data('init', true);
+        Swipe(swipes[0], {
+          continuous: false,
+          startSlide : index || 0,
+          disableScroll: false,
+          stopPropagation: false,
+          callback: function(index, elem) {
+            api.execScript({
+              frameName: 'img-view_status',
+              script: 'changeIndex("'+index+'");'
+            });
+          },
+          transitionEnd: function(index, elem) {
+          }
+        });
+      }
+    }
+    
+    $('body').on('tap', function() {
+      api.closeWin({'name' : 'img-view'});
+    });
+  
+
+  }
+</script>
+</html>

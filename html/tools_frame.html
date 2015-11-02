@@ -1,0 +1,474 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/tool.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <title>工具_鱼多多_找钓点，就用鱼多多</title>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="tool-detail">
+
+    <div id="header" class="top-actions">
+      <div class="l" ontouchstart="api.closeWin();"><i class="icon-m icon-back"></i></div>
+      <div class="r" id="help"><i class="icon-m icon-help"></i></div>
+      <div class="center">
+        <i class="icon-m icon-position-fill"></i>
+        <span id="wrap_city"></span>
+        <i id="changeCity" class="icon-m icon-fold"></i>
+      </div>
+    </div>
+
+    <div class="exponent">
+      <div class="inner">
+        <strong id="wrap_fishnum"></strong>
+        钓鱼指数
+      </div>
+    </div>
+
+    <div class="date-field" id="wrap_date"></div>
+    <div id="wrap_wtext" class="weather-field">
+      <span></span>
+      <span></span>
+    </div>
+
+    <div class="main-field">
+      <ul class="border-bottom">
+        <li class="border-right border-top">
+          <i class="icon-m icon-temperature"></i>
+          <div class="info"><p>气温</p><span id="wrap_wnum"></span></div>
+        </li>
+        <li class="border-right border-top">
+          <i class="icon-m icon-wind"></i>
+          <div class="info"><p>风</p><span id="wrap_wind"></span></div>
+        </li>
+        <li class="border-right border-top">
+          <i class="icon-m icon-pressure"></i>
+          <div class="info"><p>气压</p><span id="wrap_pressure"></span></div>
+        </li>
+        <li class="border-right border-top">
+          <i class="icon-m icon-humidity"></i>
+          <div class="info"><p>湿度</p><span id="wrap_humidity"></span></div>
+        </li>
+      </ul>      
+    </div>
+
+    <div class="sunup-set">
+      <div id="updown" class="handle">
+        <span name="sun" class="l active">日出日落</span>
+        <span name="moon" class="r">月出月落</span>          
+      </div>
+      <div class="sun-move">
+        <i id="theSun" class="sun" style="top:10px; left:70px;"></i> 
+      </div>
+      <div class="time">
+        <span class="l up-time" id="wrap_sunrise"></span>
+        <span class="r down-time" id="wrap_sunset"></span>
+        <span class="cur-time" id="curTime"></span>
+      </div>
+    </div>
+
+
+    <div class="weather-info" style="padding-bottom:0;">
+      <div name="date" class="tab-bd">
+        <ul class="week-7" id="weekList">
+        </ul>
+        <div id="container" class="data-line">
+        </div>
+        <div class="zebra">
+          <ul>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/jquery1.8.2.js"></script>
+<script src="../script/highcharts.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+    
+    var header = $api.byId('header');
+    $api.fixIos7Bar(header);
+
+    if(api.systemType === 'ios') {
+      $('.exponent').css('margin-top','40px');
+    }
+
+
+    var riseDownObj = {};
+
+    Date.prototype.format =function(format) {
+      var o = {
+        "M+" : this.getMonth()+1, //month
+        "d+" : this.getDate(), //day
+        "h+" : this.getHours(), //hour
+        "m+" : this.getMinutes(), //minute
+        "s+" : this.getSeconds(), //second
+        "q+" : Math.floor((this.getMonth()+3)/3), //quarter
+        "S" : this.getMilliseconds() //millisecond
+      }
+      if(/(y+)/.test(format)) format=format.replace(RegExp.$1,
+      (this.getFullYear()+"").substr(4- RegExp.$1.length));
+      for(var k in o)if(new RegExp("("+ k +")").test(format))
+        format = format.replace(RegExp.$1,
+        RegExp.$1.length==1? o[k] :
+        ("00"+ o[k]).substr((""+ o[k]).length));
+      return format;
+    }
+
+// 钓鱼指数是根据气象因素对垂钓的影响程度，提取出影响垂钓的主要气象因素：气温、风速、气压、湿度变化等，进行综合考虑计算得出，钓友们可利用钓鱼指数参考垂钓出行。钓鱼指数越高适合钓鱼。
+
+
+
+    api.setRefreshHeaderInfo({
+        visible: true,
+        loadingImg: 'widget://image/push-down.gif',
+        bgColor: '#1998f5',
+        textColor: '#fff',
+        textDown: '下拉刷新...',
+        textUp: '松开刷新...',
+        showTime: true
+    }, function(ret, err){
+      initTools();
+    });
+    
+
+    window.initTools = function() {
+      var mapInfo = $api.getStorage('mapInfo');
+      $('#wrap_city').text(mapInfo['area_name']);  
+
+      sendAjax(URLConfig('weather'), {'area_code' : mapInfo['area_code']}, function(data, code, msg) {
+        api.refreshHeaderLoadDone();
+        try{
+          renderData(data);
+        }catch(e){
+          var errmsg = e.message+'   '+JSON.stringify(e);
+          uploadErrLog('exception', errmsg);
+        }
+      });
+    }
+
+    initTools();
+
+
+    // renderData(data);
+
+    function getDate(time) {
+      var month = time.split('-')[1];
+      var day =  time.split('-')[2];
+      return Number(month)+'月'+Number(day)+'日';
+    }
+
+    function renderData(data) {
+      var today = data.today;
+      $('#wrap_date').text(getDate(today.date) + ' ' + today.day);
+      // $('#wrap_fishnum').text(today.humidity);
+      $('#wrap_stateText').text(today.fishing_forecast_info);
+      $('#wrap_wtext').find('span').eq(1).text(today.text);
+      
+      $('#wrap_wtext').find('span').eq(0).html('<i class="icon-m icon-weather'+data.today.code+'"></i>');
+      
+      $('#wrap_wnum').text(today.high + '°/' + today.low+'°');
+
+
+      $('#wrap_wind').text(today.wind);
+      if(today.humidity.indexOf('%') < 0) {
+        $('#wrap_humidity').text(today.humidity+'%');
+      }else{
+        $('#wrap_humidity').text(today.humidity);
+      }
+      if(today.pressure) {
+        $('#wrap_pressure').text(today.pressure + '百帕');
+      }else{
+        $('#wrap_pressure').text('未知');
+      }
+      // $('#wrap_today_icon')[0].src = 'http://image.thinkpage.cn/weather/images/icons/3d_50/' + today.code + '.png';
+
+      renderSunPos(today);
+      renderWeekList(data['weather']);
+      // renderHourly(data['today']['hourly']);
+
+
+      //解析图形数据
+      var weathersData = data['weather'];
+      var highTemArr = [], lowTemArr = [];
+      
+      var dlen = weathersData.length >= 6 ? 6 : weathersData.length;
+      for(var i=0; i<dlen; i++) {
+        highTemArr.push({'y' :  Number(weathersData[i]['high']),'color' : '#fcd55d'});
+        lowTemArr.push({'y' : Number(weathersData[i]['low']),'color' : '#00e4ff'});
+      }
+
+      window.chartsData = [
+        {data : highTemArr,dataLabels : {color : '#fff',  shadow : false, format: '{y}°'}},
+        {data : lowTemArr, dataLabels : {color : '#fff',  shadow : false, format: '{y}°'}}
+      ];
+
+      fishNum(today.fishing_forecast, data['weather'].length);
+    }
+
+    function renderCharts(len) {
+      if(len > 6) {
+        len = 6;
+      }
+      $('#container').width(api.winWidth/6*len);
+      $('#container').highcharts({
+        chart: {
+            type: 'line',
+            backgroundColor : '#1580ce',
+            plotShadow : false,
+            shadow : false,
+            margin : [0,20,0,20]
+        },
+        title :{
+            text:null
+        },
+        credits : {
+          enabled : false
+        },
+        xAxis : {
+          lineColor : '#036ebc',
+          labels: {
+              enabled: false
+          },
+          tickColor : '#1580ce',
+          title: {
+              enabled: false
+          }
+        },
+        yAxis : {
+          gridLineColor : '#1580ce',
+          labels: {
+              enabled: false
+          },
+          title: {
+              enabled: false
+          }
+        },
+        plotOptions: {
+            line: {
+                dataLabels: {
+                    enabled: true
+                },
+                enableMouseTracking: false,
+                color : '#73bcf2'
+            }
+        },
+        legend: {
+            enabled: false
+        },
+        series : window.chartsData
+      });
+    }
+
+    function renderSunPos(today) {
+
+      var sunrise = today.sunrise?today.sunrise.substring(0,5) : null;
+      var sunset = today.sunset?today.sunset.substring(0,5) : null;
+      var moonrise = today.moonrise?today.moonrise.substring(0,5) : null;
+      var moonset = today.moonset?today.moonset.substring(0,5) : null;
+
+      $('#wrap_sunrise').text(sunrise?sunrise : '未知');
+      $('#wrap_sunset').text(sunset?sunset : '未知');
+      riseDownObj = {
+        'sunRise' : sunrise,
+        'sunDown' : sunset,
+        'moonRise' : moonrise,
+        'moonDown' : moonset
+      }
+      
+      animateForIt();
+
+      // $('.sun-icon').css({left:sunleft, top:suntop});///
+      // $('#wrap_today_timenow').text(fDateFilter(tDateNow, 'HH:mm')).css({left:sunleft});
+    }
+
+
+    function fishNum(num, len) {
+      num = num?num : Number($('#wrap_fishnum').text());
+      var count = 0, o;
+      o = setInterval(function() {
+        if(count < num) {
+          count++;
+        }else{
+          clearInterval(o);
+        }
+        $('#wrap_fishnum').text(count);
+      },10);
+
+      //初始化图形
+      renderCharts(len);
+    }
+
+    window.fishNum = fishNum;
+
+    function renderWeekList(data) {
+      var htmlStr = '', len = data.length >=6?6:data.length;
+      var perWidth = api.winWidth/len;
+
+      //限制chart长度
+      $('#container').width(perWidth*len);
+
+
+      for(var i=0; i<len; i++) {
+        var day = data[i]['date'].split('-')[2];
+        var month = data[i]['date'].split('-')[1];
+
+        var curDay = new Date().getDay();
+        switch(curDay) {
+          case 0:
+            curDay = '周日';
+            break;
+          case 1:
+            curDay = '周一';
+            break;
+          case 2:
+            curDay = '周二';
+            break;
+          case 3:
+            curDay = '周三';
+            break;
+          case 4:
+            curDay = '周四';
+            break;
+          case 5:
+            curDay = '周五';
+            break;
+          case 6:
+            curDay = '周六';
+            break;
+        }
+        
+        htmlStr += '<li>'
+        if(data[i]['day'] == curDay) {
+           htmlStr += '  <div class="week">今日</div>'
+        }else{
+           htmlStr += '  <div class="week">'+data[i]['day']+'</div>'
+        }
+        htmlStr += '  <div class="date">'+new Date(data[i]['date']).format('MM/dd')+'</div>'
+        if(data[i]['fishing_forecast'] >= 60) {
+          htmlStr += '<div class="index low">'+data[i]['fishing_forecast']+'</div>'
+        }else if(data[i]['fishing_forecast'] <= 30) {
+          htmlStr += '<div class="index high">'+data[i]['fishing_forecast']+'</div>'
+        }else{
+          htmlStr += '<div class="index medium">'+data[i]['fishing_forecast']+'</div>'
+        }
+        htmlStr += '  <div class="day-weather"><i class="icon-m icon-weather'+data[i]['code1']+'"></i></div>'
+        +'  <div class="space-height"></div>'
+        +'  <div class="night-weather"><i class="icon-m icon-weather'+data[i]['code2']+'"></i></div>'
+        +'  <div class="wind">'+data[i]['wind_direction']+'</div>'
+        +'  <div class="wind-lv">'+data[i]['wind_scale']+'级</div>'
+        +'</li>'
+      }
+      $('#weekList').html(htmlStr);
+    }
+
+
+    $('#changeCity, #wrap_city').on('click',   function() {
+        api.execScript({
+          name: 'index',
+          script: 'openChangeCityWin();'
+        });
+    });
+
+    
+    //日出日落   月出月落
+    $('#updown').on('touchstart', 'span', function() {
+      var name = $(this).attr('name');
+      $('#updown').find('span.active').removeClass('active');
+      $(this).addClass('active');
+      $('#theSun').removeClass('moon').removeClass('sun').addClass(name);
+
+      if(name === 'sun') {
+        $('#wrap_sunrise').text(riseDownObj['sunRise']);
+        $('#wrap_sunset').text(riseDownObj['sunDown']);
+      }else{
+        $('#wrap_sunrise').text(riseDownObj['moonRise'] || '未知');
+        $('#wrap_sunset').text(riseDownObj['moonDown'] || '未知');
+      }
+
+      animateForIt();
+
+    });
+
+
+    function animateForIt() {
+      var date = new Date();
+      var now = date.format('hh:mm');
+
+      var nowM = getAllMinutes(now);
+      var rise = getAllMinutes($('#wrap_sunrise').text());
+      var down = getAllMinutes($('#wrap_sunset').text());
+
+      var rate =   (down - rise) / (api.winWidth - 20 );
+      
+      var nowWidth = (nowM - rise)/rate;
+
+      var middlePoint = getMiddlePoint(down, rise);
+
+      var curTop = nowM - rise;
+      
+      var absV = Math.abs(middlePoint - curTop); 
+      $('#curTime').removeClass('hidden');
+
+      if(absV < 100) {
+        $('#theSun').css('top','0');
+      }else if(absV >= 100 && absV < 300) {
+        $('#theSun').css('top','10px');
+      }else{
+        $('#curTime').addClass('hidden');
+        $('#theSun').css('top','20px');
+      }
+      $('#theSun').css('left' , nowWidth);
+      
+      $('#curTime').text(now).css('left', nowWidth);
+    }
+
+    function getAllMinutes(value) {
+      if(!value) return;
+      var hour = value.split(':')[0];
+      var minute = value.split(':')[1];
+      
+      return Number(hour)*60 + Number(minute);
+    }
+
+    function getMiddlePoint(down, rise) {
+      return (down - rise)/2;
+    }
+
+
+
+    // 钓鱼指数是根据气象因素对垂钓的影响程度，提取出影响垂钓的主要气象因素：气温、风速、气压、湿度变化等，进行综合考虑计算得出，钓友们可利用钓鱼指数参考垂钓出行。钓鱼指数越高越适合钓鱼。
+
+    $('#help').on('touchstart',  function() {
+      api.alert({
+          title: '钓鱼提示',
+          msg: '钓鱼指数是根据气象因素对垂钓的影响程度，提取出影响垂钓的主要气象因素：气温、风速、气压、湿度变化等，进行综合考虑计算得出，钓友们可利用钓鱼指数参考垂钓出行。钓鱼指数越高越适合钓鱼。',
+          buttons:['我知道了']
+      },function(ret,err){});
+    });
+
+
+  }
+</script>
+
+</html>

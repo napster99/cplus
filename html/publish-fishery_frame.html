@@ -1,0 +1,602 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../css/publish-fishery.css">
+  <link rel="stylesheet" href="../script/ratchet/ratchet.css">
+
+  <title>发表渔获--填写内容</title>
+  <style>
+    div[name=more] {
+      opacity: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+      <!-- 发表渔获 -->
+      <div class="publish-fishery">
+        <!-- publish -->
+        <div class="key-feild border-bottom">
+          <div class="photo-list col4">
+            <ul>
+              <div id="pics"></div>
+              <li id="addPhoto" class="border">
+                <div class="img-box"><i class="icon-m icon-add"></i></div>
+              </li>
+            </ul>
+          </div>
+          <div class="textarea-box">
+            <textarea id="desc"  name="" placeholder="谈谈这条鱼的精彩…"></textarea>
+          </div>
+        </div>
+
+        <div class="other-field mt10">
+          <div id="tipCon" class="block-tip bg-purple hidden">
+            <i id="closeTip" class="icon-m icon-close-fill"></i>
+            <div>
+              请选择本次渔获中<strong class="text-yellow">最大</strong>一条鱼，填写以下信息参与趣味排名！
+            </div>
+          </div>
+
+          <div class="text-list mt10">
+            <ul id="fishInfo" class="border-top">
+              <li name="fish" class="border-bottom">
+                <span class="r"><span name="content"></span><span class="enter"><i class="icon-m icon-arrow-right"></i></span></span>
+                <i class="icon-m icon-fish"></i>
+                <span class="field">鱼类</span>
+              </li>
+              <li name="weight" class="border-bottom">
+                <span class="r"><span name="content"></span><span class="enter"><i class="icon-m icon-arrow-right"></i></span></span>
+                <i class="icon-m icon-weight"></i>
+                <span class="field">重量</span>
+              </li>
+              <!-- <li name="length" class="border-bottom">
+                <span class="r"><span name="content"></span><span class="enter"><i class="icon-m icon-arrow-right"></i></span></span>
+                <i class="icon-m icon-rule"></i>
+                <span class="field">长度</span>
+              </li> -->
+              <li name="fishPond" class="border-bottom">
+                <span class="r"><span name="content"></span><span class="enter"><i class="icon-m icon-arrow-right"></i></span></span>
+                <i class="icon-m icon-position"></i>
+                <span class="field">钓点</span>
+              </li>
+              <li name="bait" class="border-bottom">
+                <span class="r"><span name="content"></span><span class="enter"><i class="icon-m icon-arrow-right"></i></span></span>
+                <i class="icon-m icon-bait"></i>
+                <span class="field">饵料</span>
+              </li>
+            </ul>  
+          </div>
+
+          <div class="channels hidden">
+            <ul>
+              <li><i class="icon-m icon-friends-circle"></i></li>
+              <li><i class="icon-m icon-qzone"></i></li>
+              <li><i class="icon-m icon-weibo"></i></li>
+            </ul>
+          </div> 
+
+          <div class="text-list mt10">
+            <ul class="border-top border-bottom">
+              <li id="showMore" class="border-bottom center ani-rotate">
+                <span class="field">展开更多详细</span>
+                <i class="icon-m icon-arrow-down"></i>
+              </li>
+            </ul>
+
+
+            <ul name="moreCon" class="mt10 hidden">
+              <li class="border-bottom">
+                <span class="r">
+                  <div id="barrageCon1" class="r" style="margin-top:-10px;">
+                    <div class="toggle" id="barrageSwitch1">
+                      <div class="toggle-handle"></div>
+                    </div>
+                  </div>
+                </span>
+                <i class="icon-m icon-release"></i>
+                <span class="field">放生</span>
+              </li>
+              <li name="fishing_time" class="border-bottom">
+                <span class="r"><span class="enter"><span name="con"></span><i class="icon-m icon-arrow-right"></i></span></span>
+                <i class="icon-m icon-time"></i>
+                <span class="field">时间</span>
+              </li>
+              <li name="water_depth" class="border-bottom">
+                <span class="r"><span class="enter"><span name="con"></span><i class="icon-m icon-arrow-right"></i></span></span>
+                <i class="icon-m icon-deepth"></i>
+                <span class="field">水深</span>
+              </li>
+              <li name="tiao_piao" class="border-bottom">
+                <span class="r"><span class="enter"><span name="con"></span><i class="icon-m icon-arrow-right"></i></span></span>
+                <i class="icon-m icon-float"></i>
+                <span class="field">调漂</span>
+              </li>
+              <li name="bait_speed" class="border-bottom">
+                <span class="r"><span class="enter"><span name="con"></span><i class="icon-m icon-arrow-right"></i></span></span>
+                <i class="icon-m icon-speed"></i>
+                <span class="field">咬钩速度</span>
+              </li>
+              <li name="water_level" class="border-bottom">
+                <span class="r"><span class="enter"><span name="con"></span><i class="icon-m icon-arrow-right"></i></span></span>
+                <i class="icon-m icon-visibility"></i>
+                <span class="field">水质</span>
+              </li>
+            </ul>
+
+            <ul name="moreCon" class="border-top hidden">
+              <li class="border-bottom">
+                <span class="r">
+                  <div id="barrageCon2" class="r" style="margin-top:-10px;">
+                    <div class="toggle active" id="barrageSwitch2">
+                      <div class="toggle-handle"></div>
+                    </div>
+                  </div>
+                </span>
+                <i class="icon-m icon-refresh2"></i>
+                <span class="field">自动读取天气数据</span>
+              </li>
+            </ul>
+
+
+            <ul name="autoLoad" class="border-top hidden">
+              <li name="weather" class="border-bottom">
+                <span class="r"><span class="enter"><span name="con"></span><i class="icon-m icon-arrow-right"></i></span></span>
+                <i class="icon-m icon-weather"></i>
+                <span class="field">天气</span>
+              </li>
+              <li name="temperature" class="border-bottom">
+                <span class="r"><span class="enter"><span name="con"></span><i class="icon-m icon-arrow-right"></i></span></span>
+                <i class="icon-m icon-temperature"></i>
+                <span class="field">气温</span>
+              </li>
+              <li name="pressure" class="border-bottom">
+                <span class="r"><span class="enter"><span name="con"></span><i class="icon-m icon-arrow-right"></i></span></span>
+                <i class="icon-m icon-pressure"></i>
+                <span class="field">气压</span>
+              </li>
+              <li name="wind" class="border-bottom">
+                <span class="r"><span class="enter"><span name="con"></span><i class="icon-m icon-arrow-right"></i></span></span>
+                <i class="icon-m icon-wind"></i>
+                <span class="field">风</span>
+              </li>
+              <li name="humidity" class="border-bottom">
+                <span class="r"><span class="enter"><span name="con"></span><i class="icon-m icon-arrow-right"></i></span></span>
+                <i class="icon-m icon-humidity"></i>
+                <span class="field">湿度</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <!-- 发表渔获 End -->
+  </div>
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script src="../script/ratchet/ratchet.js"></script>
+<script>
+  apiready = function() {
+    try{
+
+
+        var picsAttr = [], picsObj = {};
+        var paramsObj = {};
+        var picsTrueAttr = [];
+
+        paramsObj['set_free'] = 0;
+        paramsObj['pics'] = [];
+        paramsObj['weather'] = {}; //记录天气
+
+        $api.setStorage('takePic',null);
+        
+        var mapInfo = $api.getStorage('mapInfo');
+
+        //从钓点详情页 自动获得id
+        if(api.pageParam['pondId']) {
+          paramsObj['pond_id'] = api.pageParam['pondId'];
+          $('li[name=fishPond]').find('span[name=content]').text(api.pageParam['pondName']);
+        }
+
+        //发布到某个话题
+        if(api.pageParam['topic_id']) {
+          paramsObj['topic_id'] = api.pageParam['topic_id'];
+          $('.other-field').addClass('hidden');
+        }else{
+          var tip = $api.getStorage('tipCon');
+          if(!tip) {
+            $('#tipCon').removeClass('hidden');
+            $('#closeTip').on('tap', function() {
+              $('#tipCon').remove();
+              $api.setStorage('tipCon', true);
+            });
+          }
+          
+        }
+        
+        $('#addPhoto').on('tap',  function() {
+          $api.setStorage('photoes',  String(picsAttr));
+          api.openWin({
+            'name' : 'publish-fishery-photo',
+            'url' : 'publish-fishery-photo.html',
+            'bounces':false,
+            'animation': {
+              'type': 'movein',
+              'subType': 'from_bottom',
+              'duration': 0
+            }
+          });
+        });
+        
+        //首次打开相册
+        $('#addPhoto').trigger('tap');
+        
+        
+        window.setImages = function(pics) {
+          var htmlStr = '', proImg = {};
+          picsAttr = [];
+
+          for(var i in pics) {
+
+            var thumbPath = pics[i]['thumbPath'];
+            var path = pics[i]['path'];
+            
+            var takePic = pics[i]['takePic'];
+            htmlStr += '<li>'
+            +'  <div class="img-box" path="'+path+'" url="'+thumbPath+'"><i class="icon-m icon-img"></i></div>'
+            +'  <div class="action"><i takePic="'+takePic+'" name="remove" url="'+thumbPath+'" class="icon-m icon-close"></i></div>'
+            +'</li>'
+            picsObj[thumbPath] = pics[i];
+            picsAttr.push(thumbPath);
+            picsTrueAttr.push({'path' : path});
+            proImg[thumbPath] = { 'url' :  thumbPath};
+
+          }
+
+
+          $('#pics').html(htmlStr);
+          getImageSize(proImg);
+
+
+          if(getObjSize(picsObj) === 9) {
+            $('#addPhoto').addClass('hidden');
+          }else{
+            $('#addPhoto').removeClass('hidden');
+          }
+
+          changeSendStatus();
+          
+        }
+
+        //发送按钮状态
+        function changeSendStatus() {
+          if(getObjSize(picsObj) === 0) {
+            //不可发送
+            api.execScript({
+              name: 'publish-fishery',
+              script: 'changeSendStatus(false);'
+            });
+          }else{
+            api.execScript({
+              name: 'publish-fishery',
+              script: 'changeSendStatus(true);'
+            });
+          }
+        }
+
+        //图片预览
+        $('#pics').on('tap',  '.img-box',  function() {
+          var curImgPath = $(this).attr('path');
+          var index = picsTrueAttr.indexOf(curImgPath);
+          var arrs = [];
+          $.each(picsTrueAttr,  function(key, val) {
+            arrs.push(val['path']);
+          });
+
+          api.openWin({
+            'name' : 'img-view',
+            'url' : 'img-view_frame.html' ,
+            'bounces': false,
+            'pageParam' : {'src' : arrs, 'index' : index},
+            'bgColor': '#000',
+            'vScrollBarEnabled':false,
+            'hScrollBarEnabled':false
+          });
+        });
+
+        //移除照片
+        $(document).on('tap', 'i[name=remove]', function() {
+          var url = $(this).attr('url');
+          delete picsObj[url];
+          if($(this).attr('takePic')) {
+            $api.setStorage('takePic',null);
+          }
+          $(this).parents('li').remove();
+          picsAttr = [], picsTrueAttr = [];
+          $.each(picsObj, function(key,val) {
+            picsAttr.push(val['thumbPath']);
+            picsTrueAttr.push({'path' : val['path']});
+          });
+
+          var len = getObjSize(picsObj);
+          if(len < 9) {
+            $('#addPhoto').removeClass('hidden');
+          }else{
+            $('#addPhoto').addClass('hidden');
+          }
+
+          if(len === 0) {
+            api.execScript({
+              name: 'publish-fishery',
+              script: 'changeSendStatus(false);'
+            });
+          }
+          
+
+        });
+
+        //信息
+        $('#fishInfo').on('tap',  'li', function() {
+          var name = $(this).attr('name');
+          var oldValue = $(this).find('span[name=content]').text();
+          if(!name) return;
+          api.openWin({
+            'name' : name,
+            'url' : './fish/'+name+'.html',
+            'bounces' : false,
+            'pageParam' : {'value' : oldValue}
+          });
+
+        });
+
+        //打开窗口
+        $('ul[name=moreCon], ul[name=autoLoad]').on('tap', 'li', function() {
+          var name = $(this).attr('name');
+          var oldValue = $(this).find('span[name=con]').text();
+          if(!name) return;
+          api.openWin({
+            'name' : name,
+            'url' : './weather/'+name+'.html',
+            'bounces' : false,
+            'pageParam' : {'value' : oldValue}
+          });
+        });
+
+        $('#showMore').on('tap',  function() {
+          if($(this).find('i').hasClass('icon-arrow-down')) {
+            $('ul[name=moreCon]').removeClass('hidden');
+            // $(this).find('i').removeClass('icon-arrow-down').addClass('icon-arrow-up');
+            $('#showMore').addClass('unfold');
+          }else{
+            $('ul[name=moreCon], ul[name=autoLoad]').addClass('hidden');
+            // $(this).find('i').removeClass('icon-arrow-up').addClass('icon-arrow-down');
+            $('#showMore').removeClass('unfold');
+          }
+        });
+
+        //更多信息
+        var show = false
+        $('#moreInfo').on('tap',  function() {
+          if(show) {
+            $('div[name=more]').animate({'opacity':0},200,function() {
+            });
+            show = false;
+          }else{
+            $('div[name=more]').animate({'opacity':1},200,function() {
+            });
+            show = true;
+          }
+        });
+
+        //是否放生
+        $(document).on('tap', '#barrageSwitch1', function() {
+          if($(this).hasClass('active')) {
+            paramsObj['set_free'] = 1;
+          }else{
+            paramsObj['set_free'] = 0;
+          }
+          api.setStatusBarStyle({
+            style: 'dark'
+          });
+        });
+
+        getWeatherData();
+
+        //是否自动读取天气
+        $(document).on('tap', '#barrageSwitch2', function() {
+          if($(this).hasClass('active')) {
+            getWeatherData();
+            $('ul[name=autoLoad]').addClass('hidden');
+          }else{
+            $('ul[name=autoLoad]').removeClass('hidden');
+          }
+          api.setStatusBarStyle({
+            style: 'dark'
+          });
+        });
+
+        function getWeatherData() {
+          sendAjax(URLConfig('getWeather'), null, function(data, code, msg) {
+            $('li[name=weather]').find('span[name=con]').text(data['text']);
+            $('li[name=temperature]').find('span[name=con]').text(data['low']+'°C~'+data['high']+'°C');
+            $('li[name=pressure]').find('span[name=con]').text(data['pressure']+'PHA');
+            $('li[name=wind]').find('span[name=con]').text(data['wind']);
+            $('li[name=humidity]').find('span[name=con]').text(data['humidity']+'%');
+
+            paramsObj['weather']['text'] = data['text'];
+            paramsObj['weather']['low'] = data['low'];
+            paramsObj['weather']['high'] = data['high'];
+            paramsObj['weather']['pressure'] = data['pressure'];
+            paramsObj['weather']['wind'] = data['wind'];
+            paramsObj['weather']['humidity'] = data['humidity'];
+          });
+        }
+
+        //=================BACK INFO=============================
+        window.setFishInfo = function(id, name) {
+          $('li[name=fish]').find('span[name=content]').text(name);
+          paramsObj['species_id'] = id;
+          paramsObj['species'] = name;
+        }
+
+
+        window.setFishPondInfo = function(id, name) {
+          $('li[name=fishPond]').find('span[name=content]').text(name);
+          paramsObj['pond_id'] = id; 
+          paramsObj['pondName'] = name;  //传值需要 排名
+        }
+
+        window.setBaitInfo = function(id, name) {
+          $('li[name=bait]').find('span[name=content]').text(name);
+          paramsObj['bait_brand'] = name;
+          paramsObj['bait_brand_id'] = id;
+        }
+
+        // window.setLengthInfo = function(len) {
+        //   if(len) {
+        //     $('li[name=length]').find('span[name=content]').text(len+'CM');
+        //     paramsObj['len'] = len;
+        //   }
+        // }
+
+        window.setWeightInfo = function(weight) {
+          if(weight) {
+            $('li[name=weight]').find('span[name=content]').text(weight+'斤');
+            paramsObj['weight'] = weight;
+          }
+        }
+
+        window.setHumidityInfo = function(humidity) {
+          if(humidity) {
+            $('li[name=humidity]').find('span[name=con]').text(humidity+'%');
+            paramsObj['humidity'] = humidity;
+          }
+        }
+
+        window.setTemperatureInfo = function(low, high) {
+          $('li[name=temperature]').find('span[name=con]').text(low+'°C~'+high+'°C');
+          paramsObj['high'] = high;
+          paramsObj['low'] = low;
+        }
+
+        window.setWeatherInfo = function(id, weather) {
+          if(weather) {
+            $('li[name=weather]').find('span[name=con]').text(weather);
+            paramsObj['weather_id'] = id;
+          }
+        }
+
+        window.setPressureInfo = function(pressure) {
+          if(pressure) {
+            $('li[name=pressure]').find('span[name=con]').text(pressure+'PHA');
+            paramsObj['pressure'] = pressure;
+          }
+        }
+
+        window.setWindInfo = function(wind) {
+          if(wind) {
+            $('li[name=wind]').find('span[name=con]').text(wind);
+            paramsObj['wind'] = wind;
+          }
+        }
+
+        window.setWater_depthInfo = function(meter, centimeter) {
+          if(meter || centimeter) {
+            var water_depth = Number(meter + '.' + centimeter)+'米';
+            $('li[name=water_depth]').find('span[name=con]').text(water_depth);
+            paramsObj['water_depth'] = Number(meter + '.' + centimeter);
+          }
+        }
+
+        window.setBaitSpeedInfo = function(baitSpeed) {
+          if(baitSpeed) {
+            $('li[name=bait_speed]').find('span[name=con]').text(baitSpeed);
+            paramsObj['bait_speed'] = baitSpeed;
+          }
+        }
+        
+        window.setWaterLevelInfo = function(waterLevel) {
+          if(waterLevel) {
+            $('li[name=water_level]').find('span[name=con]').text(waterLevel);
+            paramsObj['water_level'] = waterLevel;
+          }
+        }
+
+        window.setTiaoPiaoInfo = function(tiaopiao1, tiaopiao2) {
+          if(tiaopiao1 || tiaopiao2) {
+            $('li[name=tiao_piao]').find('span[name=con]').text('调'+tiaopiao1+'钓'+tiaopiao2);
+            paramsObj['tiao_piao'] = '调'+tiaopiao1+'钓'+tiaopiao2;
+          }
+        }
+
+        //日期
+        window.setFishTimeInfo = function(time) {
+          if(time) {
+            $('li[name=fishing_time]').find('span[name=con]').text(time);
+            paramsObj['fishing_time '] = time;
+          }
+        }
+
+
+        //=================BACK INFO=============================
+
+        window.sendFeed = function() {
+          uploadErrLog('3333333333333333>>>', '33333333333');
+          paramsObj['desc'] = $('#desc').val();
+
+
+          //发布到某个话题
+          if(api.pageParam['topic_id']) { 
+            paramsObj = {};
+            paramsObj['desc'] = $('#desc').val();
+            paramsObj['topic_id'] = api.pageParam['topic_id'];
+            paramsObj['topicName'] = api.pageParam['topicName'];
+          }
+          paramsObj['pics'] = [];
+          
+          $api.setStorage('curPond', null);  //钓点
+
+          $api.setStorage('backstagePics', picsTrueAttr); //图片路径
+          $api.setStorage('backstageParams', paramsObj);  //字段信息
+            // api.sendEvent({
+            //     name: 'myEvent',
+            //     extra: {key1:'value1', key2:'value2'}
+            // });
+                        
+            api.execScript({
+              name: 'index',
+              frameName : 'index',
+              script: 'publishFeed();'
+            });
+
+          if(api.pageParam['topic_id']) {
+            api.closeToWin({
+              'name' : 'topic_detail'
+            });
+          }else{
+            api.closeToWin({
+              'name' : 'index'
+            });
+          }
+          
+        }
+
+    
+
+    }catch(e){
+      var errmsg = e.message+'   '+JSON.stringify(e);
+      uploadErrLog('exception', errmsg);
+    }
+
+  }
+
+</script>
+</html>

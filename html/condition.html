@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+   <meta name="viewport" content="maximum-scale=1,minimum-scale=1,user-scalable=1,width=device-width,initial-scale=1"/>
+  <meta content="yes" name="apple-mobile-web-app-capable" />
+  <meta content="black" name="apple-mobile-web-app-status-bar-style" />
+  <meta content="telephone=no" name="format-detection" />
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <title>过滤条件</title>
+  
+</head>
+<body style="background-color:transparent;">
+<div class="wrap">
+  
+  <!-- 筛选条件 -->
+  <div class="condition-list">
+    <!-- 城市下拉 -->
+    <div name="city" class="hidden">
+      <div class="area-list">
+        <div class="bd">
+          <ul class="filter-col-3">
+          </ul>
+        </div>
+        <div  id="switchCity" class="ft border-top">
+          <div class="city-switch border">
+            <div  class="r">
+              更换
+              <i class="icon-m icon-arrow-right"></i>
+            </div>
+            当前城市：<span id="currentCity"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 城市下拉 end-->
+    
+    <!-- 智能排序下拉 -->
+    <div name="sort" class="sort-list hidden">
+      <ul></ul>
+    </div>
+    <!-- 智能排序下拉 end-->
+
+    <!-- 筛选 -->
+    <div name="filter" class="filter-pop hidden">
+      <div id="filterList">
+      </div>
+      <!-- <div class="clearfix finish-box">
+          <span id="done" class="finish-btn">完成</span>
+          <div id="reset" class="title" style="margin-left:15px;">重置</div>
+      </div> -->
+      <div class="filter-actions">
+        <label id="reset" class="l" style="padding:10px;">重置</label>
+        <label id="done" class="r" style="padding:10px;">完成</label>
+      </div>
+    </div>
+    <!-- 筛选 end-->
+    
+  </div>
+  <!-- 筛选条件 end-->
+
+</div>
+
+<!-- <div class="mask" style="z-index:10;"></div> -->
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+
+    var params = {};
+
+
+    api.setFrameAttr({
+      'scrollToTop' : false
+    });
+
+    window.openCondition = function(name) {
+      $('div[name=city], div[name=sort], div[name=filter]').addClass('hidden');
+      getConfigData();
+      $('div[name='+name+']').removeClass('hidden');
+    }
+    
+    $('.wrap').on('tap',  function(e) {
+      if(e.target.nodeName === 'DIV') {
+        api.setFrameAttr({
+          'name' : 'condition',
+          'hidden' : true
+        });
+        api.execScript({
+          name: 'index',
+          script: 'condiBack();'
+        });
+      } 
+    });
+    
+    // $('body').on('tap', function(e) {
+    //   if(e.target.nodeName === 'DIV') {
+    //     api.setFrameAttr({
+    //       'name' : 'condition',
+    //       'hidden' : true
+    //     });
+    //     api.execScript({
+    //       name: 'index',
+    //       script: 'condiBack();'
+    //     });
+    //   }
+    // });
+    function getConfigData() {
+     var mapInfo = $api.getStorage('mapInfo');
+     $('#currentCity').text(mapInfo['parent_name']);
+
+     var filterDatas = $api.getStorage('filterDatas');
+     if($.isEmptyObject(filterDatas)) {
+        filterDatas = {};
+        loadFromServer(filterDatas, mapInfo);
+     }else{
+        if($.isEmptyObject(filterDatas[mapInfo['parent_code']])) {
+          loadFromServer(filterDatas, mapInfo);
+        }else{
+          renderData(filterDatas[mapInfo['parent_code']]);
+        }
+     }
+    }
+
+    function loadFromServer(filterDatas, mapInfo) {
+      sendAjax(URLConfig('pondFilter'), {'area_code' : mapInfo['parent_code']}, function(data, code, msg) {
+        if(code === 0) {
+          filterDatas[mapInfo['parent_code']] = data;
+          $api.setStorage('filterDatas', filterDatas);
+
+          renderData(data);
+        }else{
+          api.toast({
+            msg: msg || '获取失败，稍后再试',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+    }
+
+    window.getConfigData = getConfigData;
+
+    function renderData(data){
+      $.each(data,  function(k,v) {
+        if(k === 'city') {
+          var ac = v['area_code'], dc = v['distance'],htmlStr = '<li class="border" >全城</li>';
+          //如果不在当前城市去掉距离
+            for(var i=0; i<dc.length; i++) {
+              htmlStr += '<li class="border" value='+dc[i]['value']+'>'+dc[i]['name']+'</li>'
+            }
+          
+          for(var i=0; i<ac.length; i++) {
+            htmlStr += '<li class="border" area_code='+ac[i]['area_code']+'>'+ac[i]['name']+'</li>'
+          }
+          $('div[name=city]').find('ul').html(htmlStr);
+        }else if(k === 'sort') {
+          var htmlStr = '';
+          for(var i=0; i<v.length; i++) {
+            htmlStr += '<li class="border-bottom" value='+v[i]['value']+'>'+v[i]['name']+'</li>'
+          }
+          $('div[name=sort]').find('ul').html(htmlStr);
+        }else if(k === 'filter') {
+          var htmlStr = '';
+
+          for(var i=0; i<v.length; i++) {
+            htmlStr += '<dl class="filter-list border-bottom">'
+                    + '<dt>' +v[i]['name']+ '</dt>'
+                    + '<dd>'
+            $.each(v[i],  function(k1, v1) {
+              if(v1 instanceof Array) {
+                var el = v1[0]['values']?v1[0]['values'] : v1;
+                for(var j=0; j<el.length; j++) {
+                  // if(v1[0]['name'] === 'type' || v1[0]['name'] === 'fishing_pos') {
+                    if(params[v1[0]['name']] == el[j]['value']) {
+                      htmlStr += '<label name="'+v1[0]['name']+'"><input type="checkbox" name="'+v1[0]['name']+'" value="'+el[j]['value']+'"><p class="active">'+el[j]['name']+'</p></label>'
+                    }else{
+                      htmlStr += '<label name="'+v1[0]['name']+'"><input type="checkbox" name="'+v1[0]['name']+'" value="'+el[j]['value']+'"><p>'+el[j]['name']+'</p></label>'
+                    }
+                }
+                htmlStr += '</dd></dl>'        
+              }
+            });
+          }
+
+          $('#filterList').html(htmlStr);
+
+        }
+      });
+    }
+    
+    //监听label
+    $(document).on('tap', 'label', function() {
+      var curName = $(this).attr('name');
+      var status = $(this).find('p').hasClass('active');
+      $('label[name='+curName+']').find('p.active').removeClass('active');
+      if(!status) {
+        $(this).find('p').addClass('active');
+      }
+    });
+
+    //完成  筛选这块
+    $('#done').on('tap',  function() {
+      var ps = $('#filterList').find('p.active');
+      params = {};
+      for(var i=0; i<ps.length; i++) {
+        params[ps.eq(i).prev().attr('name')+''] = ps.eq(i).prev().attr('value');
+      }
+      
+      destoryFunc(params);
+      return false;
+    });
+
+    //切换城市
+    $('#switchCity').on('tap',  function() {
+      api.execScript({
+        name: 'index',
+        script: 'openChangeCityWin(true);'
+      });
+      return false;
+    });
+
+
+    function destoryFunc(params) {
+      api.setFrameAttr({
+        'name' : 'condition',
+        'hidden' : true
+      });
+      api.execScript({
+        name: 'index',
+        script: 'condiBack();'
+      });
+      
+      if(!$.isEmptyObject(params)) {
+        api.execScript({
+          frameName: 'pond',
+          script: 'setCondition('+JSON.stringify(params)+');'
+        });
+      }else{
+        api.execScript({
+          frameName: 'pond',
+          script: 'setCondition();'
+        });
+      }
+
+    }
+
+    //重置 筛选这块
+    $('#reset').on('click',  function() {
+      var ps = $('#filterList').find('p.active');
+      ps.removeClass('active');
+
+      var distance = params['distance'];
+      var area_code = params['area_code'];
+      var sort = params['sort'];
+      params = {};
+      if(distance){
+        params['distance'] = distance;
+      }
+      if(area_code){
+        params['area_code'] = area_code;
+      }
+      if(sort){
+        params['sort'] = sort;
+      }
+      
+    });
+
+    //全城
+    $('div[name=city]').on('click', 'li', function() {
+      if($(this).attr('value')) {
+        params['distance'] = $(this).attr('value');
+      }else{
+        params['area_code'] = $(this).attr('area_code');
+        delete params['distance'];
+      }
+      
+      var liText = $(this).text();
+      
+      api.execScript({
+        'name' : 'index',
+        'script' : 'placeTitleFn("'+liText+'")'
+      });
+      destoryFunc(params);
+    });
+
+    //智能排序
+    $('div[name=sort]').on('click', 'li', function() {
+      var liText = $(this).text();
+
+      api.execScript({
+        'name' : 'index',
+        'script' : 'sortTitleFn("'+liText+'")'
+      });
+
+      if($(this).attr('value')) {
+        params['sort'] = $(this).attr('value');
+      }
+      destoryFunc(params);
+    });
+
+
+  }
+
+</script>
+</html>

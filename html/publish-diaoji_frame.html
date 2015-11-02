@@ -1,0 +1,425 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <style type="text/css">
+  .publish-diaoji{
+    position: relative;
+    height: 100%;
+    background-color: #fff;
+  }
+
+  .content{
+    padding: 10px 10px 50px;
+    background: #fff;
+  }
+
+  .content img{
+    border-radius: 4px;
+  }
+
+  .c-wrap{
+    position: relative;
+    border-radius: 4px;
+    padding: 5px;
+    margin-bottom: 15px;
+  }
+
+  .c-wrap.active{
+    border:1px dashed #ffd200;
+  }
+
+  .actions-bar{
+    /*position: absolute;*/
+    /*left: -1px; right: -1px; top: -36px;*/
+    /*height: 35px;*/
+    border:1px dashed #ffd200;
+    /*border-bottom: 0;*/
+    /*display: none;*/
+    background-color: #fff;
+    /*z-index: 2;*/
+    padding: 10px;
+  }
+
+  .actions-bar ul{
+    overflow: hidden;
+  }
+
+  .actions-bar li{
+    float: right;
+    font-size: 18px;
+    width: 35px;
+    height: 35px;
+    line-height: 35px;
+    text-align: center;
+    margin-left: 3px;
+  }
+
+  .title{margin-bottom: 15px;}
+
+  .title textarea{
+    font-size: 16px;
+    line-height: 1.3;
+    width: 100%;
+    resize:none;
+    padding: 5px;
+  }
+  
+  .c-wrap p{
+    position: relative;
+    font-size: 16px;
+    line-height: 1.3;
+  }
+
+  .c-wrap textarea{
+    position: relative;
+    font-size: 16px;
+    line-height: 1.3;
+    width: 100%;
+    resize:none;
+    /*display: none;*/
+  }
+
+  .c-wrap.active p{
+    display: none;
+  }
+
+  .c-wrap.active textarea{
+    display: block;
+  }
+
+  .c-wrap.active .actions-bar{
+    display: block;
+  }
+
+  .inner-field{
+    padding-left: 70px;
+    color: #808080;
+  }
+  
+
+  </style>
+  <title>发表渔获--填写内容</title>
+  
+</head>
+<body>
+<div class="wrap">
+  <!-- 发表钓记 -->
+  <div class="publish-diaoji">
+    <div class="content">
+      <div class="title border">
+        <textarea id="title" rows="2" placeholder="钓记标题：千岛湖筏钓，黄尾爆护"></textarea>
+      </div>
+      <div class="text-list mt10">
+        <ul id="fishInfo" class="border-top border-bottom">
+          <li name="fishPond">
+            <span class="r"><span name="content"></span><span class="enter"><i class="icon-m icon-arrow-right"></i></span></span>
+            <i class="icon-m icon-position"></i>
+            <span class="field">钓点</span>
+          </li>
+
+          <li name="device" class="border-top">
+            <span class="r"><span name="content"></span><span class="enter"><i class="icon-m icon-arrow-right"></i></span></span>
+            <i class="icon-m icon-img-group"></i>
+            <span class="field">装备</span>
+          </li>
+
+
+          <li type="device" name="ganzhang" class="border-top hidden">
+            <span class="r"></span>
+            <span class="field inner-field">竿长</span>
+          </li>
+          <li type="device" name="zhuxian" class="border-top hidden">
+            <span class="r"></span>
+            <span class="field inner-field">主线</span>
+          </li>
+          <li type="device" name="zixian" class="border-top hidden">
+            <span class="r"></span>
+            <span class="field inner-field">子线</span>
+          </li>
+          <li type="device" name="shuishen" class="border-top hidden">
+            <span class="r"></span>
+            <span class="field inner-field">水深</span>
+          </li>
+          <li type="device" name="yuer" class="border-top hidden">
+            <span class="r"></span>
+            <span class="field inner-field">鱼饵</span>
+          </li>
+          <li type="device" name="woliao" class="border-top hidden">
+            <span class="r"></span>
+            <span class="field inner-field">窝料</span>
+          </li>
+
+
+
+        </ul>  
+      </div>
+
+
+      <div id="modeCon">
+       <!--  <div class="c-wrap">
+            <div class="actions-bar">
+              <ul>
+                <li><i name="close" class="icon-m icon-close-round"></i></li>
+                <li><i name="up" class="icon-m icon-arrow-up-round"></i></li>
+                <li><i name="down" class="icon-m icon-arrow-down-round"></i></li>
+              </ul>
+              <textarea onpropertychange="this.style.height = this.scrollHeight + 'px';" oninput="this.style.height = this.scrollHeight + 'px';"></textarea>
+            </div>
+          </div>  -->
+        
+      </div>
+    </div>
+    
+
+
+  </div>
+  <!-- 发表钓记 End -->
+</div>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+
+    var picsTrueAttr = [];
+    var deviceObj = {};
+
+    $('#title').on('keyup', function() {
+      checkStatus();
+    }).on('blur', function() {
+      checkStatus();
+    });
+    
+    function openPhoto(type) {
+      api.getPicture({
+          sourceType: type,
+          encodingType: 'jpg',
+          mediaValue: 'pic',
+          destinationType: 'url',
+          allowEdit: true,
+          quality: 100,
+          // targetWidth:100,
+          // targetHeight:100,
+          saveToPhotoAlbum: false
+      }, function(ret, err){ 
+          if (ret && ret.data) {
+            var htmlStr = createPicMode(ret.data);
+            $('#modeCon').append(htmlStr);
+            //滚动到底部
+            $('body')[0].scrollTop = $(document).height();
+            checkStatus();
+
+          }
+      });
+    }
+
+    //钓点
+    $('li[name=fishPond]').on('tap',  function() {
+      var oldValue = $('li[name=fishPond]').find('span[name=content]').text();
+      api.openWin({
+        'name' : 'fishPond',
+        'url' : './fish/fishPond.html',
+        'bounces' : false,
+        'pageParam' : {'value' : oldValue}
+      });
+    });
+
+    //装备
+    $('li[name=device]').on('tap',  function() {
+      api.openWin({
+        'name' : 'device',
+        'url' : './fish/device.html',
+        'pageParam' : {'which' : 'set', 'device' : deviceObj},
+        'bounces' : false
+      });
+    });
+
+    window.setFishPondInfo = function(id, name) {
+      $('li[name=fishPond]').find('span[name=content]').text(name);
+      $('li[name=fishPond]').attr('pondId', id).attr('pondName', name);
+    }
+
+
+    function checkStatus() {
+      var flag = false;
+      if($('#title').val().replace(/\s+/g,'') != '' && $('.c-wrap img')[0]) {
+        flag = true;
+      }
+      api.execScript({
+        name: 'publish-diaoji',
+        script: 'changeSendStatus('+flag+');'
+      });
+    }
+
+    window.addTextFn = function() {
+      var htmlStr = createTextMode();
+      $('#modeCon').append(htmlStr);
+      //滚动到底部
+      $('body')[0].scrollTop = $(document).height();
+
+      
+    }
+
+    window.addPicsFn = function() {
+      api.actionSheet({
+        title: '插入图片',
+        cancelTitle: '取消',
+        buttons: ['拍照','从手机相册选取']
+      },function(ret,err){
+        if(ret.buttonIndex == 1) { //拍照
+          openPhoto('camera');
+        }else if(ret.buttonIndex == 2) { //相册
+          openPhoto('library');
+        }
+      });
+    }
+
+
+    //上下移动或关闭
+    $(document).on('tap', '.actions-bar i', function() {
+      var name = $(this).attr('name');
+      var curWrap = $(this).parents('.c-wrap');
+      if(name === 'down') {
+        if(curWrap.next().hasClass('c-wrap')) {
+          curWrap.next().after(curWrap);
+        }
+      }else if(name === 'up') {
+        if(curWrap.prev().hasClass('c-wrap')) {
+          curWrap.insertBefore(curWrap.prev());
+        }
+      }else if(name === 'close') {
+        curWrap.remove();
+        checkStatus();
+      }
+    });
+
+
+    /* 创建图片模型 */
+    function createPicMode(imgUrl) {
+      var htmlStr = '';
+
+      htmlStr += '<div class="c-wrap" name="img">'
+      +'  <div class="actions-bar">'
+      +'    <ul>'
+      +'      <li><i name="close" class="icon-m icon-close-round"></i></li>'
+      +'      <li><i name="up" class="icon-m icon-arrow-up-round"></i></li>'
+      +'      <li><i name="down" class="icon-m icon-arrow-down-round"></i></li>'
+      +'    </ul>'
+      +'    <img src="'+imgUrl+'">'
+      +'  </div>'
+      +'</div>'
+
+      return htmlStr;
+    }
+
+    /* 创建文字模型 */
+    function createTextMode() {
+      var htmlStr = '';
+      htmlStr += '<div class="c-wrap" name="txt">'
+      +'  <div class="actions-bar">'
+      +'    <ul>'
+      +'      <li><i name="close" class="icon-m icon-close-round"></i></li>'
+      +'      <li><i name="up" class="icon-m icon-arrow-up-round"></i></li>'
+      +'      <li><i name="down" class="icon-m icon-arrow-down-round"></i></li>'
+      +'    </ul>'
+      +'    <textarea onpropertychange="this.style.height = this.scrollHeight + \'px\'; this.scrollTop = this.scrollHeight + \'px\';" oninput="this.style.height = this.scrollHeight + \'px\';" placeholder="请输入文字信息"></textarea>'
+      +'  </div>'
+      +'</div>'
+
+      return htmlStr;
+    }
+
+
+    //封装参数
+    function getParams() {
+      var param = {};
+
+      param['desc'] = $('#title').val();
+      param['topic_id'] = 17;
+      param['topicName'] = '钓记';
+      param['pics'] = [];
+
+      var arrs = [];
+      picsTrueAttr = []
+      var cWraps = $('.c-wrap');
+      for(var i=0; i<cWraps.length; i++) {
+        var unit = {};
+        if(cWraps.eq(i).find('textarea')[0]) {
+          unit['text'] = cWraps.eq(i).find('textarea').val();
+        }else if(cWraps.eq(i).find('img')[0]) {
+          var curImgSrc = cWraps.eq(i).find('img').attr('src');
+          unit['img'] = curImgSrc;
+          picsTrueAttr.push({'path' : curImgSrc});
+          // param['pics'].push(curImgSrc);
+        }
+
+        arrs.push(unit);
+      }
+
+      if(!$.isEmptyObject(deviceObj)) { 
+        $.each(deviceObj, function(key, val) {
+          var curObj = {};
+          curObj[key] = val
+          arrs.push(curObj);
+        });
+      }
+
+      param['fish_extra'] = arrs;
+
+
+      
+      return param;
+    }
+
+    //发送钓记
+    window.sendDiaoji = function() {
+      var param = getParams();
+
+      param['pond_id'] = $('li[name=fishPond]').attr('pondId');
+      param['pondName'] = $('li[name=fishPond]').attr('pondName');
+
+      $api.setStorage('curPond', null);  //钓点
+      $api.setStorage('backstagePics', picsTrueAttr); //图片路径
+      $api.setStorage('backstageParams', param);  //字段信息
+
+      api.execScript({
+        name: 'index',
+        frameName : 'index',
+        script: 'publishFeed();'
+      });
+
+      api.closeToWin({
+        'name' : 'topic_detail'
+      });
+   
+    }
+
+    window.setDeviceParams = function(obj) {
+      if(!$.isEmptyObject(obj)) {
+        deviceObj = obj;
+        var lis = $('li[type=device]');
+        for(var i=0; i<lis.length; i++) {
+          var name = lis.eq(i).attr('name');
+          if(obj[name]) {
+            lis.eq(i).removeClass('hidden');
+            lis.eq(i).find('span.r').text(obj[name]);
+          }else{
+            lis.eq(i).addClass('hidden');
+          }
+        }
+      }
+    }
+
+
+
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+
+
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <title>水质</title>
+  
+</head>
+<body>
+  <div class="wrap">
+    <!-- 水质 -->
+    <div class="text-list mt10">
+      <ul id="waterList">
+        <li name="恶劣" class="border-bottom">
+          <span class="r">
+            <span class="enter"><i class="icon-m icon-check text-blue hidden"></i></span>
+          </span>
+          <span class="field">恶劣</span>
+        </li>
+        <li name="较差" class="border-bottom">
+          <span class="r">
+            <span class="enter"><i class="icon-m icon-check text-blue hidden"></i></span>
+          </span>
+          <span class="field">较差</span>
+        </li>
+        <li name="一般" class="border-bottom">
+          <span class="r">
+            <span class="enter"><i class="icon-m icon-check text-blue hidden"></i></span>
+          </span>
+          <span class="field">一般</span>
+        </li>
+        <li name="较好" class="border-bottom">
+          <span class="r">
+            <span class="enter"><i class="icon-m icon-check text-blue hidden"></i></span>
+          </span>
+          <span class="field">较好</span>
+        </li>
+        <li name="极好" class="border-bottom">
+          <span class="r">
+            <span class="enter"><i class="icon-m icon-check text-blue hidden"></i></span>
+          </span>
+          <span class="field">极好</span>
+        </li>
+      </ul>
+    </div>
+    <!-- 水质 End -->
+  </div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+  apiready = function() {
+    var water = api.pageParam['water'];
+    if(water && $('#waterList').find('li[name='+water+']')[0]) {
+      $('#waterList').find('li[name='+water+']').find('i').removeClass('hidden');
+    }
+    
+    $('#waterList').on('click', 'li',  function() {
+      var waterLevel = $(this).attr('name');
+      $('#waterList').find('li i').addClass('hidden');
+      $(this).find('i').removeClass('hidden');
+      api.execScript({
+        name : 'publish-fishery',
+        frameName: 'publish-fishery',
+        script: 'setWaterLevelInfo("'+waterLevel+'");'
+      });
+      api.closeWin();
+    });
+
+  }
+
+</script>
+</html>

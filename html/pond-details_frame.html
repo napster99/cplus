@@ -1,0 +1,899 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../css/shop-detail.css">
+  
+  <title>钓点详情</title>
+  
+</head>
+<body  onscroll="srollEvents(document.body.scrollTop);">
+<div class="wrap">
+  <div class="shop-detail">
+    <!-- 钓点 -->
+      <div class="top-actions border-bottom"  id="bannerFilter">
+        <div onclick="api.closeWin();" tapmode class="l"><i class="icon-m icon-back"></i></div>
+        <div id="share" class="r"><i class="icon-m icon-share"></i></div>
+      </div>
+      <div class="pic-group">
+        <div class="slider">
+          <div class="swipe-wrap">
+            <ul class="swipe-img-list">
+            <li>
+                <div class="img-box"><i class="icon-m icon-logo"></i></div>
+            </li>
+            </ul>
+            <span class="status" style="position:absolute; bottom:10px; background-color:rgba(0,0,0,.5); height:20px; line-height:20px; padding:0 15px; border-radius:0 1000px 1000px 0; color:#fff;">
+              <span id="curPicNum" style="font-weight:bold; font-size:18px;">1</span>/<span id="totalPicNum"></span>
+           </span>
+           <div class="follow-num"><span id="follows"></span>关注</div>
+          </div>
+        </div>
+
+        <div class="head-info border-bottom">
+          <button id="follow" class="btn-fill color-green">关注</button>
+          <div class="infos">
+            <h2 id="name"></h2>
+            <div class="price" id="price"></div>
+            <span id="firstFree"></span>
+            <span id="level"></span>
+            <!-- <div class="auth-lv1" id="level"><i class="icon-m icon-auth"></i>官方认证</div> -->
+          </div>
+        </div>
+
+        <div class="att-info border-bottom" id="desc"></div>
+
+
+        <div class="announcement hidden" time="7月20日" id="announcement">
+        </div>
+
+        <div class="shop-data border-top">
+          <div class="address border-bottom">
+            <span class="r" id="distance"></span>
+            <div>地址：<span  id="address"></span> </div>
+          </div>
+          <ul class="contacts border-bottom">
+            <li class="border-right"><a id="callTel" href="javascript:;" style="color:#555;"><i class="icon-m icon-phone"></i>正在获取...</a></li>
+            <li id="navMap"><i class="icon-m icon-go"></i>正在获取...</li>
+          </ul>
+        </div>
+
+
+        <div id="tipCon" class="block-tip bg-brown mt10 hidden">
+          <i id="closeTip" class="icon-m icon-close-fill"></i>
+          <div>
+            请各位钓友出行前先和老板联系，避免因临时封塘、修整等原因无法正常营业而<strong class="text-yellow">跑空</strong>。
+          </div>
+        </div>
+
+        <div id="rankTitle" class="tab-head border-top border-bottom">
+          <div name="info" class="active"><i class="icon-m icon-note"></i>信息</div>
+          <div name="rank"><i class="icon-m icon-medal"></i>排行</div>
+          <div name="feed"><i class="icon-m icon-imgs"></i>渔获</div>
+          <span class="line"></span>
+        </div>
+
+        <div class="tab-body">
+
+          <div names="info" class="tabc">
+            <div class="nice-box border-bottom">
+              <h3 class="border-bottom">概要</h3>
+
+              <div class="parameter border-bottom">
+                <ul>
+                  <li><span class="r" id="type"></span>水域</li>
+                  <li class="border-top"><span class="r" id="acreage"></span>面积</li>
+                  <li class="border-top"><span class="r" id="fishing_pos"></span>钓位</li>
+                  <li class="border-top"><span class="r" id="depth"></span>水深 </li>
+                </ul>
+                <div class="assort">
+                  <ul id="others" class="clearfix">
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+
+            <div class="nice-box border-top border-bottom mt10">
+              <h3 class="border-bottom">鱼类</h3>    
+              <ul id="fishSpiciesList" class="item-list">
+              </ul>
+            </div>
+
+            <div class="nice-box border-top border-bottom mt10">
+              <h3 class="border-bottom">注意</h3>    
+              <div class="parameter border-bottom">
+                <ul>
+                  <li><div class="r" id="limit_len"></div>限杆长</li>
+                  <li class="border-top"><div class="r" id="pick_wo"></div>打窝</li>
+                  <li class="border-top"><div class="r" id="live_bait"></div>活饵</li>
+                  <li class="border-top"><div class="r" id="pos_type"></div>选位</li>
+                </ul>
+              </div>
+            </div>
+
+          </div>
+
+          <div names="rank" class="tabc hidden">
+            <div id="kingTitle" class="nice-box border-bottom">
+              <h3 class="border-bottom">钓点之王</h3>    
+              <ul id="kingsList" class="user-list">
+
+
+
+              </ul>
+            </div>
+            <!-- 各种鱼类榜 -->
+            <div id="fishRankList"></div>
+
+            <div id="baitTitle" class="nice-box border-top border-bottom mt10">
+              <h3 class="border-bottom">鱼饵榜</h3>    
+              <ul id="baitList" class="item-list">
+              </ul>
+            </div>
+
+          </div>
+
+          <div names="feed" class="tabc">
+            <ul id="feedList" class="photo-list col3">
+              <!-- <li><div class="img-box"><img src="../temp/profile-fish-box11.jpg"></div></li> -->
+            </ul>
+
+          </div>
+
+
+          <div class="slogan">
+            <div class="trophys">
+              <i class="icon-m icon-trophy trophy-the-second mid-one"></i>
+              <i class="icon-m icon-trophy trophy-the-first big-one"></i>
+              <i class="icon-m icon-trophy trophy-the-third mid-one"></i>
+            </div>
+            <div class="title">成为钓点之王</div>
+            <div class="desc">添加渔获，分享每一次快乐！</div>
+          </div>
+
+        </div>
+      </div>
+
+   </div>
+  <!-- 钓点 End -->
+
+</div>
+
+
+</body>
+
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script src="../script/swipe/swipe.js"></script>
+<script src="../script/feedListDoms.js"></script>
+<script>
+  
+  apiready = function() {
+
+    var pondId = api.pageParam['pondId']; 
+    var pondRank = api.pageParam['pondRank']; 
+    var location_lon = '', location_lat = '';
+    var datas, curShow, shareImg = '';
+
+    // 设置ios7的标题栏字体变亮，全局用一个就行了
+    api.setStatusBarStyle({
+      style: 'dark'
+    });
+
+    api.addEventListener({
+      name:'viewappear'
+    },function(ret,err){
+      // 设置ios7的标题栏字体变亮，全局用一个就行了
+      api.setStatusBarStyle({
+        style: 'dark'
+      });
+    });
+          
+    var bannerFilter = $api.dom('#bannerFilter');
+    $api.fixIos7Bar(bannerFilter);
+
+
+    getData('pondInfo', {'id' : pondId},  renderData);
+
+    var user = $api.getStorage('user');
+
+    function getData(name, params, callback) {
+      sendAjax(URLConfig(name), params, function(data, code, msg) {
+        datas = data;
+        if(code === 0) {
+          callback(data);
+        }else{
+          api.toast({
+            msg: msg || '请求失败，稍后再试',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+    }
+    
+    function renderData(data) {
+      var htmlStr = '', picsAttr = [];
+      // var fillPicsObj = {};
+      if(data['pics'] && data['pics'].length != 0) {
+        picsAttr = data['pics']['water_area']
+        //没图用默认的占位图
+        if(picsAttr.length > 0) {
+          for(var i=0; i<picsAttr.length; i++) {
+            var lastUrl = getPicUrl(picsAttr[i]['b'], api.winWidth*window.devicePixelRatio, api.winWidth*0.75*window.devicePixelRatio);
+            // var cacheUrl = getImageCache(lastUrl);
+            var cacheUrl = lastUrl;
+            shareImg = getShareImg(picsAttr[i]['b']);
+
+            htmlStr += '<li><div name="imgBox" view="saveImg" url="'+cacheUrl+'" class="img-box"><i class="icon-m icon-logo"></i></div></li>'
+            // fillPicsObj[cacheUrl] = { 'url' :  cacheUrl};
+          }
+          // getImageSize(fillPicsObj);
+          if(picsAttr.length > 1){
+            $('.status').removeClass('hidden');
+            $('#totalPicNum').text(picsAttr.length);
+          }
+          $('.swipe-img-list').html(htmlStr);
+
+          renderLogo();
+        }else{
+          if(api.systemType === 'android') {
+            $('.swipe-img-list').height(350);
+          }
+        }
+        
+        if(picsAttr.length <= 1) {
+          $('#pages').addClass('hidden');
+        }else{
+          initSwipe();
+        }
+      }
+
+      //钓点公告
+      if(data['notice']){
+        $('#announcement').text(data['notice']).removeClass('hidden').attr('time', data['notice_date']);
+      }
+
+      if(data['desc'] && data['desc'].replace(/\s+/g,'') != '') {
+        $('#desc').text(data['desc']);
+      }else{
+        $('#desc').addClass('hidden');
+      }
+      
+      
+      //钓点名称 
+      $('#name').text(data['name']);
+      if(data['is_favorite'] == 0) {
+        $('#follow').addClass('color-green').text('关注').attr('follow','no');
+      }else{
+        $('#follow').removeClass('color-green').text('已关注').attr('follow', 'yes');
+      }
+      $('#follows').text(data['favorite']);
+      
+      //1 免费   3天塘  2斤塘
+      if(!data['price']) {
+        $('#price').html('<span class="now"><strong>未知</strong></span>');
+      }else{
+        if(data['charge_type'] == 3) {  //天塘
+          $('#price').html('<span class="now"><strong>&yen;'+data['price']+'</strong>/天</span>');
+        }else if(data['charge_type'] == 2) { //斤塘
+          $('#price').html('<span class="now"><strong>&yen;'+data['price']+'</strong>/斤</span>');
+        }else if(data['charge_type'] == 1){  //免费
+          $('#price').html('<span class="now"><strong>免费</strong></span>');
+        }else if(data['charge_type'] == 4){  //场费
+          $('#price').html('<span class="now"><strong>&yen;'+data['price']+'</strong>/场</span>');
+        }else{
+          $('#price').html('<span class="now"><strong>未知</strong></span>');
+        }
+      }
+      
+      var myHtmlStr = '';
+      if(data['tag'] & 1) {
+        myHtmlStr += '<span class="text-badge bg-orange">合作</span>';
+      }
+      if(data['tag'] & 2) {
+        myHtmlStr += '<span class="text-badge bg-green">抽券</span>';
+      }
+      
+      $('#firstFree').html(myHtmlStr);
+
+      //认证等级 9 官方认证 5 钓友认证 3 电话认证 0 未认证
+      if(data['level'] == 9) {
+        $('#level').html('<div class="auth-lv1"><i class="icon-m icon-auth"></i>官方认证</div>')
+      }else if(data['level'] == 5) {
+        $('#level').html('<div class="auth-lv2"><i class="icon-m icon-auth"></i>钓友认证</div>')
+      }else if(data['level'] == 3) {
+        $('#level').html(' <div class="auth-lv3"><i class="icon-m icon-auth"></i>电话认证</div>')
+      }else {
+        // $('#level').html('<div class="auth-lv4"><i class="icon-m icon-auth"></i>未认证</div>')
+      }
+
+      $('#address').text(data['address']);
+      $('#distance').text(data['distance']);
+      //店主
+      if(data['boss']) {
+        $('#boss').text('（'+data['boss']+'）');
+      }
+      
+      if(data['mobile']) {
+        $('#callTel').attr('href','tel:'+ data['mobile']);
+        $('#callTel').html('<i class="icon-m icon-phone"></i>电话');
+      }else{
+         $('#callTel').attr('href','javascript:;');
+         $('#callTel').html('<i class="icon-m icon-phone"></i>无');
+      }
+
+      $('#callTel').on('tap', function() {
+        if(!data['mobile']) {
+          api.toast({
+            msg: '暂无联系电话',
+            duration:2000,
+            location: 'middle'
+          }); 
+        }
+        return false;
+      });
+
+      //经纬度
+      location_lon = data['location_lon'];
+      location_lat = data['location_lat'];
+
+      $('#navMap').html('<i class="icon-m icon-go"></i>地图');
+      
+      
+      // 1:池塘,2:江河,3:水库
+      $('#type').text(data['type_name']);
+      if(data['acreage']) {
+        $('#acreage').text(data['acreage']+'亩');
+      }else{
+        $('#acreage').text('未知');
+      }
+      
+      if(data['fishing_pos']) {
+        $('#fishing_pos').text(data['fishing_pos']+'个');  
+      }else{
+        $('#fishing_pos').text('未知');  
+      }
+      //napster
+      if(data['depth']) {
+        $('#depth').text(data['depth']+'米');  
+      }else{
+        $('#depth').text('未知');  
+      }
+      
+      //住宿  餐饮  棋牌  停车  已售 夜钓
+      var othersHtmlStr = '';
+      if(data['guest_room'] == 1) {
+        othersHtmlStr += '<li><i class="icon-m icon-check-round"></i>住宿</li>';
+      }
+      if(data['catering'] == 1) {
+        othersHtmlStr += '<li><i class="icon-m icon-check-round"></i>餐饮</li>'; 
+      }
+      if(data['chess_room'] == 1) {
+        othersHtmlStr += '<li><i class="icon-m icon-check-round"></i>棋牌</li>'; 
+      }
+      if(data['parking'] == 1) {
+        othersHtmlStr += '<li><i class="icon-m icon-check-round"></i>停车</li>'; 
+      }
+      if(data['night_fishing'] == 1) {
+        othersHtmlStr += '<li><i class="icon-m icon-check-round"></i>夜钓</li>'; 
+      }
+      if(data['collect_fish'] == 1) {
+        othersHtmlStr += '<li><i class="icon-m icon-check-round"></i>收鱼</li>'; 
+      }
+      $('#others').html(othersHtmlStr);
+
+      //钓点指数 
+      var num = data['weather']['fishing_forecast']? data['weather']['fishing_forecast'] : 0;
+      $('#wea-Num').text(num);
+      
+      if(data['weather']['fishing_forecast'] >= 60) {
+        $('#wea-exponent').addClass('high').html('高');
+      }else if(data['weather']['fishing_forecast'] < 60 && data['weather']['fishing_forecast'] >= 30){
+        $('#wea-exponent').addClass('medium').html('中');
+      }else{
+        $('#wea-exponent').addClass('low').html('低');
+      }
+
+      if(data['weather']['weather_idx'] === '高') {
+        $('#wea-exponent').addClass('high');
+      }else if(data['weather']['weather_idx'] === '低') {
+        $('#wea-exponent').addClass('low');
+      }else{
+        $('#wea-exponent').addClass('medium');
+      }
+
+      $('#wea-evaluation').text(data['weather']['fishing_forecast_info']);
+      $('#wea-other').text(data['weather']['text'] +'，'+ data['weather']['wind_direction'] +'，'+data['weather']['wind_scale']+'级。'+data['weather']['pressure']+'百帕，' + data['weather']['low']+'°-'+data['weather']['high']+'°');
+
+      if(data['pos_type'] == 1) {
+        $('#pos_type').text('自选');
+      }else if(data['pos_type'] == 2) {
+        $('#pos_type').text('抽签');
+      }else{
+        $('#pos_type').text('未知');
+      }
+
+      
+      if(data['limit_len']) {
+        $('#limit_len').text(data['limit_len']+'米');  
+      }else{
+        $('#limit_len').text('未知');
+      }
+
+      if(data['pick_wo'] === null) {
+        $('#pick_wo').text('未知');
+      }else{
+        $('#pick_wo').text( data['pick_wo']? '允许' : '不允许');
+        if(data['pick_wo'] == 2) {
+          $('#pick_wo').text( '不得重窝' );
+        }else if(data['pick_wo'] == 1) {
+          $('#pick_wo').text( '允许打窝' );
+        }else if(data['pick_wo'] == 0) {
+          $('#pick_wo').text( '禁止打窝' );
+        }else{
+          $('#pick_wo').text('未知');
+        }
+      }
+
+      if(data['live_bait'] === null) {
+        $('#live_bait').text('未知');
+      }else{
+        $('#live_bait').text( data['live_bait']? '允许' : '不允许');
+      }
+
+      //排行
+      var htmlStr = '';
+      for(var i=0; i<data['fish_rank'].length;i++) {
+        var id = Number(data['fish_rank'][i]['id']);
+        htmlStr += '    <li class="border-bottom">'
+                +'      <div class="img-box"><img src="'+data['fish_rank'][i]['pics'][0]+'"></div>'
+                +'      <div class="rank-user">'
+                +'        <div class="avatar-box"><img src="'+data['fish_rank'][i]['avatar']+'"></div>'
+                +'        <div class="name">'+data['fish_rank'][i]['nickname']
+
+                if(id%3 === 0) {
+                  htmlStr += ' <span class="text-green designation">'
+                }else if(id%3 === 1) {
+                  htmlStr += ' <span class="text-blue designation">'
+                }else if(id%3 === 2){
+                  htmlStr += ' <span class="text-orange designation">'
+                }
+        htmlStr +='<i class="icon-m icon-crown"></i>'+data['fish_rank'][i]['species']+'之王</span></div>'
+        if(data['fish_rank'][i]['length']) {
+          htmlStr += '        <div class="data">'+data['fish_rank'][i]['species']+' '+data['fish_rank'][i]['weight'] +' 斤/'+data['fish_rank'][i]['length']+' cm</div>'
+        }else{
+          htmlStr += '        <div class="data">'+data['fish_rank'][i]['species']+' '+data['fish_rank'][i]['weight']+' 斤</div>'
+        }
+        
+        htmlStr += '      </div>'
+                +'    </li>'
+      }
+
+      if(data['fish_rank'].length === 0) {
+        $('#kingTitle').addClass('hidden');
+      }else{
+        $('#kingsList').html(htmlStr);
+      }
+
+
+      
+      //各个鱼种排行
+      var htmlStr = '', proImg = {};
+
+      for(var i in data['fish_spicies_rank']) {
+        var type = data['fish_spicies_rank'][i]['type']
+        var len = data['fish_spicies_rank'][i]['rank'].length;
+        if(len != 0) {
+          htmlStr += '<div class="nice-box border-bottom mt10">'
+                +'  <h3 class="border-bottom">'+type+'之王</h3>    '
+                +'  <ul class="user-list">'
+            for(var j=0; j<len; j++) {
+              var pic = data['fish_spicies_rank'][i]['rank'][j]['pics'][0];
+                htmlStr += '    <li class="border-bottom">'
+                        +'      <div class="img-box"><img  src="'+data['fish_spicies_rank'][i]['rank'][j]['pics'][0]+'"></div>'
+                        +'      <div class="rank-user">'
+                        if(j === 0) {
+                          htmlStr += '<i class="icon-m icon-trophy trophy-the-first mid-one"></i> '
+                        }else if(j === 1) {
+                          htmlStr += '<i class="icon-m icon-trophy trophy-the-second mid-one"></i> '
+                        }else if(j === 2) {
+                          htmlStr += '<i class="icon-m icon-trophy trophy-the-third mid-one"></i> '
+                        }
+                        htmlStr += '        <div class="avatar-box"><img src="'+data['fish_spicies_rank'][i]['rank'][j]['avatar']+'"></div>'
+                        +'        <div class="name">'+data['fish_spicies_rank'][i]['rank'][j]['nickname']+'<span class="designation text-green"><i class="icon-m icon-crown"></i>'+type+'之王</span></div>'
+                        
+
+                        if(data['fish_spicies_rank'][i]['rank'][j]['length']) {
+                          htmlStr += '<div class="data">'+type+' '+data['fish_spicies_rank'][i]['rank'][j]['weight']+'斤/'+data['fish_spicies_rank'][i]['rank'][j]['length']+'cm</div>'
+                          +'      </div>'
+                        }else{
+                          htmlStr += '<div class="data">'+type+' '+data['fish_spicies_rank'][i]['rank'][j]['weight']+'斤</div>'
+                          +'      </div>'
+                        }
+
+                        htmlStr += '    </li>'
+
+
+
+              proImg[pic] = { 'url' :  pic};
+            }
+            htmlStr += '  </ul>'
+                    +'</div>'
+        }
+
+      }
+      $('#fishRankList').html(htmlStr);
+      // getImageSize(proImg);
+
+      //饵料排行
+      var htmlStr = '', proImg = {};
+      for(var i=0;i<data['fish_bait_rank'].length;i++) {
+        var logo = data['fish_bait_rank'][i]['logo'];
+        htmlStr += '<li class="border-bottom">'
+                +'  <div class="data">'
+                +'    <div class="field">'
+                +'      <div class="big-text">'+data['fish_bait_rank'][i]['percent']+'%</div>'
+                +'      使用率'
+                +'    </div>'
+                +'  </div>'
+                +'  <div class="img-box border"><img url="'+logo+'" src="'+logo+'"></div>'
+                +'  <div class="info">'
+                +'    <div class="name">'+data['fish_bait_rank'][i]['name']+'</div>'
+                +'    <div class="desc">'+data['fish_bait_rank'][i]['type']+'/'+data['fish_bait_rank'][i]['brand_name']+'</div>'
+                +'  </div>'
+                +'</li>'
+
+                proImg[logo] = { 'url' :  logo};
+      }
+      if(data['fish_bait_rank'].length === 0) {
+        $('#baitTitle').addClass('hidden');
+      }else{
+        $('#baitList').html(htmlStr);
+      }
+      // getImageSize(proImg);
+
+      //信息
+      var htmlStr = '';  //鱼类
+      for(var i in data['fish_spicies']) {
+        var pic = data['fish_spicies'][i]['pic'];
+        htmlStr += '<li class="border-bottom">'
+                // +'  <div class="data">'
+                // +'    <div class="field">'
+                // +'      <div class="big-text">'+data['fish_spicies'][i]['avg_weight']+'斤</div>'
+                // +'      均重'
+                // +'    </div>'
+                // +'  </div>'
+                +'  <div class="img-box border"><img src="'+pic+'"></div>'
+                +'  <div class="info">'
+                +'    <div class="big-name">'+data['fish_spicies'][i]['name']+'</div>'
+                +'  </div>'
+                +'</li>'
+      }
+      
+      if(htmlStr) {
+        $('#fishSpiciesList').html(htmlStr);
+      }else{
+        $('#fishSpiciesList').parent().remove();
+      }
+
+      var htmlStr =  '', picImg = {};
+      for(var i=0;i<data['feeds'].length; i++) {
+        var pic = data['feeds'][i]['pic'];
+        htmlStr += '<li id="'+data['feeds'][i]['id']+'" onclick="enterFeedList(this);"><div url="'+pic+'" class="img-box"><i class="icon-m icon-img"></i></div></li>'
+
+        picImg[pic] = {'url' : pic};
+      }
+      $('#feedList').html(htmlStr);
+      
+      getImageSize(picImg);
+      setTimeout(function() {
+        $('div[names=feed]').addClass('hidden');
+      },200)
+
+      //首次进入钓点页提示
+      
+    }
+
+    function initSwipe() {
+      // 轮播图
+      var swipes = document.querySelectorAll('.swipe-wrap');
+      for(var i = 0; i < swipes.length; i++) {
+        if($(swipes[i]).data('init')) continue;
+        $(swipes[i]).data('init', true);
+        Swipe(swipes[i], {
+          // auto: 5000,
+          continuous: false,
+          disableScroll: false,
+          stopPropagation: false,
+          callback: function(index, elem) {
+            $('#curPicNum').text(index+1);
+          },
+          transitionEnd: function(index, elem) {
+          }
+        });
+      }
+    }
+    
+
+    //Tab切换
+    $('#rankTitle').on('tap', 'div', function() {
+      var name = $(this).attr('name');
+      if(curShow === name) return;
+      curShow = name;
+      $('#rankTitle').find('div.active').removeClass('active');
+      $(this).addClass('active');
+
+      $('.tabc').addClass('hidden');
+      $('div[names='+name+']').removeClass('hidden');
+    });
+
+    if(pondRank === 'yes') {
+      $('#rankTitle').find('div').eq(1).trigger('tap');
+      document.body.scrollTop = $('#rankTitle').find('div').offset().top;
+    }
+    
+    window.srollEvents = function(top) {
+      if(top >= 215) {
+        $('#bannerFilter').addClass('top-actions-ani');
+      }else{
+        $('#bannerFilter').removeClass('top-actions-ani');
+      }
+    }
+    
+    //取消
+    $('#taskCancel').on('tap',  function() {
+      $('#popConsume, #poptask').addClass('hidden');
+    });
+
+    //去做任务
+    $('#todoTask').on('tap',  function() {
+      api.openWin({
+        'name' : 'mission',
+        'url' : './my/mission.html'
+      });
+    });
+
+    //天气页
+    $('.forecast').on('tap',  function() {
+      api.openWin({
+        'name' : 'tool',
+        'url' : 'tools_frame.html'
+      });
+    });
+
+
+    var baiduLocation = api.require('baiduLocation');
+    var baiduNavigation = api.require('baiduNavigation');
+    //地图导航
+    $('#navMap').on('tap',  function() {
+        var routeMode = '', systemType = api.systemType;
+
+        var buttons = ['推荐路线','高速优先','少走高速'];
+        if(api.systemType === 'android') {  
+          buttons = ['最短时间','最短距离','最少收费','躲避拥堵'];
+        }
+        api.actionSheet({
+            title: '路线选择',
+            cancelTitle: '取消',
+            buttons: buttons
+        },function(ret,err){
+            switch(ret.buttonIndex) {
+              case 1:
+                if(systemType === 'ios') {
+                  routeMode = 'recommend';
+                }else{
+                  routeMode = 'min_time';
+                }
+                break;
+              case 2:
+                if(systemType === 'ios') {
+                  routeMode = 'highway';
+                }else{
+                  routeMode = 'min_dist';
+                }
+                break;
+              case 3:
+                if(systemType === 'ios') {
+                  routeMode = 'noHighway';
+                }else{
+                  routeMode = 'min_toll';
+                }
+                break;
+              case 4:
+                if(systemType === 'android') {
+                  routeMode = 'avoid_trafficJam';
+                }else{
+                  return;
+                }
+                break;
+              case 5:
+                return;
+                break;
+            }
+            
+            baiduLocation.getLocation(function(ret, err){
+              var sta = ret.status;
+              var lat = ret.latitude;
+              var lon = ret.longitude;
+
+              //高德转百度
+              var placeEndObj = GpsEncode['bdEncrypt'](datas['location_lon'], datas['location_lat']);
+
+              if(sta){
+                var placeObj = GpsEncode['bdDecrypt'](lon, lat);
+                $api.setStorage('winLat', placeObj['lat']);
+                $api.setStorage('winLon', placeObj['lng']);
+                
+                baiduNavigation.start({
+                  start: { // 起点信息.
+                      position: { // 经纬度，与address配合可为空
+                          lon: lon, // 经度.
+                          lat: lat // 纬度.
+                      },
+                      title: "", // 描述信息
+                      address: "" // 地址信息，与position配合为空
+                  },
+                  routeMode : routeMode,
+                  end: { // 终点信息.
+                      position: { // 经纬度，与address配合可为空
+                      lon: placeEndObj['lng'], // 经度
+                      lat: placeEndObj['lat'] // 纬度
+                      },
+                      title: datas['name'], // 描述信息
+                      address: datas['address'] // 地址信息，与position配合为空
+                  }
+              }, function(ret, err){
+                  
+              }); 
+            }else{
+              callback();
+            }
+          });
+        });
+    });
+    
+    
+    $('#share').on('tap', function() {
+        var shareDatas = {};
+        var desc = datas['name']+'  \n '+ datas['address'];
+        var share_url = datas['share_url']; 
+        
+        shareDatas['info'] = {
+          'title' : '分享一个钓点',
+          'description' : desc,
+          'content_url' : share_url,
+          'imageUrl' : shareImg
+        };
+        
+        sharePop('分享该钓点', shareDatas);
+    });
+    
+
+    
+
+    //进入鱼类排行榜页
+    window.enterSpicies = function(el) {
+      var id = el.id;
+      
+    }
+
+    //进入渔获详情页
+    // window.enterFeedDetail = function(el) {
+    //   var id =el.id;
+    //   api.openWin({
+    //     'name' : 'feedDetail',
+    //     'url' : './feedDetail.html',
+    //     'pageParam' : {'id' : id},
+    //     'bounces':true
+    //   });
+    // }
+
+    //进入渔获列表页
+    window.enterFeedList = function(el) {
+      var id = el.id; //当前渔获id
+      api.openWin({
+        'name' : 'feedList',
+        'url' : './feedList.html',
+        'pageParam' : {'curFeedId' : id, 'pondId' : pondId},
+        'bounces':true
+      });
+    }
+    
+    //关注钓点
+    $('#follow').on('tap',  function() {
+      var follow = $(this).attr('follow'), self = this;
+      authInfo(function(data, code, msg) {
+        if(code === 2) {
+          showLoginConfirm('../index.html');  
+        }else if(code === 0){
+          sendAjax(URLConfig('favorite'), {'type' : 1, 'target' : pondId}, function(data, code, msg) {
+            if(code === 0) {
+              var num = Number($('#follows').text());
+              if(msg === 'add') {
+                $(self).removeClass('color-green').text('已关注').attr('follow', 'yes');
+                $('#follows').text(++num);
+
+              }else{
+                $(self).addClass('color-green').text('关注').attr('follow', 'no');
+                $('#follows').text(--num);
+
+              }
+            }else{
+              api.toast({
+                msg: msg || '关注失败，稍后再试',
+                duration:2000,
+                location: 'middle'
+              });
+            }
+
+
+            //刷新我的收藏列表
+            api.execScript({
+              name : 'index',
+              frameName: 'pond-my',
+              script: 'initData();'
+            });
+
+
+          });
+        }
+      });
+    });
+
+    //图片查看器
+    $(document).on('tap', 'div[view=saveImg] img', function(){
+      var src = $(this).attr('url');
+      var picsAttr = [];
+      var imgs = $(this).parents('ul').find('li img');
+      for(var i=0; i<imgs.length; i++){
+        picsAttr.push(imgs.eq(i).attr('src'));
+      }
+      api.openWin({
+        'name' : 'img-view',
+        'url' : 'img-view_frame.html',
+        'bounces' : false,
+        'pageParam' :  {'src' : picsAttr},
+        'animation' : {
+          'type' : 'none'
+        }
+      });
+
+      // api.openFrame({
+      //   'name' : 'img-view',
+      //   'url' : 'img-view_frame.html' ,
+      //   'bounces': false,
+      //   'pageParam' : {'src' : picsAttr},
+      //   'bgColor': '#000',
+      //   'vScrollBarEnabled':false,
+      //   'hScrollBarEnabled':false
+      // });      
+    });
+    
+    var tipCon = $api.getStorage('closeTip');
+
+    if(!tipCon) {
+      $('#tipCon').removeClass('hidden');
+    }
+    
+    //跑堂提示
+    $('#closeTip').on('tap',  function() {
+      $('#tipCon').hide(function() {
+         $('#tipCon').remove();
+         $api.setStorage('closeTip','yes');
+      });
+    });
+
+  }
+
+  
+</script>
+</html>

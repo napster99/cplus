@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <link rel="stylesheet" href="../../css/shop-detail.css">
+  <title>鱼种列表</title>
+  
+</head>
+<body>
+  <div class="wrap">
+    <div class="shop-detail">
+      <div class="nice-box border-top border-bottom">
+          <ul id="fishList" class="item-list hidden">
+          </ul>
+        </div>
+    </div>
+    <div class="load-page wait"></div>
+  </div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+  apiready = function() {
+    
+    function getListData(name, params, callback ) {
+      sendAjax(URLConfig(name), params, function(data, code, msg) {
+        if(code === 0) {
+          callback(data);
+        }else{
+          api.toast({msg: msg || '请求失败，稍后再试', duration:2000, location: 'middle'});
+        }
+      });
+    }
+
+    getListData('getFishes', null, function(data) {
+      renderData(data);
+    });
+
+    function renderData(data) {
+      var htmlStr = '';
+      for(var i=0; i<data.length; i++) {
+         htmlStr += '<li class="border-bottom" id="'+data[i]['id']+'" name="'+data[i]['name']+'">'
+          +'  <div class="img-box border"><img src="'+data[i]['pic']+'" ></div>'
+          +'  <div class="info">'
+          +'    <div class="big-name">'+data[i]['name']+'</div>'
+          +'  </div>'
+          +'</li>'
+      }
+      $('#fishList').html(htmlStr);
+      showLoadDiv(false, $('#fishList'));
+    }
+
+
+    $('#fishList').on('click', 'li',  function() {
+      var id = this.id, name = $(this).attr('name');
+      
+      api.execScript({
+        name : 'publish-fishery',
+        frameName: 'publish-fishery',
+        script: 'setFishInfo("'+id+'","'+name+'");'
+      });
+
+      api.closeWin();
+      
+    });
+
+  }
+
+</script>
+</html>

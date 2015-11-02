@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/form.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <title>知道_鱼多多_找钓点，就用鱼多多</title>
+</head>
+<body>
+<div class="wrap">
+  <div class="form-page">
+    <!-- 表单 -->
+    <div class="form-row">
+        <input id="tel" type="tel" maxlength="11" placeholder="填写手机号"/>
+    </div>
+
+    <!-- <div class="form-row clearfix">
+      <div class="l">
+        <button type="button" id="send" class="btn-fill btn-lg color-blue">发送验证码</button>
+        <button type="button" id="sending" class="btn-fill btn-lg hidden"><span id="count">60</span>秒后重新发送</button>
+      </div>
+      <div class="r">
+        <input type="tel" id="verCode"  maxlength="4"/>
+      </div>
+    </div> -->
+
+    <div class="form-row mt20">
+        <button id="login" type="button" class="btn-fill btn-lg">前往支付</button>
+    </div>
+
+    <!-- 表单end -->
+  </div>
+</div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+ apiready = function() {
+
+
+    var id = api.pageParam['id'];
+    var telReg = /^(0|86|17951)?(13[0-9]|15[012356789]|17[678]|18[0-9]|14[57])[0-9]{8}$/;
+
+    $('#tel').on('keyup', function() {
+      if(telReg.test($(this).val())) {
+        $('#login').addClass('color-blue');
+        var params = {
+          'mobile' : $('#tel').val(),
+          'activity_id' : id
+        }
+
+        sendAjax(URLConfig('gatherAttend'), params, function(data, code, msg) {
+          if(code === 0) {
+            $('#login').text('前往支付').attr('redirect_url', data['redirect_url']);
+             $('#login').addClass('color-blue');
+          }else{
+             api.toast({
+              msg: msg || '请求数据出错',
+              duration:2000,
+              location: 'middle'
+            });
+          }
+        });
+      }
+      
+      
+    });
+
+    $('#login').on('tap', function() {
+      if(!$(this).hasClass('color-blue')) return;
+      var rurl = $('#login').attr('redirect_url');
+      if(rurl) {
+        api.openWin({
+          name: 'adpics',
+          url: '../adpics.html',
+          bounces : false,
+          pageParam: {'url': rurl, 'title' : '活动支付'}
+        });
+      }
+    });
+
+
+  }
+  
+</script>
+</html>

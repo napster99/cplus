@@ -1,0 +1,103 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+
+
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <link rel="stylesheet" href="../../css/profile.css">
+
+  <title>鱼饵列表</title>
+  
+</head>
+<body>
+  <div class="wrap">
+    <div class="bait">
+      <div class="item-list">
+        <ul id="baitList" class="border-bottom hidden">
+          
+        </ul>  
+      </div>
+
+
+    </div>
+  </div>
+  
+  <div class="load-page wait"></div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+  apiready = function() {
+
+    function getListData(name, params, callback ) {
+      sendAjax(URLConfig(name), params, function(data, code, msg) {
+        if(code === 0) {
+          callback(data);
+        }else{
+          api.toast({msg: msg || '请求失败，稍后再试', duration:2000, location: 'middle'});
+        }
+      });
+    }
+
+
+    getListData('baitBrand', null, function(data) {
+      if(data.length === 0) {
+        getListData('baitBrand', {'all' : 1}, function(datas) {
+          renderData(datas);
+        });
+      }else{
+        renderData(data);
+      }
+    });
+    
+    
+    function renderData(data) {
+      var htmlStr = '';
+      for(var i=0; i<data.length; i++) {
+        htmlStr += '<li id="'+data[i]['id']+'" name="'+data[i]['brand_name']+'" class="border-bottom">'
+                +'  <div class="data">'
+                +'    <div class="field">'
+                // +'    <div class="big-text">52%</div>'
+                // +'      使用率'
+                +'    </div>'
+                +'  </div>'
+                +'  <div class="img-box border"><img src="'+data[i]['logo']+'"></div>'
+                +'  <div class="info">'
+                +'    <div class="name">'+data[i]['brand_name']+'</div>'
+                if(data[i]['product_name'] === '自制') {
+                  htmlStr += '    <div class="desc">自制饵 / '+data[i]['brand_name']+'</div>'
+                }else{
+                  htmlStr += '    <div class="desc">商品饵 / '+data[i]['brand_name']+'</div>'
+                }
+                htmlStr += '  </div>'
+                +'</li>'
+      }
+
+      $('#baitList').html(htmlStr);
+      showLoadDiv(false, $('#baitList'));
+    }
+    
+    $('#baitList').on('click', 'li',  function() {
+      var id = this.id, name = $(this).attr('name');
+      
+      api.execScript({
+        name : 'publish-fishery',
+        frameName: 'publish-fishery',
+        script: 'setBaitInfo("'+id+'","'+name+'");'
+      });
+
+      api.closeWin();
+      
+    });
+
+  }
+
+</script>
+</html>

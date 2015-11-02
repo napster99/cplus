@@ -1,0 +1,314 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <title>新的好友</title>
+</head>
+<body>
+  <div class="wrap hidden" id="conDiv">
+    <!-- 新粉丝 -->
+    <div name="newFans" class="new-friend">
+      <h4 class="section-title border-bottom">新粉丝（<span id="fansNum"></span>）</h4>
+      <div class="user-sns-list border-bottom">
+        <ul class="border-bottom">
+          <!-- <li class="border-bottom">
+            <div class="avatar-box"><img src="../temp/avatar.jpg"></div>
+            <div class="btn-box"><button class="btn-line color-green">关注</button></div>
+            <div class="last-photo">
+              <div class="img-box"><img src="../temp/feed2.jpg"></div>
+            </div>
+            <div class="infos">
+              <h3>匆忙的杰克</h3>
+              <div class="info">
+                <div><span>223</span>篇渔获</div>
+                <div><span>44667</span>人关注</div>
+              </div>
+            </div>
+          </li> -->
+        </ul>
+        <!-- <div name="more" class="more border-bottom">更多</div> -->
+      </div>
+    </div>
+    <!-- 新粉丝 -->
+    
+
+
+    <!-- 通讯录好友 -->
+    <div name="newContact" class="new-friend">
+      <h4 class="section-title border-bottom">通讯录好友（<span id="contactNum"></span>）</h4>
+      <div class="user-sns-list border-bottom">
+        <ul class="border-bottom">
+          <!-- <li class="border-bottom">
+            <div class="avatar-box"><img src="../temp/avatar.jpg"></div>
+            <div class="btn-box"><button class="btn-line color-green">关注</button></div>
+            <div class="last-photo">
+              <div class="img-box"><img src="../temp/feed2.jpg"></div>
+            </div>
+            <div class="infos">
+              <h3>匆忙的杰克</h3>
+              <div class="info">
+                <div><span>223</span>篇渔获</div>
+                <div><span>44667</span>人关注</div>
+              </div>
+            </div>
+          </li> -->
+        </ul>
+        <!-- <div name="more" class="more border-bottom">更多</div> -->
+      </div>
+    </div>
+    <!-- 通讯录好友 -->
+
+    <!-- 可能感兴趣的人 -->
+    <div name="newInterested" class="new-friend">
+      <h4 class="section-title border-bottom">可能感兴趣的人</h4>
+      <div class="user-sns-list border-bottom">
+        <ul class="border-bottom">
+          <!-- <li class="border-bottom">
+            <div class="avatar-box"><img src="../temp/avatar.jpg"></div>
+            <div class="btn-box"><button class="btn-line color-green">关注</button></div>
+            <div class="last-photo">
+              <div class="img-box"><img src="../temp/feed2.jpg"></div>
+            </div>
+            <div class="infos">
+              <h3>匆忙的杰克</h3>
+              <div class="info">
+                <div><span>223</span>篇渔获</div>
+                <div><span>44667</span>人关注</div>
+              </div>
+            </div>
+          </li> -->
+        </ul>
+        <!-- <div name="more" class="more border-bottom">更多</div> -->
+      </div>
+    </div>
+    <!-- 可能感兴趣的人 -->
+
+  </div>
+  <div class="load-page wait"></div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+  apiready = function() {
+    var contact = api.require('contact');
+    var friendsPhones = {};
+    var mobileArr = [];
+
+    showLoadDiv(true, $('#conDiv'));  
+
+
+    contact.queryContact(function(ret,err) {
+      if(ret.status) {
+        var array = ret.contacts;
+        for(var i=0; i<array.length; i++){
+          var arrayPho = array[i].phones;
+          friendsPhones[arrayPho[0]['手机']] = {
+            'name' : array[i]['name'],
+            'mobile' : arrayPho[0]['手机']
+          }
+          mobileArr.push(arrayPho[0]['手机']);
+        }
+
+        var params = mobileArr.toString();
+        sendAjax(URLConfig('contact'), {'mobile' : params}, function(data, code, msg) {
+          if(code === 0) {
+            sendNewFriendAjax();
+          }else{
+            api.toast({msg: msg || '请求失败，稍后再试',duration:2000,location: 'middle'});
+          }
+        });
+
+      } else {
+        api.toast({msg: '通讯录获取失败', duration:2000,location: 'middle'});
+      }
+    });
+
+    function sendNewFriendAjax() {
+      sendAjax(URLConfig('newFriend'),{'mobile' : 2}, function(data, code, msg) {
+        if(code === 0) {
+          renderData(data);
+        }else{
+          api.toast({msg:msg, duration:2000, location: 'middle'});
+        }
+      }); 
+    }
+
+    $(document).on('tap', '.infos, .avatar-box, .last-photo', function() {
+      var uid = $(this).attr('uid');
+      api.openWin({
+        'name' : 'profile',
+        'url' : '../profile.html',
+        'bounces' : false,
+        'pageParam' : {'uid' : uid}
+      });
+    });
+
+
+    function renderData(data) {
+      showLoadDiv(false, $('#conDiv')); 
+      var htmlStr = '', errCount = 0;
+      //新的粉丝
+      if(data['new']) {
+        for(var i=0; i<data['new'].length; i++) {
+          if(!data['new'][i]['nickname']) {
+            errCount++;
+            continue;
+          };
+
+          var avatarImg = data['new'][i]['avatar'];
+          if(avatarImg) {
+            avatarImg = getPicUrl(avatarImg, 90, 90);
+          }
+
+          htmlStr += '<li class="border-bottom">'
+          +'  <div class="avatar-box" url="'+avatarImg+'" uid="'+data['new'][i]['id']+'" onclick="enterProfile(this);"><i class="icon-m icon-user"></i></div>'
+          +'  <div class="btn-box"><button name="follow-btn" follow="no" uid="'+data['new'][i]['id']+'" class="btn-line color-green">关注</button></div>'
+          if(data['new'][i]['feed_pic']) {
+            htmlStr += '  <div class="last-photo"  uid="'+data['new'][i]['id']+'">'
+            +'    <div class="img-box"><img src="'+data['new'][i]['feed_pic']+'"></div>'
+            +'  </div>'
+          }
+          htmlStr += '  <div class="infos" uid="'+data['new'][i]['id']+'">'
+          +'    <h3>'+data['new'][i]['nickname']+'</h3>'
+          +'    <div class="info">'
+          +'      <div><span>'+data['new'][i]['feed_num']+'</span>篇渔获</div>'
+          +'      <div><span>'+data['new'][i]['fan_num']+'</span>人关注</div>'
+          +'    </div>'
+          +'  </div>'
+          +'</li>'
+        }
+        
+        $('div[name=newFans]').find('ul').html(htmlStr);
+
+
+        //render 头像
+        renderAvatar();
+
+        $('#fansNum').text(data['new'].length - errCount);
+        if(data['new'].length - errCount == 0) {
+          $('div[name=newFans]').addClass('hidden');
+        }
+      }else{
+        $('div[name=newFans]').addClass('hidden');
+      }
+
+      //通讯录好友
+      if(!$.isEmptyObject(data['contact'])) {
+        htmlStr = '';
+        for(var i=0; i<data['contact'].length; i++) {
+          if(!data['contact'][i]['nickname']) continue;
+          var avatarImg = data['contact'][i]['avatar'];
+          if(avatarImg) {
+            avatarImg = getPicUrl(avatarImg, 90, 90);
+          }
+
+
+          htmlStr += '<li class="border-bottom">'
+          +'  <div class="avatar-box" url="'+avatarImg+'" uid="'+data['contact'][i]['id']+'" onclick="enterProfile(this);"><i class="icon-m icon-user"></i></div>'
+          +'  <div class="btn-box"><button name="follow-btn" follow="no" uid="'+data['contact'][i]['id']+'" class="btn-line color-green">关注</button></div>'
+          if(data['contact'][i]['feed_pic']) {
+            htmlStr += '  <div class="last-photo"  uid="'+data['contact'][i]['id']+'">'
+            +'    <div class="img-box"><img src="'+data['contact'][i]['feed_pic']+'"></div>'
+            +'  </div>'
+          }
+          htmlStr += '  <div class="infos" uid="'+data['contact'][i]['id']+'">'
+          +'    <h3>'+data['contact'][i]['nickname']+'</h3>'
+          +'  </div>'
+          +'</li>'
+        }
+       
+        $('div[name=newContact]').find('ul').html(htmlStr);
+        //render 头像
+        renderAvatar();
+        $('#contactNum').text(data['contact'].length);
+      }else{
+        $('div[name=newContact]').addClass('hidden');
+      }
+
+      
+      //可能感兴趣的人
+      if(data['interested']) {
+        htmlStr = '';
+        for(var i=0; i<data['interested'].length; i++) {
+          if(!data['interested'][i]['nickname']) continue;
+
+          var avatarImg = data['interested'][i]['avatar'];
+          if(avatarImg) {
+            avatarImg = getPicUrl(avatarImg, 90, 90);
+          }
+
+          htmlStr += '<li class="border-bottom">'
+          +'  <div class="avatar-box" url="'+avatarImg+'" uid="'+data['interested'][i]['id']+'" onclick="enterProfile(this);"><i class="icon-m icon-user"></i></div>'
+          +'  <div class="btn-box"><button name="follow-btn" follow="no" uid="'+data['interested'][i]['id']+'" class="btn-line color-green">关注</button></div>'
+          if(data['interested'][i]['feed_pic']) {
+            htmlStr += '  <div class="last-photo"  uid="'+data['interested'][i]['id']+'">'
+            +'    <div class="img-box"><img src="'+data['interested'][i]['feed_pic']+'"></div>'
+            +'  </div>'
+          }
+          htmlStr += '  <div class="infos" uid="'+data['interested'][i]['id']+'">'
+          +'    <h3>'+data['interested'][i]['nickname']+'</h3>'
+          +'    <div class="info">'
+          +'      <div><span>'+data['interested'][i]['feed_num']+'</span>篇渔获</div>'
+          +'      <div><span>'+data['interested'][i]['fan_num']+'</span>人关注</div>'
+          +'    </div>'
+          +'  </div>'
+          +'</li>'
+        }
+        $('div[name=newInterested]').find('ul').html(htmlStr);
+        //render 头像
+        renderAvatar();
+      }else{
+        $('div[name=newInterested]').addClass('hidden');
+      }
+
+    }
+
+
+
+    //关注
+    $(document).on('tap', 'button[name=follow-btn]', function() {
+      var uid = $(this).attr('uid'), follow = $(this).attr('follow'), self = this;
+      var userInner = $api.getStorage('user');
+      if($.isEmptyObject(userInner)) {
+        showLoginConfirm('../index.html');  
+        return;
+      }
+
+      // authInfo(function(data, code, msg) {
+      //   if(code === 2) {
+      //     showLoginConfirm('../index.html');  
+      //   }else if(code === 0){
+          if(follow === 'no'){
+            //关注
+            $(self).removeClass('color-green').text('已关注').attr('follow', 'yes');
+            sendAjax(URLConfig('follow'), {'uid' : uid}, function(data, code, msg) {
+              if(code != 0) {
+                $(self).addClass('color-green').text('关注').attr('follow', 'no');
+                api.toast({msg: msg || '请求失败，稍后再试', duration:2000,location: 'middle'});
+              }
+            });
+          }else{
+            //取消关注
+            $(self).addClass('color-green').text('关注').attr('follow', 'no');
+            sendAjax(URLConfig('cancelFollow'), {'uid' : uid}, function(data, code, msg) {
+              if(code != 0) {
+                $(self).removeClass('color-green').text('已关注').attr('follow', 'yes');
+                api.toast({msg: msg || '请求失败，稍后再试', duration:2000,location: 'middle'});
+              }
+            });
+          }
+      //   }
+      // });
+    });
+    
+
+  }
+</script>
+</html>

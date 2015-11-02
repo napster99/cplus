@@ -1,0 +1,215 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <!-- <link rel="stylesheet" href="../css/fish-ac.css"> -->
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <title>放钓头条_鱼多多_找钓点，就用鱼多多</title>
+  <style>
+      .fish-ac-list{
+        background-color: #fff; 
+      }
+
+      .fish-ac-list>ul>li{
+        overflow: hidden;
+        padding: 10px;
+        position: relative;
+      }
+
+      .fish-ac-list .img-box{
+        width: 65px;
+        height: 65px;
+        float: left;
+      }
+
+      .fish-ac-list .info{ 
+        margin-left: 75px;
+
+      }
+
+      .fish-ac-list .info .name{
+        color: #222;
+        font-size: 15px;
+        padding: 5px 0;
+      }
+
+      .fish-ac-list .info .param{
+        color: #555;
+      }
+
+      .fish-ac-list .info .param span{
+        color: #aaa;
+      }
+
+      .fish-ac-list .info .param li{
+        overflow: hidden;
+        padding: 2px 0;
+        line-height: 1.4;
+      }
+
+      .fish-ac-list .param strong{
+        color: #ff8a00;
+        font-weight: normal;
+      }
+
+      .fish-ac-list .addr{
+        color: #aaa;
+        padding: 10px 0;
+      }
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="fish-ac-list">
+      <ul id="putInList" class="hidden">
+      </ul>
+    </div>
+    
+    <div class="load-page wait"></div>
+  </div>
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+
+    var isEnd = false, isAjaxing = false;
+
+    var mapInfo = $api.getStorage('mapInfo');
+
+    var condicationObj = {
+      'page' : 1,
+      'page_size' : 10,
+      'area_code' : mapInfo['parent_code']
+    }
+
+    function getListData(name, params, callback, first) {
+      if(first) {
+        // showLoadDiv(true, $('#putInList'));  
+      }else{
+        showButtonLoadDiv(true, $('#putInList'));  
+      }
+      sendAjax(URLConfig(name), params, function(data, code, msg) {
+        if(code === 0) {
+          callback(data, first);
+        }else{
+           api.toast({
+            msg: msg || '请求数据出错',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+    }
+
+    getListData('putIn', condicationObj, function(data, first) {
+      renderData(data,first);
+    }, true);
+
+    api.setRefreshHeaderInfo({
+        visible: true,
+        loadingImg: 'widget://image/push-down.gif',
+        bgColor: '#fff',
+        textColor: '#ccc',
+        textDown: '下拉刷新...',
+        textUp: '松开刷新...',
+        showTime: true
+    }, function(ret, err){
+       isEnd = false;
+       condicationObj['page'] = 1;
+       isAjaxing = false;
+       // $('#putInList').html('');
+       getListData('putIn', condicationObj, function(data,first) {
+         renderData(data, first);
+       }, true);
+    });
+
+
+     //下拉加载
+    api.addEventListener({
+      name: 'scrolltobottom'
+    }, function(ret, err){
+      if(isEnd) {
+        showButtonLoadDiv(false, $('#putInList'));
+        api.toast({
+          msg: '没有更多数据了',
+          duration:2000,
+          location: 'middle'
+        });
+      }
+      if(!isEnd && !isAjaxing) {
+        showButtonLoadDiv(false, $('#putInList'));
+        ++condicationObj['page'];
+        getListData('putIn', condicationObj ,renderData);
+      }
+    });
+
+
+    //数据渲染
+    function renderData(data, first) {
+      api.refreshHeaderLoadDone();
+      if(!first) {
+        showButtonLoadDiv(false, $('#putInList'));
+      }
+      if(data['list'].length === 0 && first) {
+        showNoData($('#putInList'));
+        return;
+      }
+      var arrs = data['list'], len = arrs.length, htmlStr = '';
+        for(var i=0; i<len; i++) {
+          htmlStr +='<li class="border-bottom" onclick="enterDetail(this);" id="'+arrs[i]['pond_id']+'">'
+                  +'  <div class="img-box border"><img src="'+arrs[i]['logo']+'"></div>'
+                  +'  <div class="info">'
+                  +'    <h3 class="name">'+arrs[i]['pond_name']+'</h3>'
+                  +'    <div class="param">'
+                  +'      <ul>'
+                  +'        <li class="time">时间：<span>'+arrs[i]['date']+'</span></li>'
+                  +'        <li class="price">价格：<span><strong>'+(arrs[i]['price']?arrs[i]['price']:'暂无价格')+'</strong></span></li>'
+                  +'        <li class="fish">'
+                  +'          鱼情：<span>'+(arrs[i]['fishes']?arrs[i]['fishes']:'暂无鱼情')+'</span>'
+                  +'        </li>'
+                  +'      </ul>'
+                  +'    </div>'
+                  +'    <div class="addr">'+arrs[i]['address']+'</div>'
+                  +'  </div>'
+                  +'</li>'
+        }
+        $('#putInList').append(htmlStr);
+        if(data['next']) {
+          showButtonLoadDiv(true, $('#putInList'));
+        }else{
+          isEnd = true;
+        }
+
+        if(first) {
+          showLoadDiv(false, $('#putInList'));
+        }
+
+        if($('img[name=threeImg]').eq(0)[0]) {
+          $('img[name=threeImg]').height($('img[name=threeImg]').eq(0).width());
+        }
+
+    }
+
+
+    //点击进入详细页
+    window.enterDetail = function(el) {
+      api.openWin({
+        name: 'pond_detail',
+        url: './pond-details.html',
+        bounces : false,
+        pageParam: {'pondId': el.id}
+      });
+    }
+
+  }
+  
+</script>
+</html>

@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <title>风</title>
+</head>
+<body>
+  <div class="wrap">
+    <div class="text-list mt10">
+    <ul class="border-top">
+      <li class="border-bottom">
+        <i id="clearThis" class="icon-m icon-close-fill"></i>
+        <input id="wind" type="text"> 
+      </li>
+    </ul>
+  </div>
+  </div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<!-- <script type="text/javascript" src="http://code.jquery.com/jquery-latest.js"></script> -->
+<script>
+  apiready = function() {
+   
+
+    if(api.pageParam['wind']) {
+      $('#wind').val(api.pageParam['wind'].replace('PHA',''));
+    }
+
+    $('#clearThis').on('click', function() {
+       $('#wind').val('');
+       $(this).addClass('hidden');
+       $('#wind').focus();
+    });
+
+    $('#wind').on('keyup',  function() {
+      var wind = $(this).val();
+      if(wind) {
+        api.execScript({
+          name: 'wind',
+          script: 'changeSaveStatus(true);'
+        });
+      }else{
+        api.execScript({
+          name: 'wind',
+          script: 'changeSaveStatus(false);'
+        });
+      }
+    });
+
+    
+
+    window.saveWind = function() {
+      var wind = $('#wind').val();
+      
+      api.execScript({
+        name : 'publish-fishery',
+        frameName: 'publish-fishery',
+        script: 'setWindInfo("'+wind+'");'
+      });
+
+      api.closeWin();
+    }
+   
+
+  }
+
+</script>
+</html>

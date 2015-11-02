@@ -1,0 +1,124 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../css/scan-guide.css">
+  <title>扫码向导页</title>
+  
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- 新的好友 -->
+  <div class="scan-guide">
+    <div class="user-b-list border-bottom">
+      <ul class="border-bottom">
+        <li class="border-bottom">
+          <div class="avatar-box" id="logo"><i class="icon-m icon-shop"></i></div>
+          <div class="btn-box"><button id="follow" class="btn-line color-green">关注</button></div>
+          <div class="infos">
+            <h3 id="pondName"></h3>
+            <div class="info">
+              <div><span id="feeds"></span>篇渔获</div>
+              <div><span id="fans"></span>人关注</div>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+    <div class="photo-list col4 border-bottom">
+      <ul id="pics">
+      </ul>
+    </div>
+    <div class="content border-top border-bottom">
+      <div class="ad">
+        <img src="../images/haibao.jpg">
+      </div>
+
+      <button id="payBtn" class="btn-fill btn-lg color-blue">立即支付</button>
+
+    </div>
+  </div>
+</div>
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+
+    var data = api.pageParam['data'];
+    var user = $api.getStorage('user');
+    var pondId;
+    if(!$.isEmptyObject(data)){
+      pondId = data['pond']['id'];
+      renderData(data);
+    }
+
+
+    function renderData(data) {
+      $('#pondName').text(data['pond']['name']);
+      var img = new Image();
+      img.src = data['pond']['logo'];
+      img.onload = function() {
+        $('#logo').html('<img src="'+data['pond']['logo']+'" />');
+      }
+      $('#feeds').text(data['pond']['feeds']);
+      $('#fans').text(data['pond']['fans']);
+      var htmlStr = '', picsAttr = [], fillPicsObj = {};
+    
+      $.each(data['pond']['pics'],  function(key, val) {
+        picsAttr.push(val[0]['b']);
+      });
+
+      for(var i=0; i<picsAttr.length; i++) {
+        htmlStr += '<li><div class="img-box" url="'+picsAttr[i]+'" name="saveImg"><i class="icon-m icon-img"></div></li>'
+        fillPicsObj[picsAttr[i]] = { 'url' :  picsAttr[i]};
+      }
+      getImageSize(fillPicsObj);
+
+      $('#pics').html(htmlStr);
+    }
+
+
+    $('#follow').on('tap',  function() {
+      var follow = $(this).attr('follow'), self = this;
+      authInfo(function(data, code, msg) {
+        if(code === 2) {
+          showLoginConfirm('../index.html');  
+        }else if(code === 0){
+          sendAjax(URLConfig('favorite'), {'type' : 1, 'target' : pondId}, function(data, code, msg) {
+            if(code === 0) {
+              if(msg === 'add') {
+                $(self).removeClass('color-green').text('已关注').attr('follow', 'yes');
+              }else{
+                $(self).addClass('color-green').text('关注').attr('follow', 'no');
+              }
+            }else{
+              api.toast({msg: msg || '关注失败，稍后再试',duration:2000,location: 'middle'});
+            }
+          });
+        }
+      });
+    });
+
+    //立即支付
+    $('#payBtn').on('tap',  function() {
+      api.openWin({
+        'name' : 'voucher-detail',
+        'url' : './voucher-detail.html',
+        'pageParam' : {'pondId':pondId}
+      });
+    });
+
+  }
+</script>
+</html>

@@ -1,0 +1,190 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+
+
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <title>与我相关</title>
+  
+</head>
+<body>
+
+<div class="wrap body-white">
+  <!-- 头部 -->
+  <div id="header" class="top-bar gray-style">
+    <div class="l" id="back">
+      <div class="icon-text-h">
+        <i class="icon-m icon-arrow-left"></i><span>返回</span>
+      </div>
+    </div>
+    <div class="center-part" id="title">与我相关</div>
+  </div>
+  <!-- 头部 end-->
+</div>
+
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+  apiready = function() {
+    // 设置ios7的标题栏字体变亮，全局用一个就行了
+    api.setStatusBarStyle({
+      style: 'dark'
+    });
+
+    api.addEventListener({
+      name:'viewappear'
+    },function(ret,err){
+      // 设置ios7的标题栏字体变亮，全局用一个就行了
+      api.setStatusBarStyle({
+        style: 'dark'
+      });
+    });
+
+    var header = $api.byId('header');
+    var id = api.pageParam['id'];
+    var floorCount = api.pageParam['floorCount'];
+    var title = api.pageParam['title'];
+    var voteId;
+
+    if(title) {
+      $('#title').text(title);
+    }
+
+    $api.fixIos7Bar(header);
+
+    $('#back').on('tap',  function() {
+      api.closeWin();
+    })
+
+    function openFrame() {
+      api.openFrame({
+        name: 'pk_me',
+        url: './pk_me_frame.html',
+        bounces: false,
+        opaque: true,
+        vScrollBarEnabled: true,
+        pageParam : {'id':id, 'floorCount' : floorCount, 'title' : title},
+        rect: {
+          x: 0,
+          y: $('.top-bar').offset().height,
+          w: 'auto',
+          h: api.winHeight - $('.top-bar').offset().height - 50
+        }
+      });
+    }
+
+    openFrame();
+
+
+    var chatBox = api.require('UIChatBox');
+    chatBox.open({
+      placeholder: '写跟帖',
+      autoFocus : false,
+      maxRows: 1,
+      emotionPath: 'widget://images/emotion',
+      styles: {
+          inputBar: {
+              borderColor: '#d9d9d9',
+              bgColor: '#f2f2f2'
+          },
+          inputBox: {
+              borderColor: '#B3B3B3',
+              bgColor: '#FFFFFF'
+          },
+          emotionBtn: {
+              normalImg: 'widget://images/emotion/face1.png'
+          },
+          keyboardBtn: {
+              normalImg: 'widget://images/emotion/key1.png'
+          }
+      }
+    }, function(ret){
+        //点击发送按钮
+        if(ret.eventType == 'send'){
+          sendCommentAjax(ret.msg);
+          chatBox.closeKeyboard();
+        }
+    });
+
+
+    function sendCommentAjax(commentText) {
+
+      var userInner = $api.getStorage('user');
+      if($.isEmptyObject(userInner)) {
+        showLoginConfirm('../../index.html');  
+        return;
+      }
+      
+      if(commentText.replace(/\s+/g,'') === '') {
+        api.toast({
+          msg: '说说您的观点呗',
+          duration:2000,
+          location: 'middle'
+        });
+        return;
+      }
+
+      var options = {
+        'pk_id' : api.pageParam['id'], 'comment' : commentText
+      }
+
+      if(voteId) {
+        delete options['pk_id'];
+        options['vote_id'] = voteId;
+      }
+
+      sendAjax(URLConfig('voteComment'), options,  function(data, code, msg) {
+        if(code == 0) {
+          api.toast({
+            msg: '评论成功！',
+            duration:2000,
+            location: 'middle'
+          });
+
+          resetComment();
+
+          //刷新评论列表
+          api.execScript({
+            frameName : 'pk_comment',
+            script: 'initdata();'
+          });
+        }else{
+          api.toast({
+            msg: msg || '评论失败，稍后再试',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+    }
+
+    
+    window.showComment = function(vote_id, floor){
+      voteId = vote_id;
+      chatBox.popupKeyboard();
+      chatBox.setPlaceholder({
+        placeholder: '回复'+floor+'楼'
+      });
+    }
+
+    window.resetComment = function() {
+      voteId = 0;
+      chatBox.closeKeyboard();
+      chatBox.setPlaceholder({
+        placeholder: '写跟帖'
+      });
+    }
+
+
+  }
+
+</script>
+</html>

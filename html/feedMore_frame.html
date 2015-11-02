@@ -1,0 +1,188 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../css/publish-fishery.css">
+
+  <title>发表渔获--填写内容</title>
+  <style>
+    div[name=more] {
+      opacity: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+      <!-- 发表渔获 -->
+      <div class="publish-fishery">
+        <!-- publish -->
+        <div class="other-field mt10">
+          <div class="text-list mt10">
+            <ul id="fishInfo">
+              <li name="species" class="border-bottom hidden">
+                <span class="r"><span class="enter"><span name="content"></span></span></span>
+                <i class="icon-m icon-fish"></i>
+                <span class="field">鱼类</span>
+              </li>
+              <li name="weight" class="border-bottom hidden">
+                <span class="r"><span class="enter"><span name="content"></span>斤</span></span>
+                <i class="icon-m icon-weight"></i>
+                <span class="field">重量</span>
+              </li>
+              <li name="pond_name" class="border-bottom hidden">
+                <span class="r"><span class="enter"><span name="content"></span></span></span>
+                <i class="icon-m icon-position"></i>
+                <span class="field">钓点</span>
+              </li>
+              <li name="bait_brand" class="border-bottom hidden">
+                <span class="r"><span class="enter"><span name="content"></span></span></span>
+                <i class="icon-m icon-bait"></i>
+                <span class="field">饵料</span>
+              </li>
+            </ul>  
+          </div>
+
+          <div class="text-list mt10">
+            <ul name="moreCon" class="mt10">
+              <!-- <li name="set_free" class="border-bottom hidden">
+                <span class="r"><span class="enter"><span name="content"></span></span></span>
+                <i class="icon-m icon-time"></i>
+                <span class="field">放生</span>
+              </li> -->
+
+              <li name="fishing_time" class="border-bottom hidden">
+                <span class="r"><span class="enter"><span name="content"></span></span></span>
+                <i class="icon-m icon-time"></i>
+                <span class="field">时间</span>
+              </li>
+              <li name="water_depth" class="border-bottom hidden">
+                <span class="r"><span class="enter"><span name="content"></span>米</span></span>
+                <i class="icon-m icon-deepth"></i>
+                <span class="field">水深</span>
+              </li>
+              <li name="tiao_piao" class="border-bottom hidden">
+                <span class="r"><span class="enter"><span name="content"></span></span></span>
+                <i class="icon-m icon-float"></i>
+                <span class="field">调漂</span>
+              </li>
+              <li name="bait_speed" class="border-bottom hidden">
+                <span class="r"><span class="enter"><span name="content"></span></span></span>
+                <i class="icon-m icon-speed"></i>
+                <span class="field">咬钩速度</span>
+              </li>
+              <li name="water_level" class="border-bottom hidden">
+                <span class="r"><span class="enter"><span name="content"></span></span></span>
+                <i class="icon-m icon-visibility"></i>
+                <span class="field">水质</span>
+              </li>
+            </ul>
+            
+            <ul name="autoLoad" class="mt10">
+              <li name="text" class="border-bottom hidden">
+                <span class="r"><span class="enter"><span name="content"></span></span></span>
+                <i class="icon-m icon-weather"></i>
+                <span class="field">天气</span>
+              </li>
+              <li name="temperature" class="border-bottom hidden">
+                <span class="r"><span class="enter"><span name="content"></span></span></span>
+                <i class="icon-m icon-temperature"></i>
+                <span class="field">气温</span>
+              </li>
+              <li name="pressure" class="border-bottom hidden">
+                <span class="r"><span class="enter"><span name="content"></span>PHA</span></span>
+                <i class="icon-m icon-pressure"></i>
+                <span class="field">气压</span>
+              </li>
+              <li name="wind" class="border-bottom hidden">
+                <span class="r"><span class="enter"><span name="content"></span></span></span>
+                <i class="icon-m icon-wind"></i>
+                <span class="field">风</span>
+              </li>
+              <li name="humidity" class="border-bottom hidden">
+                <span class="r"><span class="enter"><span name="content"></span>%</span></span>
+                <i class="icon-m icon-humidity"></i>
+                <span class="field">湿度</span>
+              </li>
+            </ul>
+
+
+          </div>
+        </div>
+      </div>
+      <!-- 发表渔获 End -->
+  </div>
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+    var feedId = api.pageParam['id'];
+
+    sendAjax(URLConfig('feedDetail'), {'feed_id' : feedId}, function(data, code, msg) {
+      if(code === 0) {
+        renderData(data);
+      }else{
+        api.toast({msg: msg || '请求失败，稍后再试', duration:2000,location: 'middle'});
+      }
+    });
+
+    function renderData(data) {
+      
+      var fish_extra = data['fish_extra'];
+      if(typeof fish_extra === 'string'){
+        try{
+          if(fish_extra) {
+            fish_extra = JSON.parse(fish_extra);
+          }else{
+            fish_extra = {};
+          }
+        }catch(e){
+          var errmsg = e.message+'   '+JSON.stringify(e);
+          uploadErrLog('exception feedMore', errmsg);
+        }
+      }
+
+
+      var wether_info = data['wether_info'];
+      if(typeof wether_info === 'string'){
+        try{
+          wether_info = JSON.parse(wether_info);
+        }catch(e){
+          var errmsg = e.message+'   '+JSON.stringify(e);
+          uploadErrLog('exception', errmsg);
+        }
+      }
+
+      $.each(fish_extra,  function(key, val) {
+        if(val) {
+          $('li[name='+key+']').removeClass('hidden')
+          if(key === 'set_free') {
+            
+          }else{
+            $('li[name='+key+']').find('span[name=content]').text(val);
+          }
+          
+        }
+      });
+      
+      $.each(wether_info,  function(key, val) {
+        if(val) {
+          $('li[name='+key+']').removeClass('hidden')
+          $('li[name='+key+']').find('span[name=content]').text(val);
+        }
+      });
+
+
+    }
+
+
+  }
+</script>
+</html>

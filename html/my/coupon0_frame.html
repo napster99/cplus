@@ -1,0 +1,380 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <link rel="stylesheet" href="../../css/voucher.css">
+  <title>我的代金券_鱼多多_找钓点，就用鱼多多</title>
+  <style>
+    .coupon-tips{text-align: center; padding: 10px 0;}
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <div id="question" class="tips-bar bg-blue mt10 hidden" style="font-weight:bold;">免单券相关问题，猛戳这条！</div>
+  <!-- 代金券列表 -->
+  <div class="voucher-list">
+    <ul id="couponList" class="hidden">
+    </ul>
+    <div id="couponTips" class="coupon-tips"><strong class="text-orange">如何使用免单券，请点击</strong></div>
+  </div>
+  <!-- 代金券列表end -->
+
+  <div class="load-page wait"></div>
+
+</div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+  apiready = function() {
+    var lastId = 0;
+    var isActived = false;
+
+    var isEnd = false, isAjaxing = false;
+    var condicationObj = {
+      'lastId' : lastId,
+      'status' : 0
+    }
+
+
+    function getListData(name, params, callback, first) {
+      if(first) {
+        // showLoadDiv(true, $('#couponList'));  
+      }else{
+        showButtonLoadDiv(true, $('#couponList'), '../../images/loadButton.gif');  
+      }
+      isAjaxing = true;
+
+      sendAjax(URLConfig(name), params, function(data, code, msg) {
+        isAjaxing = false;
+        api.refreshHeaderLoadDone();
+        if(code === 0) {
+          callback(data, first);
+        }else{
+          api.toast({
+            msg: msg || '请求失败，稍后再试',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+    }
+    
+    getListData('couponNewList', condicationObj, function(data, first) {
+      renderData(data,first);
+    }, true);
+    
+    api.setRefreshHeaderInfo({
+        visible: true,
+        loadingImg: 'widget://image/push-down.gif',
+        bgColor: '#fff',
+        textColor: '#ccc',
+        textDown: '下拉刷新...',
+        textUp: '松开刷新...',
+        showTime: true
+    }, function(ret, err){
+       isEnd = false;
+       lastId = 0;
+       condicationObj = {
+        'status' : 0,
+        'lastId' : lastId
+       }
+       isAjaxing = false;
+       // $('#couponList').html('');
+      getListData('couponNewList', condicationObj, renderData, true);
+    });
+ 
+    //下拉加载
+    api.addEventListener({
+      name: 'scrolltobottom'
+    }, function(ret, err){
+      if(!isEnd && !isAjaxing) {
+        showButtonLoadDiv(false, $('#couponList'), '../../images/loadButton.gif');
+        lastId = $('#couponList').find('li').last().attr('id');
+        condicationObj['lastId'] = lastId;
+        getListData('couponNewList', condicationObj ,renderData);
+      }
+    });
+
+    function renderData(data, first) {
+      var htmlStr = '';
+      for(var i=0; i<data.length; i++) {
+        var id = data[i]['id'];
+        var pondId = data[i]['pond_id'];
+        var time = '永久';
+        var price = data[i]['coupon']['discount'];
+
+        var name = data[i]['coupon']['name'];
+
+        var unit = '元', type = '代金券';
+        if(data[i]['coupon']['type'] == 0){
+          unit = '折';
+          type = '券';
+        }
+
+        if(data[i]['coupon']['discount'] == 0 && data[i]['coupon']['type'] == 0){
+          unit = '';
+          type = '';
+          price = '免单券';
+        }
+        
+        var organization = data[i]['coupon']['organization'];
+        var started = data[i]['coupon']['started'];
+        var expired = data[i]['coupon']['expired'];
+        
+        var started = new Date(started*1000).Format("M月d日");
+        var expired = new Date(expired*1000).Format("M月d日");
+        
+        if(data[i]['coupon']['expired']) {
+          time = started + '-' + expired;
+        }
+        
+        var doneCount, allCount;
+        if(data[i]['coupon']['limit']) {
+          doneCount = data[i]['coupon']['limit']['data']['progress'][0];
+          allCount = data[i]['coupon']['limit']['data']['progress'][1];
+        }
+
+        var status = data[i]['coupon']['status'];
+
+        var cardId = data[i]['card_id'];
+
+
+        if(data[i]['coupon']['limit'] && (data[i]['coupon']['limit']['type'] === 'share_friends' || status >= 0)) {
+          htmlStr += '<li class="border" id="'+id+'" onclick="shareIt();" tapmode>'
+        }else{
+          htmlStr += '<li class="border" id="'+id+'">'
+        }
+        
+        htmlStr += '  <div class="left-box" onclick="enterPondDetail(this);" pondId="'+pondId+'">'
+        +'    <div class="img-box"><i class="icon-m icon-shop"></i></div>'
+        +'    <div class="shop">'+organization+'</div>'
+        +'  </div>'
+        +'  <div class="info">'
+        if(data[i]['type'] == 0 && price == 0){
+          if(name) {
+            htmlStr += '  <h3 class="name"><strong class="text-orange">'+name+'</strong>'
+          }else{
+            htmlStr += '  <h3 class="name"><strong class="text-orange">免单券</strong>'
+          }
+        }else{
+          if(name) {
+            htmlStr += '  <h3 class="name"><strong class="text-orange">'+name+'</strong>&nbsp;'
+          }else{
+            htmlStr += '  <h3 class="name"><strong class="text-orange">'+price+unit+'</strong>&nbsp;'+type
+          }
+        }
+        
+        
+        htmlStr += '</h3>'
+        + '    <div class="time">'+time+'</div>'
+
+        if(data[i]['coupon']['limit'] && data[i]['coupon']['limit']['type'] === 'share_friends') {
+          htmlStr +='   <div class="condition">成功邀请好友 '+doneCount+'/'+allCount+'</div>  '
+        }
+        
+        if(data[i]['coupon']['limit'] && status >= 0) {
+          htmlStr += '<div class="action">炫耀一下</div>'
+        }else if(data[i]['coupon']['limit'] && status < 0){
+          htmlStr += '<div class="action">点击邀请</div>'
+        }
+
+        // +'    <div class="code"><span class="text-green">'+cardId+'</span></div>'
+        htmlStr += '  </div>'
+        +'  <div class="dot"></div>'
+        +'  <div class="stamp-left"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>'
+        +'  <div class="stamp-right"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>'
+        if(data[i]['coupon']['limit']) {
+          if(status < 0) {
+            htmlStr += '  <div class="superscript">未激活</div>'
+          }else{
+            htmlStr += '  <div class="superscript active">已激活</div>'
+          }
+        }
+        htmlStr += '</li>'
+        
+        // htmlStr +='<li class="border" id="'+id+'">'
+        // +'  <div class="img-box"><i class="icon-m icon-shop"></i></div>'
+        // +'  <div class="info">'
+
+        // if(data[i]['type'] == 0 && price == 0){
+        //   htmlStr += '  <h3 class="name"><strong class="text-orange">免单券</strong><small>（'+organization+'）</small></h3>'
+        // }else{
+        //   htmlStr += '  <h3 class="name"><strong class="text-orange">'+price+unit+'</strong>&nbsp;'+type+'<small>（'+organization+'）</small></h3>'
+        // }
+
+        // htmlStr += '    <div class="time-code">'
+        // +'      <div class="time">'+time+'</div>'
+        // +'      <div class="code text-green">'+cardId+'</div>'
+        // +'    </div>'
+        // +'  </div>'
+        // +'  <div class="dot"></div>'
+        // +'  <div class="stamp-left"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>'
+        // +'  <div class="stamp-right"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>'
+        // +'</li>'
+
+
+      }
+
+
+      if(first) {
+        $('#couponList').html(htmlStr);
+        if(isActived) {
+           $('#question').remove();
+        }else{
+           $('#question').removeClass('hidden');
+        }
+
+      }else{
+        $('#couponList').append(htmlStr);
+      }
+
+      showLoadDiv(false, $('#couponList'));
+
+      showButtonLoadDiv(false, $('#couponList'), '../../images/loadButton.gif');
+      if(data.length === 0) {
+        isEnd = true;
+        if(first && data.length === 0) {
+          showNoData($('#couponList'));
+        }else if(!first){
+          api.toast({
+            msg: '没有更多数据了',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      }
+
+      if(data.length < 15) {
+        isEnd = true;
+      }
+    }
+
+    $('#question').on('tap',  function() {
+      var linkUrl = 'http://yuxin.yddapp.com/h/201509/06/';
+      api.openWin({
+        name: 'adpics',
+        url: '../adpics.html',
+        bounces : false,
+        pageParam: {'url': linkUrl, 'title' : '详情'}
+      });
+    });
+
+
+    $('#couponTips').on('tap',  function() {
+      var linkUrl = 'http://yuxin.yddapp.com/h/hangzhou81/';
+      api.openWin({
+        name: 'adpics',
+        url: '../adpics.html',
+        bounces : false,
+        pageParam: {'url': linkUrl, 'title' : '详情'}
+      });
+    });
+
+
+    //请求分享数据
+    //礼包检测接口
+    var descs = '', links = '', imgUrls = '';
+    sendAjax(URLConfig('giftCheck'), null,  function(data, code, msg) {
+      if(code === 0) {
+        descs = data['free']['coupon']['coupon']['limit']['data']['share']['description'];
+        links = data['free']['coupon']['coupon']['limit']['data']['share']['content_url'];
+        imgUrls = data['free']['coupon']['coupon']['limit']['data']['share']['thumb_url'];
+        
+        if(descs && links && imgUrls) {
+          $('#shareIt').removeClass('hidden');
+        }
+      }
+    });
+
+    /*
+     * 钓点详情页  onclick="enterPondDetail(this);" 
+     */
+    window.enterPondDetail = function(el) {
+      event.stopPropagation();
+      el = $(el);
+      var pondId = el.attr('pondId');
+      if(!pondId || pondId == 0) return;
+      api.openWin({
+        name: 'pond_detail',
+        url: '../pond-details.html',
+        bounces : false,
+        bgColor : '#fff',
+        pageParam: {'pondId': pondId}
+      });
+    }
+
+
+
+    //分享 激活
+    window.shareIt = function() {
+      //share it
+      var url = imgUrls;
+      if(!url) {
+        url = 'http://img1.shanggou.la/default/logo.jpg';
+      }
+      
+      api.imageCache({
+          url: url
+      },function(ret,err){
+          if (ret) {
+            var path = ret.url;
+            var cacheDir = api.cacheDir; 
+            var imageFilter = api.require('imageFilter');
+            imageFilter.compress({
+                img: path,
+                quality: 0.5,
+                scale: 1,
+                save: {
+                    imgPath: api.cacheDir,
+                    imgName: 'share.jpg'
+                }
+            }, function(ret, err){
+                if(ret.status) {
+                  var imgSmallPath = api.cacheDir + '/share.jpg';
+                  var weiXin = api.require('weiXin');
+                  weiXin.registerApp(function(ret,err){
+                      if (ret.status) {
+                        weiXin.sendRequest({
+                            scene:'timeline',
+                            contentType:'web_page',
+                            title:descs,
+                            description:descs,
+                            thumbUrl: imgSmallPath,
+                            contentUrl: links
+                        },function(ret,err){
+                            if(ret.status){
+                              api.toast({
+                                msg: '分享成功',
+                                duration:2000,
+                                location: 'middle'
+                              });
+                            }else{
+                              api.toast({
+                                msg: '分享取消',
+                                duration:2000,
+                                location: 'middle'
+                              });
+                            };
+                        });
+                      }
+                  });
+                }
+            });
+          }
+      });
+    };
+
+
+  }
+
+</script>
+</html>

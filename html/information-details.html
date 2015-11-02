@@ -1,0 +1,255 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+
+
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/article-detail.css">
+  <link rel="stylesheet" href="../css/article.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../script/ratchet/ratchet.css">
+
+  <title>知道_鱼多多_找钓点，就用鱼多多</title>
+  <style>
+  .proportion-bg {
+    width: 200px;
+    height: 2px;
+    background: #c3c3c3;
+    position: relative;
+    margin-top: 30px;
+  }
+  .proportion-in{
+    width: 50%;
+    height: 2px;
+    background: #007aff;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+  .proportion-dot{
+    width: 19px;
+    height: 19px;
+    border:1px solid #ebebeb;
+    border-radius: 19px;
+    background: #fff;
+    box-shadow: -1px 3px 8px 2px #ebebeb;
+    position: absolute;
+    left: 50%;
+    top: -10px;
+    margin-left: -10px;
+    z-index: 3;
+  }
+
+  #header{
+    height: 20px;
+    background: #fff;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 999;
+  }
+  </style>
+</head>
+<body>
+<div class="wrap hidden">
+  <!-- 底部 -->
+  <div id="footer" class="btn-bar">
+    <ul class="border-top">
+      <li id="goBack">
+        <i class="icon-m icon-back"></i>
+      </li>
+      <li id="favorited">
+        <i class="icon-m  icon-star"></i>
+        <i class="icon-m icon-refresh2 rotate hidden"></i>
+      </li>
+      <li id="setFont">
+        <i class="icon-m icon-font"></i>
+      </li>
+      <li id="share">
+        <i class="icon-m icon-share"></i>
+      </li>
+    </ul>
+  </div>
+  <!-- 底部 -->
+</div>
+
+<div class="load-page wait"></div>
+
+
+</body>
+
+<script src="../script/api.js"></script>
+<script src="../script/jquery1.8.2.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+
+
+    var isNewsOpend = false, curId = api.pageParam['id'];
+
+    // 设置ios7的标题栏字体变亮，全局用一个就行了
+    api.setStatusBarStyle({
+      style: 'dark'
+    });
+
+    api.addEventListener({
+      name:'viewappear'
+    },function(ret,err){
+      // 设置ios7的标题栏字体变亮，全局用一个就行了
+      api.setStatusBarStyle({
+        style: 'dark'
+      });
+    });
+
+    var fontSetting = $api.getStorage('fontSetting');
+    if($.isEmptyObject(fontSetting)) {
+      fontSetting = {
+        'fontSize' : 'font-size-medium',  //中号
+        'light'    : 70,
+        'isNight'  : 'no'
+      }
+    }
+
+
+    $('#goBack').on('touchstart', function() {
+      var isNewNight = ($api.getStorage('isNight') === 'yes') ? $api.getStorage('isNight') : 'no';
+      var newFontSetting = $api.getStorage('fontSetting');
+      if($.isEmptyObject(newFontSetting)) {
+        newFontSetting = fontSetting;
+      }
+      newFontSetting['isNight'] = isNewNight;
+      $api.setStorage('fontSetting', fontSetting);
+      api.openWin({
+          name: 'index',
+          url: '../index-main.html',
+          bounces : false,
+          slidBackEnabled : false
+      });
+    });
+
+
+    function init(id) {
+
+      showLoadDiv(true, $('.wrap'));
+      sendAjax(URLConfig('newsInfo'), {id : id}, function(data, code, msg) {
+        showLoadDiv(false, $('.wrap'));
+        // renderFontSetting();
+        if(isNewsOpend) { //已经打开
+          api.setFrameAttr({
+            frameName : 'detail-con',
+            hidden : false
+          });
+          data = JSON.stringify(data);
+          api.execScript({
+            frameName: 'detail-con',
+            script: 'initRender('+data+');'
+          });
+
+        }else{
+          var footer   = $api.byId('footer');
+          var footerPos = $api.offset(footer);
+          api.openFrame({
+            name: 'detail-con',
+            url: 'information-details_frame.html',
+            rect:{x:0, y:0, w:'auto', h:api.winHeight - footerPos.h},
+            pageParam : {'data' : data},
+            vScrollBarEnabled:true,
+            hScrollBarEnabled:true
+          });
+
+          isNewsOpend = true;
+        }
+
+
+        if(code === 0) {
+          // renderData(data);
+        }else{
+          api.toast({
+            msg: msg || '获取失败，稍后再试',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+    }
+
+    init(api.pageParam['id']);
+
+
+    window.updateContent = init;
+
+
+    $('#favorited').on('click', function() {
+      // icon-m icon-refresh2 rotate
+
+      var user = $api.getStorage('user');
+      if(!$.isEmptyObject(user)) {
+        $('#favorited i').eq(0).addClass('hidden');
+        $('#favorited i.rotate').removeClass('hidden');
+      }
+
+      sendAjax(URLConfig('favorite'), {'type' : 2, 'target' : curId}, function(data, code, msg) {
+        $('#favorited i.rotate').addClass('hidden');
+        $('#favorited i').eq(0).removeClass('hidden');
+        if(code === 0) {
+          if(msg === 'add') {
+            //收藏成功！
+            msg = '收藏成功';
+            $('#favorited i').eq(0).removeClass('icon-star').addClass('icon-star-fill');
+          }else{
+            msg = '取消成功';
+            $('#favorited i').eq(0).removeClass('icon-star-fill').addClass('icon-star');
+          }
+
+          api.toast({
+            msg: msg,
+            duration:2000,
+            location: 'middle'
+          });
+        }else{
+          api.toast({
+            msg: msg || '收藏失败，稍后再试',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+    });
+
+
+
+    //字体设置
+    $('#setFont').on('click', function() {
+      api.execScript({
+        frameName : 'detail-con',
+        script : 'setFontFunc();'
+      });
+    });
+
+
+    //分享弹窗
+    $('#share').on('click', function() {
+      api.execScript({
+        frameName : 'detail-con',
+        script : 'setShareFunc();'
+      });
+    });
+
+
+    window.addBodyClass = function(flag) {
+      if(flag) {
+        $('body').addClass('dark-style');
+      }else{
+        $('body').removeClass('dark-style');
+      }
+    }
+
+
+  }
+</script>
+</html>

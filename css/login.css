@@ -1,0 +1,41 @@
+.login{
+  min-height: 100%;
+  background: #1a98f5 url(../images/login-way.jpg) no-repeat;
+  background-size: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-way{
+  position: absolute;
+  bottom: 0; left: 0; right: 0; top: 0;
+}
+
+.login-way ul{
+  position: absolute;
+  left: 10px; right: 10px;
+  bottom: 40px;
+}
+
+.login-way li{
+  border-radius: 5px;
+  background-color: rgba(255,255,255,.6);
+  color: #222;
+  height: 35px;
+  margin-top: 6px;
+  font-size: 14px;
+  line-height: 35px;
+  text-align: center;
+}
+
+.guest{
+  padding: 10px;
+  position: absolute;
+  right: 0;
+  top: 15px;
+  z-index: 100;
+  color: #222;
+}
+
+
+

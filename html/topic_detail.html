@@ -1,0 +1,146 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+
+
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../css/shop-detail.css">
+  <title>话题列表</title>
+  
+</head>
+<body>
+
+<div class="wrap body-white">
+  <!-- 头部 -->
+  <div id="header" class="top-bar gray-style">
+    <div class="l" ontouchstart="api.closeWin();">
+      <div class="icon-text-h">
+        <i class="icon-m icon-arrow-left"></i><span>返回</span>
+      </div>
+    </div>
+    <div id="addFeed" class="r">
+      <div class="icon-text-h">
+        <i class="icon-m icon-add"></i><span>发布</span>
+      </div>
+    </div>
+    
+    <div id="topicName" class="center-part">话题</div>
+  </div>
+  <!-- 头部 end-->
+
+<!-- 
+  <div id="addFeed" class="useraction border-top">
+    <i class="icon-m icon-imgs"></i>发布
+  </div> -->
+
+</div>
+
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+    // 设置ios7的标题栏字体变亮，全局用一个就行了
+    api.setStatusBarStyle({
+      style: 'dark'
+    });
+    
+    api.addEventListener({
+      name:'viewappear'
+    },function(ret,err){
+      // 设置ios7的标题栏字体变亮，全局用一个就行了
+      api.setStatusBarStyle({
+        style: 'dark'
+      });
+    });
+    
+    var header = $api.byId('header');
+    $api.fixIos7Bar(header);
+
+
+    var name = api.pageParam['name'];
+    var id = api.pageParam['id'];
+
+    $('#topicName').text(name);
+    
+    function openFrame() {
+      api.openFrame({
+        name: 'topic_detail',
+        url: './topic_detail_frame.html',
+        bounces: false,
+        opaque: true,
+        vScrollBarEnabled: true,
+        scrollToTop : true,
+        pageParam : {'id' : id},
+        rect: {
+          x: 0,
+          y: $('.top-bar').offset().height,
+          w: 'auto',
+          h: api.winHeight - $('.top-bar').offset().height
+        }
+      });
+    }
+
+    openFrame();
+
+    //发布
+    $('#addFeed').on('tap', function() {
+      var userInner = $api.getStorage('user');
+      if($.isEmptyObject(userInner)) {
+        showLoginConfirm('../index.html');  
+        return;
+      }
+      
+      if(id == 16) {
+          api.openWin({
+            'name' : 'publish-video',
+            'url' : './publish-video.html',
+            'bounces':false,
+            'pageParam' : {'topic_id':id},
+            'animation': {
+              'type': 'movein',
+              'subType': 'from_bottom',
+              'duration': 0
+            }
+          });
+        }else if(id == 17) { //钓记
+          api.openWin({
+            'name' : 'publish-diaoji',
+            'url' : './publish-diaoji.html',
+            'bounces':false,
+            'pageParam' : {'topic_id':id},
+            'animation': {
+              'type': 'movein',
+              'subType': 'from_bottom',
+              'duration': 0
+            }
+          });
+        }else{
+          api.openWin({
+            'name' : 'publish-fishery',
+            'url' : './publish-fishery.html',
+            'bounces':false,
+            'pageParam' : {'topic_id':id, 'topicName' : name},
+            'animation': {
+              'type': 'movein',
+              'subType': 'from_bottom',
+              'duration': 0
+            }
+          });
+        }
+        
+        
+    });
+
+
+  }
+
+</script>
+</html>

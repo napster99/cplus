@@ -1,0 +1,149 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+    <title>日常任务</title>
+    <link href="./images/style.css" rel="stylesheet" />
+    <script>
+        var commonjspath = './images';
+    </script>
+    <script src="./images/commons.js" type="text/javascript"></script>
+    <style>
+        .coin {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            margin-bottom: -4px;
+            background-image: url(./images/coin.png);
+            background-repeat: no-repeat;
+        }
+        .content .list ul li .action {
+            float: left;
+            width: 35%;
+            padding-top: 3px;
+        }
+        .content .list ul li .prize1 {
+            float: left;
+            width: 30%;
+            overflow: hidden;
+            font-size: 16px;
+        }
+        .content .list ul li .time1 {
+            float: right;
+            width: 30%;
+        }
+        .yudou_top {
+            text-align: left;
+            position: relative;
+            color: #f9dc97;
+            background-color: #E33E41;
+        }
+        .yudou_top .jindu {
+            width: 100%;
+            padding: 10px;
+            color: #fff;
+            font-size: 1em;
+            font-weight: bold;
+            line-height: 1.2em;
+            z-index: 21;
+        }
+    </style>
+</head>
+<body>
+    <div class="yudou_top" id="header">
+        <div class="jindu">每日完成进度 <span id="finishedNum"></span>/<span id="totalNum"></span></div>
+    </div>
+    <div class="line"><img src="./images/line.png" /></div>
+    <div class="content">
+        <div class="clr"></div>
+        <div class="mylist">
+            <div class="title"><img src="./images/title_7.png" /></div>
+            <div class="text list">
+                <ul id="taskList">
+                    <li>
+                        <span class="action">发表渔获</span>
+                        <span class="prize1">+10 <i class="coin"></i></span>
+                        <span class="button button_02">已完成</span>
+                        <div class="clr"></div>
+                    </li>
+                    <li>
+                        <span class="action">登录鱼多多</span>
+                        <span class="prize1">+100 <i class="coin"></i></span>
+                        <span class="button button_02">已完成</span>
+                        <div class="clr"></div>
+                    </li>
+                    <li>
+                        <span class="action">邀请好友</span>
+                        <span class="prize1">+120 <i class="coin"></i></span>
+                        <span class="button button_01">未完成</span>
+                        <div class="clr"></div>
+                    </li>
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="content">
+       <div class="title"><img src="./images/title_2.png" /></div>
+       <div class="text">发渔获、钓记每日发第一次时可获得奖励。</div>
+    </div>
+    <div class="line"><img src="./images/line.png" /></div>
+    <div class="copyright">杭州鱼游网络科技有限公司</div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+    apiready = function() {
+
+      var header = $api.byId('header');
+      $api.fixIos7Bar(header);
+
+      function init() {
+        sendAjax(URLConfig('mission'), null, function(data, code, msg) {
+          if(code === 0) {
+            renderData(data);
+          }else{
+            api.toast({
+              msg: msg || '请求失败，稍后再试',
+              duration:2000,
+              location: 'middle'
+            });
+          }
+        });
+      }
+
+      init();
+
+
+      function renderData(data) {
+        var htmlStr = '';
+
+        $('#finishedNum').text(data['tasks']['daily']['finished']);
+        $('#totalNum').text(data['tasks']['daily']['total']);
+
+        data = data['tasks']['daily']['lists'];
+
+        for(var i=0; i<data.length;i++) {
+            htmlStr += '<li>'
+            +'<span class="action">'+data[i]['name']+'</span>'
+            +'<span class="prize1">+'+data[i]['reward']+'<i class="coin"></i></span>'
+            if(data[i]['finished']) {
+              htmlStr += '<span class="button button_02">已完成</span>'
+            }else{
+              htmlStr += '<span class="button button_01">未完成</span>'
+            }
+            htmlStr += '<div class="clr"></div>'
+            +'</li>'
+        }
+
+        $('#taskList').html(htmlStr);
+      }
+    }
+
+</script>
+</html>

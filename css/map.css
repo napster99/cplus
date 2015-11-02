@@ -1,0 +1,164 @@
+.map-cover{
+	/*position: fixed;
+	top: 0; bottom:0;
+	left: 0; right: 0;*/
+}
+
+.map-cover .data-filter{
+	background-color: rgba(0,0,0,.85);
+}
+
+.map-cover .data-filter li{
+	color: #fff;
+}
+
+.map-cover .data-filter li:after{
+	border-color: rgba(255,255,255,.3);
+}
+
+.map-cover .data-filter li:nth-child(1),
+.map-cover .data-filter li:nth-child(4){
+	width: 14%;
+}
+
+.map-cover .data-filter li:nth-child(2),
+.map-cover .data-filter li:nth-child(3){
+	width: 36%;
+}
+
+.pin{
+	width: 28px;
+	height: 39px;
+	position: absolute;
+}
+
+.pin.river{
+	background: url(../images/pin-river.png) no-repeat center center;
+	background-size: 100%;
+}
+.pin.pond{
+	background: url(../images/pin-pond.png) no-repeat center center;
+	background-size: 100%;
+}
+.pin.lake{
+	background: url(../images/pin-lake.png) no-repeat center center;
+	background-size: 100%;
+}
+
+.pin.unknow{
+	background: url(../images/pin-unknow.png) no-repeat center center;
+	background-size: 100%;
+}
+
+
+.bottom-control{
+	position: fixed;
+	bottom: 10px;
+	left: 10px; right: 10px;
+}
+.bottom-control div{
+	padding: 10px;
+	border-radius: 3px;
+	background-color: rgba(0,0,0,.85);
+	color: #fff;
+	line-height: 1;
+}
+.bottom-control .icon-m{
+	font-size: 16px;
+}
+
+.notice{
+	position: fixed;
+	bottom: 5px;
+	left: 50%;
+	-webkit-transform:translateX(-50%);
+	background-color: rgba(0,0,0,.7);
+	color: #fff;
+	padding: 3px 20px;
+	white-space: nowrap;
+}
+
+.map-tips{
+	position: absolute;
+	width: 80%;
+	padding: 10px;
+	background-color: #fff;
+	box-shadow: 0 1px 5px 1px rgba(0,0,0,.5);
+	border-radius: 3px;
+}
+
+.map-tips:after{
+	position: absolute;
+	bottom: -10px;
+	left: 50%;
+	-webkit-transform:translateX(-50%);
+	content: "";
+	width:0; 
+    height:0; 
+    border-left:10px solid transparent;
+    border-right:10px solid transparent;
+    border-top:10px solid #fff;
+}
+
+.map-tips:before{
+	position: absolute;
+	bottom: -5px;
+	left: 50%;
+	-webkit-transform:translateX(-50%) rotate(45deg);
+	content: "";
+	width:20px; 
+    height:20px;
+    background-color: #fff;
+    z-index: -1;
+    box-shadow: 0 1px 5px 1px rgba(0,0,0,.5);
+}
+
+
+.map-tips .img-box{
+	float: left;
+	width: 97px;
+	height: 73px;
+	overflow: hidden;
+}
+
+.map-tips .info{
+	margin-left: 105px;
+	margin-right: 20px;
+}
+
+.map-tips .name{
+	font-size: 15px;
+	padding: 5px 0;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.map-tips .price {
+  margin: 8px 0;
+  font-size: 16px;
+  color: #ff8a00;
+}
+
+.map-tips small, del{
+  color: #aaa;
+  font-size: 12px;
+  margin-right: 10px;
+}
+
+.map-tips .distance{
+	color: #aaa;
+
+}
+
+.map-tips .icon-arrow-right{
+	position: absolute;
+	right: 10px;
+	text-align: center;
+	font-size: 18px;
+	top: 50%;
+	-webkit-transform:translateY(-50%);
+	color: #aaa;
+}
+
+

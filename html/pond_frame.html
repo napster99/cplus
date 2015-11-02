@@ -1,0 +1,371 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/shop.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <title>钓点_鱼多多_找钓点，就用鱼多多</title>
+  
+</head>
+<body>
+<div class="wrap hidden" id="conDiv">
+  <!-- 当前地址 -->
+  <div class="cur-addr border-bottom">
+    <i id="location" class="icon-m icon-refresh r rotate" style="top:0; padding:10px 15px;"></i>
+    <div id="locationResult" class="c">正在获取...</div>
+  </div>
+
+  <!-- 商店列表 -->
+  <div class="shop-list">
+    <ul id="pondList"></ul>
+    <div id="findPond" class="icon-box" style="z-index:1000;">
+      <i class="icon-m icon-search"></i>
+    </div>
+  </div>
+  <!-- 商店列表end -->
+</div>
+
+<div class="load-page wait"></div>
+
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script src="http://webapi.amap.com/maps?v=1.3&key=425928309ed735359972d7edb1534ff1"></script>
+<script>
+  apiready = function() {
+
+    var isEnd = false, isAjaxing = false;
+    var curAreaCode = $api.getStorage('mapInfo')['parent_code'];
+
+    var condicationObj = {
+      'page' : 1,
+      'sort' : 'intelligence',
+      'area_code' : curAreaCode
+    }
+
+    api.setFrameAttr({
+      'scrollToTop' : false
+    });
+
+    function getListData(name, params, callback, first) {
+      if(!first) {
+        showButtonLoadDiv(true, $('#conDiv'));  
+      }
+      isAjaxing = true;
+      sendAjax(URLConfig(name), params, function(data, code, msg) {
+        isAjaxing = false;
+        api.refreshHeaderLoadDone();
+        if(code === 0) {
+          callback(data, first);
+        }else{
+
+          if(msg.indexOf('地理位置信息失败') > -1) {
+            $('.load-page').removeClass('hidden').removeClass('wait').addClass('error');
+            $('#conDiv').addClass('hidden');
+
+            api.confirm({
+              title: '提示框',
+              msg: '是否查看如何设置定位权限？',
+              buttons:['知道了', '去看看']
+            },function(ret,err){
+              if(ret.buttonIndex == 2){
+                var linkUrl = 'http://yuxin.yddapp.com/h/hangzhou81/20150810/';
+                api.openWin({
+                  name: 'adpics',
+                  url: './adpics.html',
+                  bounces : false,
+                  pageParam: {'url': linkUrl, 'title' : '如何开启定位权限'}
+                });
+              }
+            });
+
+            isEnd = true;
+          }
+
+          api.toast({
+            msg: msg || '请求失败，稍后再试',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+    }
+
+    api.setRefreshHeaderInfo({
+        visible: true,
+        loadingImg: 'widget://image/push-down.gif',
+        bgColor: '#fff',
+        textColor: '#ccc',
+        textDown: '下拉刷新...',
+        textUp: '松开刷新...',
+        showTime: true
+    }, function(ret, err){
+       isEnd = false;
+       isAjaxing = false;
+       condicationObj['page'] = 1;
+       locationIt(function() {
+          getListData('pondList', condicationObj, renderData, true);
+       });
+    });
+
+    //下拉加载
+    api.addEventListener({
+      name: 'scrolltobottom'
+    }, function(ret, err){
+      if(!isEnd && !isAjaxing) {
+        showButtonLoadDiv(false, $('#conDiv'));
+        ++condicationObj['page'];
+        getListData('pondList', condicationObj ,renderData);
+      }
+    });
+
+    window.initPondData = function() {
+      isEnd = false;
+      condicationObj['page'] = 1;
+      isAjaxing = false;
+      curAreaCode = $api.getStorage('mapInfo')['parent_code'];
+      condicationObj['area_code'] = curAreaCode;
+      getListData('pondList', condicationObj, renderData, true);
+    }
+    
+    function renderData(data, first) {
+      if(!data) { //人均最低  null -> []
+        data = [];
+      }
+      //1 免费   3天塘  2斤塘
+      var htmlStr = '', curLocation = [], proImg = {};
+      for(var i=0; i<data.length; i++) {
+          
+          var cacheUrl = getPicUrl(data[i]['spic'], 97*window.devicePixelRatio, 73*window.devicePixelRatio);
+          proImg[cacheUrl] = { 'url' :  cacheUrl};
+          
+          htmlStr += '<li class="border-bottom" id="'+data[i]['id']+'" onclick="enterDetail(this);">'
+                  +'  <div url="'+cacheUrl+'" class="img-box"><i class="icon-m icon-logo"></i></div>'
+                  +'  <div class="info">'
+                  +'    <h3 class="name">'+data[i]['name']+'</h3>'
+                  +'    <div class="price">'
+                  if(!data[i]['price']) {
+                    htmlStr += '      未知';
+                  }else{
+                    if(data[i]['discount_price']) {
+                      if(data[i]['charge_type'] == 1) {
+                        htmlStr += '      免费';
+                      }else if(data[i]['charge_type'] == 3){
+                        htmlStr += '      ￥'+data[i]['discount_price']+'<small>/天</small><del>'+data[i]['price']+'/天</del>';
+                      }else if(data[i]['charge_type'] == 2) {
+                        htmlStr += '      ￥'+data[i]['discount_price']+'<small>/斤</small><del>'+data[i]['price']+'/斤</del>';
+                      }else if(data[i]['charge_type'] == 4) {
+                        htmlStr += '      ￥'+data[i]['discount_price']+'<small>/场</small><del>'+data[i]['price']+'/场</del>';
+                      }else{
+                        htmlStr += '      未知';
+                      }
+                    }else{
+                      if(data[i]['charge_type'] == 1) {
+                        htmlStr += '      免费';
+                      }else if(data[i]['charge_type'] == 3){
+                        htmlStr += '      ￥'+data[i]['price']+'<small>/天</small>';
+                      }else if(data[i]['charge_type'] == 2) {
+                        htmlStr += '      ￥'+data[i]['price']+'<small>/斤</small>';
+                      }else if(data[i]['charge_type'] == 4) {
+                        htmlStr += '      ￥'+data[i]['price']+'<small>/场</small>';
+                      }else{
+                        htmlStr += '      未知';
+                      }
+                    }
+                  }
+           
+            if(data[i]['tag'] & 1) {
+              htmlStr += '<span class="text-badge bg-orange">合作</span>';
+            }
+
+            if(data[i]['tag'] & 2) {
+              htmlStr += '<span class="text-badge bg-green">抽券</span>';
+            }
+            
+
+            htmlStr += '    </div>'
+                  +'    <div class="addr">'
+
+            if(data[i]['pond_area_name']) { //推广钓点
+              htmlStr += '<span class="text-badge bg-blue">'+data[i]['pond_area_name']+'</span>'
+            }
+
+            htmlStr +='<div class="distance">'+data[i]['distance']+'</div>'+(data[i]['address'] || '暂无地址')+'</div>'
+            if(data[i]['level'] == 9) {
+              htmlStr += '    <div class="auth-lv1"><i class="icon-m icon-auth"></i>官方认证</div></div></li>'
+            }else if(data[i]['level'] == 5){
+              htmlStr += '    <div class="auth-lv2"><i class="icon-m icon-auth"></i>钓友认证</div></div></li>'
+            }else if(data[i]['level'] == 3) {
+              htmlStr += '      <div class="auth-lv3"><i class="icon-m icon-auth"></i>电话认证</div></div></li>'
+            }else{
+              // htmlStr += '      <div class="auth-lv4"><i class="icon-m icon-auth"></i>未认证</div></li>'
+            }
+          curLocation.push({
+            'id' : data[i]['id'],
+            'name' : data[i]['name'],
+            'discount_price' : data[i]['discount_price'],
+            'charge_type' : data[i]['charge_type'],
+            'type' : data[i]['type'],
+            'level' : data[i]['level'],
+            'spic' : cacheUrl,
+            'lat' : data[i]['location_lat'],
+            'lng' : data[i]['location_lon']
+          });
+          
+      }
+
+      if(first) {
+        showLoadDiv(false, $('#conDiv'));
+      }
+
+      if(first) {
+        $('#pondList').html(htmlStr);
+        $api.setStorage('curLocation',curLocation);
+      }else{
+        $('#pondList').append(htmlStr);  
+      }
+
+
+      getImageSize(proImg);
+
+
+      //render 图片
+      // renderLogo();
+      
+    
+      showButtonLoadDiv(false, $('#conDiv'));
+      if(data.length < 15) {
+        isEnd = true;
+        if(first && data.length === 0) {
+          showNoData($('#conDiv'));
+        }else if(!first){
+          api.toast({
+            msg: '没有更多数据了',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+        
+      }else{
+        showButtonLoadDiv(true, $('#conDiv'));
+      }
+    }
+
+    //========================筛选条件=============================
+    window.setCondition = function(conObj) {
+      // conObj['page'] = 1;
+      // condicationObj = conObj;
+      if(!$.isEmptyObject(conObj)) {
+        condicationObj = conObj;
+        if(conObj['area_code']) {
+          curAreaCode = conObj['area_code'];
+        }
+        condicationObj['area_code'] = curAreaCode;
+        condicationObj['page'] = 1;
+      }else{
+        var oldSort = condicationObj['sort'];
+        condicationObj = {
+          'page' : 1,
+          'sort' : oldSort,
+          'area_code' : curAreaCode
+        }
+      }
+      
+      isEnd = false;
+
+      showButtonLoadDiv(false, $('#conDiv'));
+      getListData('pondList', condicationObj, function(data, first) {
+        renderData(data,first);
+      }, true);
+    }
+    //========================筛选条件=============================
+
+    window.enterDetail = function(el) {
+      api.openWin({
+        name: 'pond_detail',
+        url: './pond-details.html',
+        bounces : false,
+        bgColor : '#fff',
+        pageParam: {'pondId': el.id}
+      });
+    }
+
+
+
+
+    // getListData('pondList', condicationObj, function(data, first) {
+    //   renderData(data,first);
+    // }, true);
+
+    
+    api.refreshHeaderLoading();
+    
+    $('#location').on('touchstart',  function() {
+      $(this).addClass('rotate');
+      $('#locationResult').text('正在获取...');
+      try{
+        locationIt(function() {
+          isEnd = false;
+          isAjaxing = false;
+          condicationObj['page'] = 1;
+          getListData('pondList', condicationObj, renderData, true);
+        });
+      }catch(e){
+        var errmsg = e.message+'   '+JSON.stringify(e);
+        uploadErrLog('exception', errmsg);
+        $('#location').removeClass('rotate');
+        $('#locationResult').text('定位获取失败，请稍后再试！');
+      }
+    });
+
+    // $('#location').trigger('touchstart');
+
+    
+    $('#locationResult').text('正在获取...');
+    var location = $api.getStorage('location');
+    if(location) {
+      $('#location').removeClass('rotate');
+      $('#locationResult').text(location);
+    }else{
+      $('#location').trigger('touchstart');
+    }
+
+
+    function locationIt(callback) {
+      startLocation(function(result){
+        $api.setStorage('location', result['regeocode']['formattedAddress']);
+        $('#location').removeClass('rotate');
+        if(result) {
+          $('#locationResult').text(result['regeocode']['formattedAddress']);
+        }else{
+          $('#locationResult').text('定位获取失败，请稍后再试！');
+        }
+        if(callback) {
+          callback();
+        }
+      }, '100m');
+    }
+
+
+    //搜索钓点
+    $('#findPond').on('tap',  function() {
+      api.openWin({
+        name: 'search-pond',
+        url: './search-pond.html',
+        bounces : false,
+        bgColor : '#fff',
+        pageParam : {'type' : 'pond'}
+      });
+    });
+
+
+  }
+
+</script>
+</html>

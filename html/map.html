@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="maximum-scale=1,minimum-scale=1,user-scalable=1,width=device-width,initial-scale=1"/>
+  <meta content="yes" name="apple-mobile-web-app-capable" />
+  <meta content="black" name="apple-mobile-web-app-status-bar-style" />
+  <meta content="telephone=no" name="format-detection" />
+  <link rel="stylesheet" href="../css/base.css">
+  <title>地图</title>
+</head>
+<body>
+
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+    apiready = function() {
+      var header = $api.byId('header');
+      $api.fixIos7Bar(header);
+      var headerPos = $api.offset(header);
+
+      var curDataIdsAttr = []; //记录当前annotations的id
+      var curCondiObj = {}, areaObj = {};
+      var mapInfo = $api.getStorage('mapInfo');  
+      var curAreaCode = mapInfo['area_code'];
+
+      var map = api.require('baiduMap');
+
+      // var map = api.require('aMap');
+      
+      // alert(map)
+      
+      
+      // 设置ios7的标题栏字体变亮，全局用一个就行了
+      api.setStatusBarStyle({
+        style: 'light'
+      });
+
+      api.addEventListener({
+        name:'viewappear'
+      },function(ret,err){
+        // 设置ios7的标题栏字体变亮，全局用一个就行了
+        api.setStatusBarStyle({
+          style: 'light'
+        });
+      });
+      
+      
+      var marker = [];
+      var windowsArr = [];
+      //基本地图加载
+      map.open({
+          x: 0,
+          y: 0,
+          w: api.winWidth,
+          h: api.winHeight
+      },function(ret,err){
+        if(ret.status){
+          api.openFrame({
+            'name' : 'map_h5',
+            'url' : 'map_h5.html' ,
+            'bounces': false,
+            'bgColor': 'rgba(0,0,0,0)',
+            'vScrollBarEnabled':false,
+            'hScrollBarEnabled':false
+          });
+          map.setZoomLevel({
+            level:12
+          });
+        }
+      });
+      
+      
+      var baiduLocation = api.require('baiduLocation');
+      
+      map.setMapListener (function(ret,err){
+        var cLng = ret.lon;
+        var cLat = ret.lat;
+        var cZoom = ret.zoom;
+
+        var placeObj = GpsEncode['bdDecrypt'](cLng, cLat);
+   
+        var params = {
+          'lat' : placeObj['lat'],
+          'lon' : placeObj['lng'],
+          'zoom' : cZoom,
+          'area_code' : curAreaCode
+        }
+        getAreaData(false, params);
+
+      });
+      
+      
+      window.initData = function(data, flag) {
+        var curLocation =  data || $api.getStorage('curLocation');
+        var annoArray = [];
+        for(var i=0; i<curLocation.length; i++) {
+          if(i === 0 && flag) {
+            map.setCenter({
+              lon:curLocation[0]['lng'],
+              lat:curLocation[0]['lat']
+            });
+          }
+          annoArray.push(addmarker(curLocation[i]));
+          curDataIdsAttr.push(addmarker(curLocation[i])['id']);
+        }
+
+        map.addAnnotations({
+          annoArray: annoArray
+        },function(ret,err){
+          if(ret.eventType === 'bubble') {
+            enterDetail(ret.pinId);
+          }
+        });
+        
+        for(var i=0; i<curLocation.length; i++) {
+          var pre = '', subTitle = '';
+          if(curLocation[i]['charge_type'] == 1) {
+            pre = '      免费';
+            subTitle = '￥免费';
+          }else if(curLocation[i]['charge_type'] == 3){
+            pre = '/天';
+            subTitle = '￥'+curLocation[i]['price'];
+          }else if(curLocation[i]['charge_type'] == 2) {
+            pre = '/斤';
+            subTitle = '￥'+curLocation[i]['price'];
+          }
+
+          var description = '', levelIcon = '';
+
+
+          if(curLocation[i]['level'] == 9) {
+            description = "官方认证";
+            levelIcon = 'widget://images/auth-lv1.png'
+          }else if(curLocation[i]['level'] == 5){
+            description = ">钓友认证";
+            levelIcon = 'widget://images/auth-lv2.png'
+          }else if(curLocation[i]['level'] == 3) {
+            description = "电话认证";
+            levelIcon = 'widget://images/auth-lv3.png'
+          }
+
+          map.setThreeTitleBubble({ 
+              id:curLocation[i]['id'], 
+              image:{
+                  bg:'widget://images/bg-320.png', 
+                  avatar:curLocation[i]['spic'], 
+                  icon:levelIcon, 
+                  arrow:'widget://images/arrow.png' 
+              },
+              text:{
+                 title:curLocation[i]['name'], 
+                 pre:pre, 
+                 subTitle:subTitle, 
+                 description:description 
+              },
+              style:{ 
+                 placeholderImg:'widget://images/default-img.png',
+                 avatarMarginUp : 10,
+                 avatarMarginLeft : 10
+              } 
+          });
+
+        }
+
+        
+      }
+
+      
+      initData($api.getStorage('curLocation'), true);
+
+
+      function addmarker(data) {
+          var lngX = data['lng'];
+          var latY = data['lat'];
+
+          var icon = 'widget://images/pin-unkonw.png'
+          // 1:池塘images/pin-pond.png,2:江河 images/pin-lake.png,3:水库 images/pin-river.png
+          switch(data['type']) {
+            case '1':
+              icon = 'widget://images/pin-pond.png';
+              break;
+            case '2':
+              icon = 'widget://images/pin-lake.png';
+              break;
+            case '3':
+              icon = 'widget://images/pin-river.png';
+              break;
+          }
+
+          var subTitle = '未认证';
+
+          if(data['level'] == 9) {
+            subTitle = "官方认证";
+          }else if(data['level'] == 5){
+            subTitle = ">钓友认证";
+          }else if(data['level'] == 3) {
+            subTitle = "电话认证";
+          }
+          
+          return {
+            'id' :data['id'],
+            'img' : icon,
+            'subTitle' : subTitle,
+            'title' : data['name'],
+            'lon' : lngX,
+            'lat' : latY
+          }
+
+      }
+
+
+      window.enterDetail = function(id) {
+        api.openWin({
+          name: 'pond_detail',
+          url: './pond-details.html',
+          bounces : false,
+          pageParam: {'pondId': id}
+        });
+      }
+
+      function getAreaData(flag, params){
+        var paramsObj = {};
+
+        paramsObj['area_code'] = curAreaCode;
+
+        if(!$.isEmptyObject(curCondiObj)) {
+          paramsObj = $.extend(paramsObj, curCondiObj);
+        }
+
+        if(!$.isEmptyObject(params)) {
+          paramsObj = $.extend(paramsObj, params);
+        }
+
+        if(!$.isEmptyObject(areaObj)) {
+          paramsObj = $.extend(paramsObj, areaObj);
+        }
+        sendAjax(URLConfig('pondList'), paramsObj, function(data, code, msg) {
+          if(code === 0) {
+            var pondListArr = [];
+            for(var i=0; i<data.length; i++) {
+              pondListArr.push({
+                'id' : data[i]['id'],
+                'name' : data[i]['name'],
+                'type' : data[i]['type'],
+                'spic' : data[i]['logo'],
+                'charge_type' : data[i]['charge_type'],
+                'level' : data[i]['level'],
+                'price' : data[i]['price'],
+                'lat' : data[i]['location_lat'],
+                'lng' : data[i]['location_lon']
+              });
+            }
+          
+            if(curDataIdsAttr.length > 0){
+              map.removeAnnotations({
+                  idArray:curDataIdsAttr
+              });
+              curDataIdsAttr = [];
+            }
+            initData(pondListArr, flag);
+
+          }else{
+            api.toast({
+              msg: msg || '请求失败，稍后再试',
+              duration:2000,
+              location: 'middle'
+            });
+          }
+
+        });
+      }
+
+      window.getAreaData = getAreaData;
+
+
+      window.changeCondiObj = function(obj) {
+        curCondiObj = obj;
+        getAreaData(true);
+      }
+
+      window.changeCurAreaCode = function(obj) {
+        areaObj = obj;
+        getAreaData(true);
+      }
+
+
+    }
+
+    
+
+
+
+  
+</script>
+</html>

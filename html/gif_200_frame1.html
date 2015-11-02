@@ -1,0 +1,126 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../css/voucher.css">
+  <title>任务_鱼多多_找钓点，就用鱼多多</title>
+  
+</head>
+<body style="background-color:transparent;">
+  <div class="wrap">
+    <div class="pop">
+      <div class="mask"></div>
+      <div class="pop-c">
+        <div class="award-box">
+          <div class="sham-pic">
+            <div class="trophy">
+              <i class="icon-m icon-trophy"></i>
+              <i class="icon-m s1 icon-star-fill"></i>
+              <i class="icon-m s2 icon-star-fill"></i>
+              <i class="icon-m s3 icon-star-fill"></i>
+              <i class="icon-m s4 icon-star-fill"></i>
+            </div>
+          </div>
+          <div>
+            <div class="title" id="title">恭喜获得价值<span class="text-orange">200元</span>钓鱼券</div>
+            <div class="award">
+              <ul id="couponsList" class="text-li">
+                <!-- <li><span class="text-green">大湖塘垂钓园</span>-<span class="text-orange">7折券</span><span>[1张]</span></li>
+                <li><span class="text-green">大湖塘垂钓园</span>-<span class="text-orange">7折券</span><span>[1张]</span></li>
+                <li><span class="text-green">大湖塘垂钓园</span>-<span class="text-orange">7折券</span><span>[1张]</span></li>
+                <li><span class="text-green">大湖塘垂钓园</span>-<span class="text-orange">7折券</span><span>[1张]</span></li>
+                <li><span class="text-green">大湖塘垂钓园</span>-<span class="text-orange">7折券</span><span>[1张]</span></li>
+                <li><span class="text-green">大湖塘垂钓园</span>-<span class="text-orange">7折券</span><span>[1张]</span></li>
+                <li><span class="text-green">大湖塘垂钓园</span>-<span class="text-orange">7折券</span><span>[1张]</span></li> -->
+              </ul>
+            </div>
+            <button onclick="closeIt();" tapmode>我知道了</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+
+    var data = api.pageParam;
+
+    function renderData() {
+      var title = data['gift']['desc'];
+      var name = data['gift']['name'];
+      title = title.replace('{name}', '<span class="text-orange">'+name+'</span>');
+
+      $('#title').html(title);
+
+      var couponArr = data['gift']['coupon'], htmlStr = '';
+      for(var i=0; i<couponArr.length; i++) {
+        var price = couponArr[i]['coupon']['discount'];
+        var unit = '元', type = '代金券';
+        var organization = couponArr[i]['coupon']['organization'];
+        var name = couponArr[i]['coupon']['name'];
+        if(couponArr[i]['coupon']['type'] == 0){
+          unit = '折';
+          type = '券';
+        }
+        
+        if(couponArr[i]['coupon']['discount'] == 0 && couponArr[i]['coupon']['type'] == 0){
+          unit = '';
+          type = '';
+          price = '免单券';
+        }
+        
+        if(name) {
+          htmlStr += '<li><span class="text-green">'+organization+'</span>-<span class="text-orange">'+name+'</span><span>[1张]</span></li>'
+        }else{
+          htmlStr += '<li><span class="text-green">'+organization+'</span>-<span class="text-orange">'+price+unit+type+'</span><span>[1张]</span></li>'
+        }
+
+      }
+
+      $('#couponsList').html(htmlStr);
+
+    }
+
+    renderData();
+
+
+    window.closeIt = function() {
+      if(data['free']['tip']) {
+        api.openFrame({
+          name: 'gif_200_frame2',
+          url : './gif_200_frame2.html',
+          rect:{x:0,y:0,w:'auto',h:'auto'},
+          bgColor: 'rgba(0,0,0,0.0)',
+          bounces : false,
+          pageParam : api.pageParam,
+          vScrollBarEnabled:true,
+          hScrollBarEnabled:true
+        });
+      }
+      api.closeFrame();
+    }
+
+
+    //点击阴影区域关闭
+    $('body').on('tap', function(event) {
+      if(event.target.tagName === 'BUTTON') return;
+      if($(event.target).parents('.award-box')[0]) return;
+      api.closeFrame();
+    });
+
+  }
+</script>
+</html>

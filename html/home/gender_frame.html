@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+   <meta name="viewport" content="maximum-scale=1,minimum-scale=1,user-scalable=1,width=device-width,initial-scale=1"/>
+  <meta content="yes" name="apple-mobile-web-app-capable" />
+  <meta content="black" name="apple-mobile-web-app-status-bar-style" />
+  <meta content="telephone=no" name="format-detection" />
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/form.css">
+  <link rel="stylesheet" href="../../css/my.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <title>性别</title>
+</head>
+<body>
+<div class="wrap">
+
+
+  <!-- 个人中心 -->
+<!--   <div class="personal-center">
+      <span>性别：</span>
+      <input type="radio" name="gender" value="1" id="boy" />男
+      <input type="radio" name="gender" value="2" id="girl" />女
+      <div>
+        <button id="sure">确定</button>
+        <button id="cancel">取消</button>
+      </div>
+
+  </div> -->
+  <!-- 个人中心 end-->
+
+  <div class="my">
+    <div class="text-list mt10">
+      <ul class="border-top">
+        <li gender="boy" class="border-bottom">
+          <span class="r">
+            <span class="enter"><i class="icon-m icon-check text-blue hidden"></i></span>
+          </span>
+          <span class="field">男</span>
+        </li>
+
+        <li gender="girl" class="border-bottom">
+          <span class="r">
+            <span class="enter"><i class="icon-m icon-check text-blue hidden"></i></span>
+          </span>
+          <span class="field">女</span>
+        </li>
+
+      </ul>
+    </div>
+  </div>
+
+
+
+</div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+  apiready = function() {
+    authInfo(function(data, code, msg) {
+      if(code === 0) {
+        $api.setStorage('user', data);
+        renderData(data);
+      }
+    });
+
+
+    function renderData(data) {
+      if(data['gender'] == 1) {
+        $('li[gender=boy]').find('i').removeClass('hidden');
+      }else if(data['gender'] == 2) {
+        $('li[gender=girl]').find('i').removeClass('hidden');
+      }
+    }
+
+    $('#cancel').on('click',  function() {
+      api.execScript({
+        name: 'gender',
+        script: 'listenChildBack();'
+      });
+
+    });
+
+    $('li').on('click', function() {
+      var gender = $(this).attr('gender');
+
+      gender = (gender === 'boy') ? 1: 2;
+      sendAjax(URLConfig('userModify'), {'gender' : gender}, function(data, code, msg) {
+        if(code === 0) {
+          $api.setStorage('rewarbHome', data);
+          api.execScript({
+            name: 'gender',
+            script: 'listenChildBack();'
+          });
+        }else{
+          api && api.toast({
+            msg: msg || '修改失败，请稍后再试！',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+    });
+
+  }
+</script>
+</html>

@@ -1,0 +1,254 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../css/feed.css">
+  <title>话题列表</title>
+  
+</head>
+<body>
+  <div class="wrap">
+    <div id="feedList" class="feed-list hidden">
+
+    </div>
+    <!--上传成功 -->
+    <div id="uploadTip" class="note bg-orange">发表成功！</div>
+    <!--上传成功 -->
+    <div class="load-page wait"></div>
+  </div>
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<!-- <script src="../script/swipe/swipe.js"></script> -->
+<script src="../script/common.js"></script>
+<script src="../script/feedListDoms.js"></script>
+<script>
+apiready = function() {
+
+    var page = 1, lastId = 0, curname;  
+    var isEnd = false, isAjaxing = false;
+    var user = $api.getStorage('user');
+    var pageFeedId = '', atuid = '';
+
+    var id = api.pageParam['id'];
+
+    var condicationObj = {
+      'page' : 1,
+      'topic_id' : id,
+      'lastId' : lastId
+    }
+    
+    api.addEventListener({
+      name:'pause'
+    },function(ret,err){
+      var videos = $('video');
+      for(var i=0; i<videos.length; i++) {
+        videos.eq(i)[0].pause();
+        videos.eq(i).attr('status', 'pause');
+      }
+    });
+
+
+    function getListData(name, params, callback, first) {
+      if(!first) {
+        showButtonLoadDiv(true, $('#feedList'));
+      }
+      
+      isAjaxing = true;
+      sendAjax(URLConfig(name), params, function(data, code, msg) {
+        isAjaxing = false;
+        api.refreshHeaderLoadDone();
+        if(code === 0) {
+          callback(data, first);
+        }else{
+          api.toast({ msg: msg || '请求失败，稍后再试',duration:2000,location: 'middle'});
+        }
+      });
+
+    }
+
+    window.initdata = function() {
+      getListData('feedList', condicationObj, function(data, first) {
+        renderData(data, first);
+      }, true);
+    }
+    
+    initdata();
+    
+
+    api.setRefreshHeaderInfo({
+        visible: true,
+        loadingImg: 'widget://image/push-down.gif',
+        bgColor: '#fff',
+        textColor: '#ccc',
+        textDown: '下拉刷新...',
+        textUp: '松开刷新...',
+        showTime: true
+    }, function(ret, err){
+       isEnd = false;
+       condicationObj['page'] = 1;
+       condicationObj['lastId'] = 0;
+
+       isAjaxing = false;
+       getListData('feedList', condicationObj, renderData, true);
+    });
+
+    //下拉加载
+    api.addEventListener({
+      name: 'scrolltobottom'
+    }, function(ret, err){
+      if(!isEnd && !isAjaxing) {
+        showButtonLoadDiv(false, $('#feedList'));
+        ++condicationObj['page'];
+        condicationObj['lastId'] = $('div[name=feedMode]').last().attr('id');
+        pageFeedId = '';
+        getListData('feedList', condicationObj ,renderData);
+      }
+    });
+
+    
+    function renderData(data, first) {
+      //1 免费   3天塘  2斤塘
+      var htmlStr = '', proImg = {};
+      for(var i=0; i<data.length; i++) {
+        if(data[i]['type'] != 1) continue;  //话题列表中只有feed
+        try{
+          htmlStr += getCurDoms(data[i]);
+        }catch(e){
+          var errmsg = e.message+'   '+JSON.stringify(e);
+          uploadErrLog('exception', errmsg);
+        }
+      }
+      if(first) {
+        $('#feedList').html(htmlStr);
+      }else{
+        $('#feedList').append(htmlStr);
+      }
+
+      //render 头像
+      renderAvatar();
+      //render 图片
+      renderLogo();
+
+      api.parseTapmode();
+      
+      echo.init({
+        offsetTop: 100,
+        throttle: 250,
+        unload: true,
+        callback: function (element, op) {
+        }
+      });
+
+      if(first && $('div[name=feedMode]')[0]) {
+        var firstImg = $('div[name=feedMode]').find('img[data-echo]').first();
+        var firstImgUrl = firstImg.attr('data-echo');
+        firstImg.attr('src', firstImgUrl);
+      }
+
+
+
+      if(first) {
+        showLoadDiv(false, $('#feedList'));
+      }
+      
+      if(pageFeedId) {
+        var el = $('#'+pageFeedId);
+        setTimeout(function() {
+          var top =el[0].offsetTop;
+          $('body').animate({'scrollTop' : top},500);
+          // $('.wrap').animate({'scrollTop' : top},300);
+        },500);
+
+        // $('wrap').animate('scrollTop',400,200)
+      }
+
+      showButtonLoadDiv(false, $('#feedList'));
+      if(data.length < 15) {
+        isEnd = true;
+        if(first && data.length === 0) {
+          showNoData($('#feedList'));
+        }else if(!first){
+          api.toast({
+            msg: '没有更多数据了',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+        
+      }else{
+        showButtonLoadDiv(true, $('#feedList'));
+      }
+    }
+
+
+    function insertFeed() {
+      var backstagePics = $api.getStorage('backstagePics');
+      var backstageParams = $api.getStorage('backstageParams');
+
+      var user = $api.getStorage('user');
+      if($.isEmptyObject(user)) {
+        showLoginConfirm('../index.html');
+        return;
+      }
+      var data = {'type' : 1};
+      var picsArr = [];
+      for(var i=0; i<backstagePics.length; i++) {
+        picsArr.push(backstagePics[i]['path']);
+      }
+      data['pics'] = picsArr;
+      data['uid'] = user['id'];
+
+      data['pretty_time'] = '刚刚';
+
+      data['avatar'] = user['avatar'];
+      data['uid'] = user['id'];
+      data['fish_extra'] = {};
+      data['uname'] = user['nickname'];
+      data['gender'] = user['gender'];
+      
+      data['desc'] = backstageParams['desc'];
+
+      data['topic_name'] = backstageParams['topicName'];
+      data['topic_id'] = backstageParams['topic_id'];
+      data['comment_total'] = 0;
+      data['zans'] = 0;
+
+
+      var htmlStr = getCurDoms(data, '', true);
+
+      if($('div[name=feedMode]')[0]) {
+        var firstDom = $('div[name=feedMode]').first();
+        firstDom.before(htmlStr);
+      }else{
+        //第一篇
+        showButtonLoadDiv(false, $('#feedList'));
+        $('#feedList').append(htmlStr);
+        showLoadDiv(false, $('#feedList'));
+      }
+      $('body')[0].scrollTop = 0;
+      
+    }
+
+
+    //发布成功提示
+    function sendSuccess() {
+      $('#uploadTip').addClass('unfold');
+      setTimeout(function() {
+        $('#uploadTip').removeClass('unfold');
+      }, 3000);
+    }
+
+
+    window.sendSuccess = sendSuccess;
+    window.insertFeed = insertFeed;
+
+  }
+</script>
+</html>

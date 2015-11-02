@@ -1,0 +1,108 @@
+/*关键信息*/
+.key-info{
+  margin-top: 10px;
+  padding: 10px 10px 10px 15px;
+  background-color: #fff;
+  overflow: hidden; 
+  color: #222;
+}
+.key-info .r{
+  width: 50px;
+  height: 65px;
+  text-align: right;
+}
+.key-info .r:before{
+  display: inline-block;
+  height: 100%;
+  content: "";
+  vertical-align: middle;
+}
+.key-info .r .icon-m{
+  vertical-align: middle;
+  font-size: 16px;
+  color: #aaa;
+}
+
+.key-info .avatar{
+  float: left;
+}
+.key-info .name{
+  margin: 11px 0 12px 75px;
+  font-size: 16px;
+}
+.key-info .uid{
+  margin-left: 75px;
+  font-size: 14px;
+}
+
+
+/**/
+.data-list{
+  background-color: #fff;
+}
+
+
+.data-list ul{
+  overflow: hidden;
+  padding: 10px 0;
+}
+
+.data-list li{
+  float: left;
+  width: 25%;
+  text-align: center;
+  color: #aaa;
+}
+
+.data-list li p{
+  font-size: 18px;
+  color: #555;
+  margin-bottom: 3px;
+}
+
+.data-list li p span{
+  font-size: 13px;
+  color: #ff3b30;
+  vertical-align: text-top; 
+}
+
+.data-list .icon-message{
+  display: inline-block;
+  position: relative;
+}
+
+.data-list .new-msg{
+  width: 9px;
+  height: 9px;
+  background-color: #f00;
+  border-radius: 1000px;
+  border:1px solid #fff;
+  position: absolute;
+  right: -2px;
+  top: -2px;
+}
+
+.avatar{
+  width: 65px;
+  height: 65px;
+  overflow: hidden;
+  border-radius: 5px;
+  display: inline-block;
+  background-color: #f4f4f4;
+  position: relative;
+  vertical-align: middle;
+}
+
+.avatar .icon-user-fill{
+  font-size: 40px;
+  color: #ddd;
+  position: absolute;
+  top: 50%; left: 50%;
+  -webkit-transform: translate(-50%,-50%);  
+}
+
+.text-list .bottom-one{
+  position: absolute;
+  bottom: 20px;
+  left: 0; right: 0;
+}

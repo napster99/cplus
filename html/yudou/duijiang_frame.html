@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+    <title>红包提现</title>
+    <meta name="format-detection" content="telephone=no"/>
+    <link rel="stylesheet" type="text/css" href="./images/duijiang.css"/>
+</head>
+<body>
+<div class="dj-base-wrap">
+    <header id="header"></header>
+
+    <div class="content">
+        <h2 id="activityName"></h2>
+
+        <p>累计获得：
+            <b id="amount"></b>
+        </p>
+
+        <p class="times_right">
+            100 M起可兑换
+        </p>
+        <ul class="list-form">
+            <li>
+                姓名：<input type="text" id="name"/>
+            </li>
+            <li>
+                手机号码：<input type="tel" id="mobile"/>
+            </li>
+        </ul>
+        <div class="wrap_btn">
+            <span class="btn disabled" id="subBtn">领取流量</span>
+        </div>
+    </div>
+</div>
+
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+    apiready = function() {
+      
+
+      function init() {
+        //用户当前流量
+        sendAjax(URLConfig('networkFlow'), null, function(data, code, msg) {
+          if(code == 0) {
+            var count = data['current'] - data['redeemedTotal'];
+            if(count >= 100) {
+              $('header').html('<p>可领奖<b>100M</b></p>');
+              $('#subBtn').removeClass('disabled');
+            }else{
+              $('header').html('<p>距离可领奖还需<b>'+(100 - count)+'M</b></p>');
+              $('#subBtn').addClass('disabled');
+            }
+
+            $('#amount').text(count+'M');
+          }else{
+            api.toast({msg: msg || '获取信息失败，请稍候再试！', duration:2000,location: 'middle'});
+          }
+        });
+      }
+
+      init();
+
+
+
+      $('#lottery').on('tap', function() {
+        api.closeWin();
+      });
+
+      
+
+      //点击领取
+      $('#subBtn').on('tap',  function() {
+        if($(this).hasClass('disabled')) return;
+
+        var name = $('#name').val();
+        var mobile = $('#mobile').val();
+
+        if(name.replace(/\s+/g,'') != '') {
+          if(/^\d{11}$/.test(mobile)) {
+            var params = {
+              'user_name' : name,
+              'mobile' : mobile
+            }
+            sendAjax(URLConfig('networkFlowRedeem'), params, function(data, code, msg) {
+              if(code == 0) {
+                api.toast({msg: '恭喜您，兑换成功！', duration:2000,location: 'middle'});
+                setTimeout(function() {
+                  api.closeWin();
+                },1000);
+              }else{
+                api.toast({msg: msg || '兑换失败，请稍候再试！', duration:2000,location: 'middle'});
+              }
+            });
+          }else{
+            api.toast({msg: '手机格式有误！', duration:2000,location: 'middle'});
+          }
+        }else{
+          api.toast({msg: '请输入姓名', duration:2000,location: 'middle'});
+        }
+      });
+    }
+
+</script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+
+
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <title>日期</title>
+</head>
+<body>
+  <div class="wrap">
+    <div class="text-list border-top mt10">
+      <ul>
+        <li class="border-bottom">
+          <span class="field">日期</span>
+          <div class="widget">
+            <i id="clearThis1" class="icon-m icon-close-fill"></i>
+            <div class="col">
+              <input id="date" type="date">
+            </div>
+          </div>
+        </li>
+        <li class="border-bottom">
+          <span class="field">时间</span>
+          <div class="widget">
+            <i id="clearThis2" class="icon-m icon-close-fill"></i>
+            <div class="col">
+              <input id="time" type="time">
+            </div>
+          </div>
+        </li>
+      </ul>    
+    </div>
+  </div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+  apiready = function() {
+
+    var fishTime = api.pageParam['fish_time'];
+
+    if(fishTime) {
+      if(fishTime.indexOf(' ') > -1) {
+        var date = fishTime.split(' ')[0];
+        var time = fishTime.split(' ')[1];
+        $('#date').val(date);
+        $('#time').val(time);
+      }
+    }
+
+
+    $('#clearThis1').on('tap',  function() {
+      $('#date').val('');
+      api.execScript({
+        name: 'fishing_time',
+        script: 'changeSaveStatus(false);'
+      });
+    });
+
+  $('#clearThis2').on('tap',  function() {
+    $('#time').val('');
+    api.execScript({
+        name: 'fishing_time',
+        script: 'changeSaveStatus(false);'
+      });
+    });
+
+    $('#date').on('change',  function() {
+      var value = $(this).val();
+      var time = $('#time').val();
+      if(value && time) {
+        api.execScript({
+          name: 'fishing_time',
+          script: 'changeSaveStatus(true);'
+        });
+      }else{
+        api.execScript({
+          name: 'fishing_time',
+          script: 'changeSaveStatus(false);'
+        });
+      }
+    });
+
+
+    $('#time').on('change',  function() {
+      var value = $(this).val();
+      var date = $('#date').val();
+      if(value && date) {
+        api.execScript({
+          name: 'fishing_time',
+          script: 'changeSaveStatus(true);'
+        });
+      }else{
+        api.execScript({
+          name: 'fishing_time',
+          script: 'changeSaveStatus(false);'
+        });
+      }
+    });
+   
+
+    window.saveFishTime = function() {
+      var date  = $('#date').val();
+      var time  = $('#time').val();
+      if(!time || !date) {
+        api.execScript({
+          name: 'fishing_time',
+          script: 'changeSaveStatus(false);'
+        });
+      }
+
+      var time = date+' '+time;
+
+      api.execScript({
+        name : 'publish-fishery',
+        frameName: 'publish-fishery',
+        script: 'setFishTimeInfo("'+time+'");'
+      });
+
+      api.closeWin();
+    }
+
+  }
+
+</script>
+</html>

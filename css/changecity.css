@@ -1,0 +1,32 @@
+.city-bar{position: fixed; right:0; top:100px; width:10px;}
+.city-bar a,
+.city-bar span{display: block; color:#007aff; margin-bottom: 5px;}
+
+.city-dlist dt{height:35px; line-height: 35px; padding-left: 10px; background-color: #fff;}
+.city-dlist dd{overflow: hidden; padding-left: 10px; padding-bottom: 10px;}
+.city-dlist dd a{width: 33.33%; float:left; text-align: center; color:#555;}
+.city-dlist dd span{display: block; border:1px solid #ddd; margin-right: 10px; height:35px; line-height: 35px; margin-top: 10px; background-color: #eee;}
+.city-flist dt{background-color: #ddd; padding-left: 10px; padding-right: 10px;height:30px; line-height: 30px; margin-top: 20px;}
+.city-flist dd{padding-left: 10px; padding-right: 10px; background-color: #fff;}
+.city-flist a{display: block; background-color: #fff; height:30px; line-height: 30px; color:#555; border-bottom:1px solid #ddd;}
+.city-search{padding: 8px 12px;font-size: 16px;color: #fff; }
+.city-search .top-search{ margin-top: -5px;}
+.city-search .top-search input{
+  display: block;
+  border-radius: 5px;
+  width: 100%;
+  padding-left: 28px;
+  height: 26px;
+  border: 0;
+  font-size: 12px;
+}
+.city-search .top-search .icon-m{
+  position: absolute;
+  top: 8px; 
+  left: 20px;
+  color: #888;
+  font-size:14px;
+}
+.city-search .top-search input::-webkit-input-placeholder{
+  color: #888;
+}

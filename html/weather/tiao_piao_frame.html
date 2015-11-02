@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+
+
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <title>调漂</title>
+</head>
+<body>
+  <div class="wrap">
+    <div class="text-list mt10">
+        <ul class="border-top">
+          <li class="border-bottom">
+            <i id="clearThis" class="icon-m icon-close-fill"></i>
+            <div class="col2">
+              <div class="col" unit="目">
+                <select id="lowTemp">
+                </select>
+              </div>
+              <div class="col" unit="目">
+                <select id="highTemp">
+                </select>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+  </div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+  apiready = function() {
+
+    function initSelectData() {
+      var htmlStr = '<option></option>';
+      for(var i=0; i<=10; i++) {
+        htmlStr += '<option value="'+i+'">' + i+'</option>';
+      }
+      $('#lowTemp').html(htmlStr);
+
+      htmlStr = '<option></option>';
+      for(var i=0; i<=10; i++) {
+        htmlStr += '<option value="'+i+'">' + i +'</option>';
+      }
+      $('#highTemp').html(htmlStr);
+    }
+
+    initSelectData();
+
+    if(api.pageParam['tiao_piao']) {
+      var low = '', high = '';
+
+      low = api.pageParam['tiao_piao'].split('钓')[0].replace('调','');
+      high = api.pageParam['tiao_piao'].split('钓')[1];
+
+      var lowOpts = $('#lowTemp').find('option');
+      for(var i=0; i<lowOpts.length; i++) {
+        if(lowOpts.eq(i).val() === low) {
+          lowOpts.eq(i)[0].selected = true;
+        }
+      }
+
+      var highOpts = $('#highTemp').find('option');
+      for(var i=0; i<highOpts.length; i++) {
+        if(highOpts.eq(i).val() === high) {
+          highOpts.eq(i)[0].selected = true;
+        }
+      }
+      
+    }
+
+    $('#lowTemp, #highTemp').on('change',  function() {
+      var low  = $('#lowTemp').val();
+      var high  = $('#highTemp').val();
+      if(high > low) {
+        api.toast({msg: '钓目必须小于等于调目！',duration:2000,location: 'middle'});
+        api.execScript({
+          name: 'tiao_piao',
+          script: 'changeSaveStatus(false);'
+        });
+        return false;
+      }
+      if(low || high) {
+        api.execScript({
+          name: 'tiao_piao',
+          script: 'changeSaveStatus(true);'
+        });
+      }else{
+        api.execScript({
+          name: 'tiao_piao',
+          script: 'changeSaveStatus(false);'
+        });
+      }
+
+    });
+
+    $('#clearThis').on('tap', function() {
+      $('#lowTemp').find('option').first().get(0).selected = true;
+      $('#highTemp').find('option').first().get(0).selected = true;
+      api.execScript({
+        name: 'tiao_piao',
+        script: 'changeSaveStatus(false);'
+      });
+    });
+   
+
+    window.saveTiao_piao = function() {
+      var low  = $('#lowTemp').find(':selected').val();
+      var high  = $('#highTemp').find(':selected').val();
+      api.execScript({
+        name : 'publish-fishery',
+        frameName: 'publish-fishery',
+        script: 'setTiaoPiaoInfo("'+low+'","'+high+'");'
+      });
+
+      api.closeWin();
+    }
+
+  }
+
+</script>
+</html>

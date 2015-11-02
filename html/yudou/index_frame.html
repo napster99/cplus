@@ -1,0 +1,414 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+
+
+    <title>抽奖</title>
+    <link href="./images/style.css" rel="stylesheet" />
+    <script type="text/javascript">
+        var commonjspath = './images';
+    </script>
+    <script src="../../script/api.js"></script>
+    <script src="../../script/zepto.min.js"></script>
+    <script src="../../script/common.js"></script>
+
+
+    <script src="./images/commons.js" type="text/javascript"></script>
+    <style>
+        .pop{
+            position: fixed;
+            top:0;
+            left:0;
+            width:100%;
+            height:100%;
+            background:rgba(0, 0, 0, 0.7);
+            display:none;
+            z-index:1000;
+            padding-top:15%;
+        }
+        .content .prize ul li .jiangpin{
+            position: relative;
+        }
+        .content .prize ul li .jiangpin span {
+            position:absolute;
+            width:100%;
+            text-align:center;
+            bottom:9px;
+            left:0;
+            font-size:12px;
+            border-radius:0 0 10px 10px;
+            background-color: rgba(196, 43, 43, 0.57);
+            color:#fff;
+            padding:5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="score" class="pop" style="display:none;">
+        <div class="promptbox">
+            <div class="box"><h1>兑换流量</h1>
+                <div class="line"><img src="./images/line_yellow.png" width="100%" /></div>
+                <div class="user">
+                    <form id="score_form">
+                        <div class="input"><input type="text" id="username" name="username" placeholder="请输入兑换手机号" /></div>
+                        <div class="input id">
+                            <input type="text" id="verify" name="verify" placeholder="验证码" />
+                            <input type="hidden" name="act" value="score">
+                            <input type="hidden" name="zj_id" id="zj_id" value="0">
+                            <input type="hidden" name="prize_id" id="prize_id" value="0">
+                            <input type="hidden" name="act_id" value="1">
+                            <input type="hidden" name="user_id" value="6084">
+                        </div>
+                    </form>
+                    <div class="but_con"  >
+                        <button class="get_score_btn button_01 but">兑换</button><button class="button_02 but"  onclick="document.getElementById('score').style.display='none';"  style="margin-left:18%">关闭</button>
+                        <div class="clr"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="zjl" class="pop" onclick="document.getElementById('zjl').style.display='';document.location.reload();" style="display:none;">
+        <div class="promptbox">
+            <div class="box"><h1>恭喜您！您的运气实在太好了！</h1>
+                <div class="line"><img src="./images/line_yellow.png" width="100%" /></div>
+                <div class="user">
+                    <!-- <img  id="jpimg" src="./images/share.png"  width="45%" class="left"  /> -->
+                    <div class="text" style="margin-left:0;">
+                        <span id="ncz"></span>
+                        <img  src="./images/cat_01.png" width="120"/>
+                        <div class="clr"></div>
+                    </div>
+                    <div class="but_con"  >
+                        <button class="button_01">关闭</button>
+                        <div class="clr"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="mzj"  class="pop" onclick="document.getElementById('mzj').style.display='';document.location.reload();" style="display:none;">
+        <div class="promptbox">
+            <div class="box"><h1>很遗憾没抽中</h1>
+                <div class="line"><img src="./images/line_yellow.png" width="100%" /></div>
+                <div class="user">
+                    <img src="./images/cat_03.png"  width="70" class="left"  />
+                    <div class="text">
+                        <span  id="jptype">参与奖</span><br />
+                        <span id="jpname">谢谢参与</span><br />
+                        <div class="clr"></div>
+                    </div>
+                    <div class="but_con">
+                        <button class="button_01">知道啦</button>
+                        <div class="clr"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="top" id="header">
+        <span name="yudou" class="credits">
+            <i></i><span class="theme-color" id="db-credits-num">0</span><span>鱼豆</span>
+        </span>
+        <span name="lingjiang" class="records" style="float:right;">
+            <i class="note"></i><span>领奖</span><i id="db-new-record"></i>
+        </span>
+    </div>
+    <div class="line"><img src="./images/line.png" /></div>
+    <div class="container" id="lottery">
+      <div class="NO">
+        <ul>
+          <li class="lottery-unit lottery-unit-0"><span class="active"></span><img src="./images/1M.png" /></li>
+          <li class="lottery-unit lottery-unit-1"><span></span><img src="./images/2M.png"/></li>
+          <li class="lottery-unit lottery-unit-2"><span></span><img src="./images/5M.png"/></li>
+          <li class="lottery-unit lottery-unit-7"><span></span><img src="./images/10M.png"/></li>
+          <li name="start"><img src="./images/start.jpg" /></li>
+          <li class="lottery-unit lottery-unit-3"><span></span><img src="./images/20M.png"/></li>
+          <li class="lottery-unit lottery-unit-6"><span></span><img src="./images/50M.png"/></li>
+          <li class="lottery-unit lottery-unit-5"><span></span><img src="./images/100M.png"/></li>
+          <li class="lottery-unit lottery-unit-4"><span></span><img src="./images/ths.png"/></li>
+          <div class="clr"></div>
+        </ul>
+      </div>
+      <img src="./images/bg.jpg" class="img"/>
+    </div>
+    
+    <div class="content">
+       <div class="title"><img src="./images/title_2.png" /></div>
+       <div class="text">活动具体说明：100鱼豆抽奖一次。每次抽奖累计，累计100M即可兑换。</div>
+    </div>
+    <div class="rich_tips with_line title_tips">
+        <span class="tips">鱼豆获得途径</span>
+    </div>
+    <div class="content">
+       <div class="prize text">
+            <ul>
+                <li name="task" class="redirect"><div class="jiangpin"><img src="./images/richang.png"/></div>日常任务</li>
+                <li name="yaoqing" class="redirect"><div class="jiangpin"><img src="./images/yaoqing.png"/></div>邀请好友</li>
+                <li name="qiang" class="redirect"><div class="jiangpin"><img src="./images/zhengdian.png"/></div>整点抢豆</li>
+            </ul>
+        </div>
+        <div class="clr"></div>
+    </div>
+<div class="line"><img src="./images/line.png" /></div>
+<div class="copyright">杭州鱼游网络科技有限公司</div>
+<script>
+
+
+    apiready = function() {
+        
+        $('span[name=yudou]').on('click', function() {
+            var userInner = $api.getStorage('user');
+            if($.isEmptyObject(userInner)) {
+                showLoginConfirm('../../index.html');  
+                return;
+            }
+
+            api.openWin({
+              'name' : 'yudou-real',
+              'url' : './yudou.html'
+            });
+        });
+
+        $('span[name=lingjiang]').on('click', function() {
+            var userInner = $api.getStorage('user');
+            if($.isEmptyObject(userInner)) {
+                showLoginConfirm('../../index.html');  
+                return;
+            }
+
+            api.openWin({
+              'name' : 'duijiang',
+              'url' : './duijiang.html'
+            });
+        });
+
+        //日常任务
+        $('li[name=task]').on('tap',  function() {
+          api.openWin({
+            'name' : 'richang',
+            'url' : './richang.html'
+          });
+        });
+
+        //邀请好友
+        $('li[name=yaoqing]').on('tap',  function() {
+          api.openWin({
+            'name' : 'yaoqing',
+            'url' : './yaoqing.html',
+            'bounces' : false
+          });
+        });
+
+        //整点抢豆
+        $('li[name=qiang]').on('tap',  function() {
+          api.openWin({
+            'name' : 'zhengdian',
+            'url' : './zhengdian.html'
+          });
+        });
+
+        function initData() {
+            //获取鱼豆
+            sendAjax(URLConfig('rollProducts'), null, function(data, code, msg) {
+              if(code == 0) {
+                var credit = data['credit'];
+                $('#db-credits-num').text(credit);
+              }else{
+                api.toast({msg: msg || '获取信息失败，请稍候再试！', duration:2000,location: 'middle'});
+              }
+            });
+        }
+
+        initData();
+
+        window.initData = initData;
+        
+    }
+
+    function showMustShare(){
+       $('body').append('<div id="must_share_box" style="position:fixed;z-index:9999999;left:0px;top:0px;width:100%;height:100%;background-color: rgba(0,0,0,0.8);text-align:right;" ontouchmove="return true;" ><img src="./images/share_pyq.png" style="margin-top:10px;margin-right:10px;"></div>');
+   }
+ // showMustShare();
+ function showShareGuide(){
+   $('body').append('<div id="share_guide_box" onclick="hideShareGuide();" style="position:fixed;z-index:9999999;left:0px;top:0px;width:100%;height:100%;background-color: rgba(0,0,0,0.8);text-align:right;" ontouchmove="return true;" ><img src="./images/share.png" style="margin-top:10px;margin-right:10px;"></div>');
+}
+function hideShareGuide(){
+    $("#share_guide_box").remove();
+}
+
+function score(zj_id,prize_id){
+    $("#zj_id").val(zj_id);
+    $("#prize_id").val(prize_id);
+    document.getElementById('score').style.display='block';
+}
+
+
+var lottery={
+    index:0,	
+    count:0,	
+    timer:0,	
+    speed:1000,	
+    times:0,	
+    cycle:50,	
+    prize:-1,	
+    init:function(id){
+        if ($("#"+id).find(".lottery-unit").length>0) {
+            slottery = $("#"+id);
+            sunits = slottery.find(".lottery-unit");
+            this.obj = slottery;
+            this.count = sunits.length;
+            slottery.find(".lottery-unit-"+this.index).find('span').addClass("active");
+        };
+    },
+    roll:function(){
+        var index = this.index;
+        var count = this.count;
+        var lottery = this.obj;
+        $(lottery).find(".lottery-unit-"+index).find('span').removeClass("active");
+        index += 1;
+        if (index>count-1) {
+            index = 0;
+        };
+        $(lottery).find(".lottery-unit-"+index).find('span').addClass("active");
+        this.index=index;
+        return false;
+    },
+    stop:function(index){
+        this.prize=index;
+        return false;
+    }
+};
+
+function roll(){
+    lottery.times += 1;
+    lottery.roll();
+    if (lottery.times > lottery.cycle+10 && lottery.prize==lottery.index) {
+        clearTimeout(lottery.timer);
+        lottery.prize=-1;
+        lottery.times=0;
+        click=false;
+
+        setTimeout(function() {
+          if(myindex != 4) {
+            $("#zjl").show()
+          }else{
+            $("#mzj").show()
+          }
+        }, 500);
+
+    }else{
+        if (lottery.times<lottery.cycle) {
+            lottery.speed -= 10;
+        }else if(lottery.times==lottery.cycle) {
+            index = myindex;//Math.random()*(lottery.count)|0;
+            lottery.prize = index;
+        }else{
+            if (lottery.times > lottery.cycle+10 && ((lottery.prize==0 && lottery.index==7) || lottery.prize==lottery.index+1)) {
+                lottery.speed += 110;
+            }else{
+                lottery.speed += 20;
+            }
+        }
+        if (lottery.speed<40) {
+            lottery.speed=40;
+        };
+        lottery.timer = setTimeout(roll,lottery.speed);
+    }
+    return false;
+}
+
+var click = false;
+var flag = 1;
+var myindex = 7;
+var submintCjStatus = 0;
+window.onload=function(){
+   
+
+    lottery.init('lottery');
+    
+    $('li[name=start]').on('tap',   function() {
+
+      var userInner = $api.getStorage('user');
+      if($.isEmptyObject(userInner)) {
+        showLoginConfirm('../../index.html');  
+        return;
+      }
+
+      var oldCount = Number($('#db-credits-num').text());
+
+      if(oldCount < 100) {
+        api.toast({msg: '抱歉，鱼豆数量少于100，无法参加抽奖！', duration:2000,location: 'middle'});
+        return;
+      }
+
+        if (click){
+            return false;
+        }else{
+            if(submintCjStatus == 1){
+                return false;
+            }
+            submintCjStatus = 1;
+
+            sendAjax(URLConfig('roll'), null, function(data, code, msg) {
+              if(code == 0) {
+                myindex = data['index'];
+                lottery.speed = 100;
+                lottery.cycle = 30;
+                roll();
+                click = true;
+
+                var text = '';
+                switch(myindex) {
+                  case 0:
+                    text = '1M';
+                    break;
+                  case 1:
+                    text = '2M';
+                    break;
+                  case 2:
+                    text = '5M';
+                    break;
+                  case 3:
+                    text = '20M';
+                    break;
+                  case 5:
+                    text = '100M';
+                    break;
+                  case 6:
+                    text = '50M';
+                    break;
+                  case 7:
+                    text = '10M';
+                    break;
+                }
+                $('#ncz').text(text);
+
+                $('#db-credits-num').text(data['credits']);
+              }else{
+                api.toast({msg: msg || '获取信息失败，请稍候再试！', duration:2000,location: 'middle'});
+              }
+            });
+        }
+    })
+
+};
+
+function checkMobile(s){
+	var regu =/^[1][3|8|4|5][0-9]{9}$/;
+	var re = new RegExp(regu);
+	if (re.test(s)) {
+		return true;
+	}else{
+		return false;
+	}
+} 
+</script>
+
+</body>
+</html>

@@ -1,0 +1,734 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <title>首页_鱼多多_找钓点，就用鱼多多</title>
+  <style>
+    #suggest,#suggest2{width:200px;}
+    .gray{color:gray;}
+    .ac_results {background:#fff;position:absolute;z-index:10000;display:none;  left: 0; top: 43px; overflow: auto;}
+    .ac_results ul{margin:0;padding:0;list-style:none;}
+    .ac_results li a{white-space:nowrap;text-decoration:none;display:block;color:#555;padding:1px 3px;}
+    .ac_results li{border-bottom:1px solid #ccc; height: 50px; line-height: 50px;}
+    .ac_results li a span{float:right;}
+    .ac_result_tip{}
+  </style>
+</head>
+<body>
+
+
+<div class="city-list">
+  <!-- <div class="anchor-bar">
+    <ul>
+      <li which="current"><i class="icon-m icon-focus"></i></li>
+      <li which="topCity"><i class="icon-m icon-time"></i></li>
+      <li which="A">A</li>
+      <li which="B">B</li>
+      <li which="C">C</li>
+      <li which="D">D</li>
+      <li which="E">E</li>
+      <li which="F">F</li>
+      <li which="G">G</li>
+      <li which="H">H</li>
+      <li which="J">J</li>
+      <li which="K">K</li>
+      <li which="L">L</li>
+      <li which="M">M</li>
+      <li which="N">N</li>
+      <li which="P">P</li>
+      <li which="Q">Q</li>
+      <li which="R">R</li>
+      <li which="S">S</li>
+      <li which="T">T</li>
+      <li which="W">W</li>
+      <li which="X">X</li>
+      <li which="Y">Y</li>
+      <li which="Z">Z</li>
+    </ul>
+  </div> -->
+
+  <div class="content">
+    <div class="search-bar border-bottom">
+      <div class="placeholder">
+        <i class="icon-m icon-search"></i>
+        <span>输入城市名或拼音</span>
+      </div>
+      <form action="javascript:;">
+        <input id="searchText" type="search">
+        <div id='suggest2' class="ac_results"></div>
+      </form>
+    </div>
+
+    <div class="hd">定位城市</div>
+    <div class="area-list">
+      <div class="bd">
+        <ul class="filter-col-3">
+          <li id="GPRS" name="p" class="border">未知</li>
+        </ul>
+      </div>
+    </div>
+
+
+    <div id="recently" class="hd hidden">最近访问</div>
+    <div class="area-list">
+      <div class="bd">
+        <ul id="recentlyList" class="filter-col-3">
+        </ul>
+      </div>
+    </div>
+
+    <div class="hd">热门城市</div>
+    <div class="area-list">
+        <div class="bd" style="max-height:none;">
+          <ul class="filter-col-3">
+            <li name="p" class="border" code="310000">上海</li>
+            <li name="p" class="border" code="110000">北京</li>
+            <li name="p" class="border" code="320500">苏州</li>
+            <li name="p" class="border" code="120000">天津</li>
+            <li name="p" class="border" code="330100">杭州</li>
+            <li name="p" class="border" code="410100">郑州</li>
+            <li name="p" class="border" code="510100">成都</li>
+            <li name="p" class="border" code="320100">南京</li>
+            <li name="p" class="border" code="420100">武汉</li>
+            <li name="p" class="border" code="500000">重庆</li>
+            <li name="p" class="border" code="330600">绍兴</li>
+          </ul>
+          <div class="notice border">其他城市即将陆续开放！敬请期待 ^_^</div>
+        </div>
+    </div>
+
+
+  <!-- 
+    <div class="hd" id="A">A</div>
+    <div class="bd">
+      <ul class="filter-col-1">
+        <li name="p" class="border-bottom" code="513200">阿坝州</li>
+        <li name="p" class="border-bottom" code="652900">阿克苏</li>
+        <li name="p" class="border-bottom" code="152900">阿拉善盟</li>
+        <li name="p" class="border-bottom" code="654300">阿勒泰</li>
+        <li name="p" class="border-bottom" code="542500">阿里</li>
+        <li name="p" class="border-bottom" code="610900">安康</li>
+        <li name="p" class="border-bottom" code="340800">安庆</li>
+        <li name="p" class="border-bottom" code="210300">鞍山</li>
+        <li name="p" class="border-bottom" code="520400">安顺</li>
+        <li name="p" class="border-bottom" code="410500">安阳</li>
+      </ul>
+    </div>
+
+    <div class="hd" id="B">B</div>
+    <div class="bd">
+      <ul class="filter-col-1">
+        <li name="p" class="border-bottom" code="220800">白城</li>
+        <li name="p" class="border-bottom" code="451000">百色</li>
+        <li name="p" class="border-bottom" code="220600">白山</li>
+        <li name="p" class="border-bottom" code="620400">白银</li>
+        <li name="p" class="border-bottom" code="130600">保定</li>
+        <li name="p" class="border-bottom" code="610300">宝鸡</li>
+        <li name="p" class="border-bottom" code="530500">保山</li>
+        <li name="p" class="border-bottom" code="150200">包头</li>
+        <li name="p" class="border-bottom" code="150800">巴彦淖尔</li>
+        <li name="p" class="border-bottom" code="652800">巴音郭楞蒙古自治州</li>
+        <li name="p" class="border-bottom" code="511900">巴中</li>
+        <li name="p" class="border-bottom" code="450500">北海</li>
+        <li name="p" class="border-bottom" code="110000">北京</li>
+        <li name="p" class="border-bottom" code="340300">蚌埠</li>
+        <li name="p" class="border-bottom" code="210500">本溪</li>
+        <li name="p" class="border-bottom" code="520500">毕节</li>
+        <li name="p" class="border-bottom" code="371600">滨州</li>
+        <li name="p" class="border-bottom" code="652700">博尔塔拉</li>
+        <li name="p" class="border-bottom" code="341600">亳州</li>
+        <li name="p" class="border-bottom" code="410900">濮阳</li>
+      </ul>
+    </div>
+
+    <div class="hd" id="C">C</div>
+    <div class="bd">
+      <ul class="filter-col-1">
+        <li name="p" class="border-bottom" code="130900">沧州</li>
+        <li name="p" class="border-bottom" code="220100">长春</li>
+        <li name="p" class="border-bottom" code="430700">常德</li>
+        <li name="p" class="border-bottom" code="542100">昌都</li>
+        <li name="p" class="border-bottom" code="652300">昌吉州</li>
+        <li name="p" class="border-bottom" code="430100">长沙</li>
+        <li name="p" class="border-bottom" code="140400">长治</li>
+        <li name="p" class="border-bottom" code="320400">常州</li>
+        <li name="p" class="border-bottom" code="211300">朝阳</li>
+        <li name="p" class="border-bottom" code="445100">潮州</li>
+        <li name="p" class="border-bottom" code="130800">承德</li>
+        <li name="p" class="border-bottom" code="510100">成都</li>
+        <li name="p" class="border-bottom" code="431000">郴州</li>
+        <li name="p" class="border-bottom" code="150400">赤峰</li>
+        <li name="p" class="border-bottom" code="341700">池州</li>
+        <li name="p" class="border-bottom" code="500000">重庆</li>
+        <li name="p" class="border-bottom" code="451400">崇左</li>
+        <li name="p" class="border-bottom" code="532300">楚雄州</li>
+        <li name="p" class="border-bottom" code="341100">滁州</li>
+      </ul>
+    </div>
+
+    <div class="hd" id="D">D</div>
+    <div class="bd">
+      <ul class="filter-col-1">
+        <li name="p" class="border-bottom" code="210200">大连</li>
+        <li name="p" class="border-bottom" code="532900">大理白族自治州</li>
+        <li name="p" class="border-bottom" code="210600">丹东</li>
+        <li name="p" class="border-bottom" code="230600">大庆</li>
+        <li name="p" class="border-bottom" code="140200">大同</li>
+        <li name="p" class="border-bottom" code="232700">大兴安岭</li>
+        <li name="p" class="border-bottom" code="511700">达州</li>
+        <li name="p" class="border-bottom" code="533100">德宏</li>
+        <li name="p" class="border-bottom" code="510600">德阳</li>
+        <li name="p" class="border-bottom" code="371400">德州</li>
+        <li name="p" class="border-bottom" code="621100">定西</li>
+        <li name="p" class="border-bottom" code="533400">迪庆</li>
+        <li name="p" class="border-bottom" code="441900">东莞</li>
+        <li name="p" class="border-bottom" code="370500">东营</li>
+      </ul>
+    </div>
+
+    <div class="hd" id="E">E</div>
+    <div class="bd">
+      <ul class="filter-col-1">
+        <li name="p" class="border-bottom" code="150600">鄂尔多斯</li>
+        <li name="p" class="border-bottom" code="422800">恩施州</li>
+        <li name="p" class="border-bottom" code="420700">鄂州</li>
+      </ul>
+    </div>
+
+    <div class="hd" id="F">F</div>
+    <div class="bd">
+      <ul class="filter-col-1">
+        <li name="p" class="border-bottom" code="450600">防城港</li>
+        <li name="p" class="border-bottom" code="440600">佛山</li>
+        <li name="p" class="border-bottom" code="210400">抚顺</li>
+        <li name="p" class="border-bottom" code="210900">阜新</li>
+        <li name="p" class="border-bottom" code="341200">阜阳</li>
+        <li name="p" class="border-bottom" code="361000">抚州</li>
+        <li name="p" class="border-bottom" code="350100">福州</li>
+      </ul>
+    </div>
+
+    <div class="hd" id="G">G</div>
+    <div class="bd">
+      <ul class="filter-col-1">
+        <li name="p" class="border-bottom" code="513300">甘孜州</li>
+        <li name="p" class="border-bottom" code="623000">甘南州</li>
+        <li name="p" class="border-bottom" code="360700">赣州</li>
+        <li name="p" class="border-bottom" code="511600">广安</li>
+        <li name="p" class="border-bottom" code="510800">广元</li>
+        <li name="p" class="border-bottom" code="440100">广州</li>
+        <li name="p" class="border-bottom" code="450800">贵港</li>
+        <li name="p" class="border-bottom" code="450300">桂林</li>
+        <li name="p" class="border-bottom" code="520100">贵阳</li>
+        <li name="p" class="border-bottom" code="632600">果洛</li>
+        <li name="p" class="border-bottom" code="640400">固原</li>
+      </ul>
+    </div>
+
+    <div class="hd" id="H">H</div>
+    <div class="bd">
+      <ul class="filter-col-1">
+        <li name="p" class="border-bottom" code="230100">哈尔滨</li>
+        <li name="p" class="border-bottom" code="632200">海北</li>
+        <li name="p" class="border-bottom" code="630200">海东</li>
+        <li name="p" class="border-bottom" code="460100">海口</li>
+        <li name="p" class="border-bottom" code="632500">海南州</li>
+        <li name="p" class="border-bottom" code="632800">海西</li>
+        <li name="p" class="border-bottom" code="652200">哈密</li>
+        <li name="p" class="border-bottom" code="130400">邯郸</li>
+        <li name="p" class="border-bottom" code="330100">杭州</li>
+        <li name="p" class="border-bottom" code="610700">汉中</li>
+        <li name="p" class="border-bottom" code="410600">鹤壁</li>
+        <li name="p" class="border-bottom" code="451200">河池</li>
+        <li name="p" class="border-bottom" code="340100">合肥</li>
+        <li name="p" class="border-bottom" code="230400">鹤岗</li>
+        <li name="p" class="border-bottom" code="131100">衡水</li>
+        <li name="p" class="border-bottom" code="430400">衡阳</li>
+        <li name="p" class="border-bottom" code="653200">和田</li>
+        <li name="p" class="border-bottom" code="441600">河源</li>
+        <li name="p" class="border-bottom" code="371700">菏泽</li>
+        <li name="p" class="border-bottom" code="451100">贺州</li>
+        <li name="p" class="border-bottom" code="532500">红河州</li>
+        <li name="p" class="border-bottom" code="320800">淮安</li>
+        <li name="p" class="border-bottom" code="340600">淮北</li>
+        <li name="p" class="border-bottom" code="431200">怀化</li>
+        <li name="p" class="border-bottom" code="340400">淮南</li>
+        <li name="p" class="border-bottom" code="421100">黄冈</li>
+        <li name="p" class="border-bottom" code="632300">黄南</li>
+        <li name="p" class="border-bottom" code="341000">黄山</li>
+        <li name="p" class="border-bottom" code="420200">黄石</li>
+        <li name="p" class="border-bottom" code="150100">呼和浩特</li>
+        <li name="p" class="border-bottom" code="441300">惠州</li>
+        <li name="p" class="border-bottom" code="211400">葫芦岛</li>
+        <li name="p" class="border-bottom" code="150700">呼伦贝尔</li>
+        <li name="p" class="border-bottom" code="330500">湖州</li>
+      </ul>
+    </div>
+
+    <div class="hd" id="J">J</div>
+    <div class="bd">
+      <ul class="filter-col-1">
+        <li name="p" class="border-bottom" code="230800">佳木斯</li>
+        <li name="p" class="border-bottom" code="360800">吉安</li>
+        <li name="p" class="border-bottom" code="440700">江门</li>
+        <li name="p" class="border-bottom" code="421000">荆州</li>
+        <li name="p" class="border-bottom" code="410800">焦作</li>
+        <li name="p" class="border-bottom" code="330400">嘉兴</li>
+        <li name="p" class="border-bottom" code="620200">嘉峪关</li>
+        <li name="p" class="border-bottom" code="445200">揭阳</li>
+        <li name="p" class="border-bottom" code="220200">吉林</li>
+        <li name="p" class="border-bottom" code="370100">济南</li>
+        <li name="p" class="border-bottom" code="620300">金昌</li>
+        <li name="p" class="border-bottom" code="140500">晋城</li>
+        <li name="p" class="border-bottom" code="360200">景德镇</li>
+        <li name="p" class="border-bottom" code="420800">荆门</li>
+        <li name="p" class="border-bottom" code="330700">金华</li>
+        <li name="p" class="border-bottom" code="370800">济宁</li>
+        <li name="p" class="border-bottom" code="140700">晋中</li>
+        <li name="p" class="border-bottom" code="210700">锦州</li>
+        <li name="p" class="border-bottom" code="360400">九江</li>
+        <li name="p" class="border-bottom" code="620900">酒泉</li>
+        <li name="p" class="border-bottom" code="230300">鸡西</li>
+      </ul>
+    </div>
+
+    <div class="hd" id="K">K</div>
+    <div class="bd">
+      <ul class="filter-col-1">
+        <li name="p" class="border-bottom" code="410200">开封</li>
+        <li name="p" class="border-bottom" code="653100">喀什</li>
+        <li name="p" class="border-bottom" code="650200">克拉玛依</li>
+        <li name="p" class="border-bottom" code="653000">克孜勒苏州</li>
+        <li name="p" class="border-bottom" code="530100">昆明</li>
+      </ul>
+    </div>
+
+    <div class="hd" id="L">L</div>
+    <div class="bd">
+      <ul class="filter-col-1">
+        <li name="p" class="border-bottom" code="451300">来宾</li>
+        <li name="p" class="border-bottom" code="371200">莱芜</li>
+        <li name="p" class="border-bottom" code="131000">廊坊</li>
+        <li name="p" class="border-bottom" code="620100">兰州</li>
+        <li name="p" class="border-bottom" code="540100">拉萨</li>
+        <li name="p" class="border-bottom" code="511100">乐山</li>
+        <li name="p" class="border-bottom" code="513400">凉山</li>
+        <li name="p" class="border-bottom" code="320700">连云港</li>
+        <li name="p" class="border-bottom" code="371500">聊城</li>
+        <li name="p" class="border-bottom" code="211000">辽阳</li>
+        <li name="p" class="border-bottom" code="220400">辽源</li>
+        <li name="p" class="border-bottom" code="530700">丽江</li>
+        <li name="p" class="border-bottom" code="530900">临沧</li>
+        <li name="p" class="border-bottom" code="141000">临汾</li>
+        <li name="p" class="border-bottom" code="622900">临夏州</li>
+        <li name="p" class="border-bottom" code="371300">临沂</li>
+        <li name="p" class="border-bottom" code="542600">林芝</li>
+        <li name="p" class="border-bottom" code="331100">丽水</li>
+        <li name="p" class="border-bottom" code="520200">六盘水</li>
+        <li name="p" class="border-bottom" code="520200">柳州</li>
+        <li name="p" class="border-bottom" code="621200">陇南</li>
+        <li name="p" class="border-bottom" code="350800">龙岩</li>
+        <li name="p" class="border-bottom" code="431300">娄底</li>
+        <li name="p" class="border-bottom" code="341500">六安</li>
+        <li name="p" class="border-bottom" code="411100">漯河</li>
+        <li name="p" class="border-bottom" code="410300">洛阳</li>
+        <li name="p" class="border-bottom" code="510500">泸州</li>
+        <li name="p" class="border-bottom" code="141100">吕梁</li>
+      </ul>
+    </div>
+
+    <div class="hd" id="M">M</div>
+    <div class="bd">
+      <ul class="filter-col-1">
+        <li name="p" class="border-bottom" code="340500">马鞍山</li>
+        <li name="p" class="border-bottom" code="440900">茂名</li>
+        <li name="p" class="border-bottom" code="511400">眉山</li>
+        <li name="p" class="border-bottom" code="441400">梅州</li>
+        <li name="p" class="border-bottom" code="510700">绵阳</li>
+        <li name="p" class="border-bottom" code="231000">牡丹江</li>
+      </ul>
+    </div>
+
+    <div class="hd" id="N">N</div>
+    <div class="bd">
+      <ul class="filter-col-1">
+        <li name="p" class="border-bottom" code="360100">南昌</li>
+        <li name="p" class="border-bottom" code="511300">南充</li>
+        <li name="p" class="border-bottom" code="320100">南京</li>
+        <li name="p" class="border-bottom" code="450100">南宁</li>
+        <li name="p" class="border-bottom" code="350700">南平</li>
+        <li name="p" class="border-bottom" code="320600">南通</li>
+        <li name="p" class="border-bottom" code="411300">南阳</li>
+        <li name="p" class="border-bottom" code="542400">那曲</li>
+        <li name="p" class="border-bottom" code="511000">内江</li>
+        <li name="p" class="border-bottom" code="330200">宁波</li>
+        <li name="p" class="border-bottom" code="533300">怒江</li>
+      </ul>
+    </div>
+
+    <div class="hd" id="P">P</div>
+    <div class="bd">
+      <ul class="filter-col-1">
+        <li name="p" class="border-bottom" code="211100">盘锦</li>
+        <li name="p" class="border-bottom" code="510400">攀枝花</li>
+        <li name="p" class="border-bottom" code="410400">平顶山</li>
+        <li name="p" class="border-bottom" code="620800">平凉</li>
+        <li name="p" class="border-bottom" code="360300">萍乡</li>
+        <li name="p" class="border-bottom" code="530800">普洱</li>
+        <li name="p" class="border-bottom" code="350300">莆田</li>
+      </ul>
+    </div>
+
+    <div class="hd" id="Q">Q</div>
+    <div class="bd">
+      <ul class="filter-col-1">
+        <li name="p" class="border-bottom" code="522600">黔东南</li>
+        <li name="p" class="border-bottom" code="522700">黔南</li>
+        <li name="p" class="border-bottom" code="522300">黔西南</li>
+        <li name="p" class="border-bottom" code="370200">青岛</li>
+        <li name="p" class="border-bottom" code="621000">庆阳</li>
+        <li name="p" class="border-bottom" code="441800">清远</li>
+        <li name="p" class="border-bottom" code="130300">秦皇岛</li>
+        <li name="p" class="border-bottom" code="450700">钦州</li>
+        <li name="p" class="border-bottom" code="230200">齐齐哈尔</li>
+        <li name="p" class="border-bottom" code="230900">七台河</li>
+        <li name="p" class="border-bottom" code="350500">泉州</li>
+        <li name="p" class="border-bottom" code="530300">曲靖</li>
+        <li name="p" class="border-bottom" code="330800">衢州</li>
+      </ul>
+    </div>
+
+    <div class="hd" id="R">R</div>
+    <div class="bd">
+      <ul class="filter-col-1">
+        <li name="p" class="border-bottom" code="540200">日喀则</li>
+        <li name="p" class="border-bottom" code="371100">日照</li>
+      </ul>
+    </div>
+
+    <div class="hd" id="S">S</div>
+    <div class="bd">
+      <ul class="filter-col-1">
+        <li name="p" class="border-bottom" code="411200">三门峡</li>
+        <li name="p" class="border-bottom" code="350400">三明</li>
+        <li name="p" class="border-bottom" code="460300">三沙</li>
+        <li name="p" class="border-bottom" code="460200">三亚</li>
+        <li name="p" class="border-bottom" code="310000">上海</li>
+        <li name="p" class="border-bottom" code="611000">商洛</li>
+        <li name="p" class="border-bottom" code="411400">商丘</li>
+        <li name="p" class="border-bottom" code="361100">上饶</li>
+        <li name="p" class="border-bottom" code="542200">山南</li>
+        <li name="p" class="border-bottom" code="440500">汕头</li>
+        <li name="p" class="border-bottom" code="441500">汕尾</li>
+        <li name="p" class="border-bottom" code="440200">韶关</li>
+        <li name="p" class="border-bottom" code="330600">绍兴</li>
+        <li name="p" class="border-bottom" code="430500">邵阳</li>
+        <li name="p" class="border-bottom" code="210100">沈阳</li>
+        <li name="p" class="border-bottom" code="440300">深圳</li>
+        <li name="p" class="border-bottom" code="130100">石家庄</li>
+        <li name="p" class="border-bottom" code="420300">十堰</li>
+        <li name="p" class="border-bottom" code="640200">石嘴山</li>
+        <li name="p" class="border-bottom" code="230500">双鸭山</li>
+        <li name="p" class="border-bottom" code="140600">朔州</li>
+        <li name="p" class="border-bottom" code="220300">四平</li>
+        <li name="p" class="border-bottom" code="220700">松原</li>
+        <li name="p" class="border-bottom" code="231200">绥化</li>
+        <li name="p" class="border-bottom" code="510900">遂宁</li>
+        <li name="p" class="border-bottom" code="421300">随州</li>
+        <li name="p" class="border-bottom" code="321300">宿迁</li>
+        <li name="p" class="border-bottom" code="320500">苏州</li>
+        <li name="p" class="border-bottom" code="341300">宿州</li>
+      </ul>
+    </div>
+
+    <div class="hd" id="T">T</div>
+    <div class="bd">
+      <ul class="filter-col-1">
+        <li name="p" class="border-bottom" code="654200">塔城</li>
+        <li name="p" class="border-bottom" code="370900">泰安</li>
+        <li name="p" class="border-bottom" code="140100">太原</li>
+        <li name="p" class="border-bottom" code="331000">台州</li>
+        <li name="p" class="border-bottom" code="321200">泰州</li>
+        <li name="p" class="border-bottom" code="130200">唐山</li>
+        <li name="p" class="border-bottom" code="120000">天津</li>
+        <li name="p" class="border-bottom" code="620500">天水</li>
+        <li name="p" class="border-bottom" code="211200">铁岭</li>
+        <li name="p" class="border-bottom" code="610200">铜川</li>
+        <li name="p" class="border-bottom" code="220500">通化</li>
+        <li name="p" class="border-bottom" code="150500">通辽</li>
+        <li name="p" class="border-bottom" code="340700">铜陵</li>
+        <li name="p" class="border-bottom" code="520600">铜仁</li>
+        <li name="p" class="border-bottom" code="652100">吐鲁番</li>
+      </ul>
+    </div>
+
+    <div class="hd" id="W">W</div>
+    <div class="bd">
+      <ul class="filter-col-1">
+        <li name="p" class="border-bottom" code="370700">潍坊</li>
+        <li name="p" class="border-bottom" code="371000">威海</li>
+        <li name="p" class="border-bottom" code="610500">渭南</li>
+        <li name="p" class="border-bottom" code="532600">文山州</li>
+        <li name="p" class="border-bottom" code="330300">温州</li>
+        <li name="p" class="border-bottom" code="150300">乌海</li>
+        <li name="p" class="border-bottom" code="420100">武汉</li>
+        <li name="p" class="border-bottom" code="340200">芜湖</li>
+        <li name="p" class="border-bottom" code="150900">乌兰察布</li>
+        <li name="p" class="border-bottom" code="650100">乌鲁木齐</li>
+        <li name="p" class="border-bottom" code="620600">武威</li>
+        <li name="p" class="border-bottom" code="320200">无锡</li>
+        <li name="p" class="border-bottom" code="640300">吴忠</li>
+        <li name="p" class="border-bottom" code="450400">梧州</li>
+      </ul>
+    </div>
+
+    <div class="hd" id="X">X</div>
+    <div class="bd">
+      <ul class="filter-col-1">
+        <li name="p" class="border-bottom" code="350200">厦门</li>
+        <li name="p" class="border-bottom" code="610100">西安</li>
+        <li name="p" class="border-bottom" code="421200">咸宁</li>
+        <li name="p" class="border-bottom" code="610400">咸阳</li>
+        <li name="p" class="border-bottom" code="420900">孝感</li>
+        <li name="p" class="border-bottom" code="152500">锡林郭勒盟</li>
+        <li name="p" class="border-bottom" code="152200">兴安盟</li>
+        <li name="p" class="border-bottom" code="130500">邢台</li>
+        <li name="p" class="border-bottom" code="630100">西宁</li>
+        <li name="p" class="border-bottom" code="410700">新乡</li>
+        <li name="p" class="border-bottom" code="411500">信阳</li>
+        <li name="p" class="border-bottom" code="140900">忻州</li>
+        <li name="p" class="border-bottom" code="532800">西双版纳</li>
+        <li name="p" class="border-bottom" code="341800">宣城</li>
+        <li name="p" class="border-bottom" code="411000">许昌</li>
+        <li name="p" class="border-bottom" code="320300">徐州</li>
+      </ul>
+    </div>
+
+    <div class="hd" id="Y">Y</div>
+    <div class="bd">
+      <ul class="filter-col-1">
+        <li name="p" class="border-bottom" code="511800">雅安</li>
+        <li name="p" class="border-bottom" code="610600">延安</li>
+        <li name="p" class="border-bottom" code="222400">延边朝鲜族自治州</li>
+        <li name="p" class="border-bottom" code="320900">盐城</li>
+        <li name="p" class="border-bottom" code="441700">阳江</li>
+        <li name="p" class="border-bottom" code="140300">阳泉</li>
+        <li name="p" class="border-bottom" code="321000">扬州</li>
+        <li name="p" class="border-bottom" code="370600">烟台</li>
+        <li name="p" class="border-bottom" code="511500">宜宾</li>
+        <li name="p" class="border-bottom" code="420500">宜昌</li>
+        <li name="p" class="border-bottom" code="360900">宜春</li>
+        <li name="p" class="border-bottom" code="654000">伊犁</li>
+        <li name="p" class="border-bottom" code="640100">银川</li>
+        <li name="p" class="border-bottom" code="230700">伊春</li>
+        <li name="p" class="border-bottom" code="210800">营口</li>
+        <li name="p" class="border-bottom" code="360600">鹰潭</li>
+        <li name="p" class="border-bottom" code="430900">益阳</li>
+        <li name="p" class="border-bottom" code="431100">永州</li>
+        <li name="p" class="border-bottom" code="430600">岳阳</li>
+        <li name="p" class="border-bottom" code="450900">玉林</li>
+        <li name="p" class="border-bottom" code="610800">榆林</li>
+        <li name="p" class="border-bottom" code="140800">运城</li>
+        <li name="p" class="border-bottom" code="445300">云浮</li>
+        <li name="p" class="border-bottom" code="632700">玉树州</li>
+        <li name="p" class="border-bottom" code="530400">玉溪</li>
+      </ul>
+    </div>
+
+    <div class="hd" id="Z">Z</div>
+    <div class="bd">
+      <ul class="filter-col-1">
+        <li name="p" class="border-bottom" code="370400">枣庄</li>
+        <li name="p" class="border-bottom" code="430800">张家界</li>
+        <li name="p" class="border-bottom" code="130700">张家口</li>
+        <li name="p" class="border-bottom" code="620700">张掖</li>
+        <li name="p" class="border-bottom" code="350600">漳州</li>
+        <li name="p" class="border-bottom" code="440800">湛江</li>
+        <li name="p" class="border-bottom" code="441200">肇庆</li>
+        <li name="p" class="border-bottom" code="530600">昭通</li>
+        <li name="p" class="border-bottom" code="410100">郑州</li>
+        <li name="p" class="border-bottom" code="321100">镇江</li>
+        <li name="p" class="border-bottom" code="442000">中山</li>
+        <li name="p" class="border-bottom" code="640500">中卫</li>
+        <li name="p" class="border-bottom" code="411600">周口</li>
+        <li name="p" class="border-bottom" code="330900">舟山</li>
+        <li name="p" class="border-bottom" code="440400">珠海</li>
+        <li name="p" class="border-bottom" code="411700">驻马店</li>
+        <li name="p" class="border-bottom" code="430200">株洲</li>
+        <li name="p" class="border-bottom" code="370300">淄博</li>
+        <li name="p" class="border-bottom" code="510300">自贡</li>
+        <li name="p" class="border-bottom" code="512000">资阳</li>
+        <li name="p" class="border-bottom" code="520300">遵义</li>
+        <li name="p" class="border-bottom" code="512000">资阳</li>
+        <li name="p" class="border-bottom" code="512000">资阳</li>
+        <li name="p" class="border-bottom" code="512000">资阳</li>
+      </ul>
+    </div> -->
+  </div>
+</div>
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/jquery1.8.2.js"></script>
+<script src="../script/common.js"></script>
+
+<script src="../script/j.suggest.js"></script>
+<script src="../script/j.dimensions.js"></script>
+<script src="../script/aircity.js"></script>
+
+
+<script>
+  apiready = function() {
+    // 设置ios7的标题栏字体变亮，全局用一个就行了
+    api.setStatusBarStyle({
+      style: 'dark'
+    });
+
+    api.addEventListener({
+      name:'viewappear'
+    },function(ret,err){
+      // 设置ios7的标题栏字体变亮，全局用一个就行了
+      api.setStatusBarStyle({
+        style: 'dark'
+      });
+    })
+
+    var recentlyCitys = $api.getStorage('recentlyCitys');
+    if($.isEmptyObject(recentlyCitys)) {
+      recentlyCitys = {};
+    }else{
+      renderRecentlyCitys();
+    }
+    
+    var curCityObj = $api.getStorage('curCityObj');
+    $('#GPRS').text(curCityObj['parent_name']).attr('code', curCityObj['parent_code']);
+
+    var header = $api.byId('header');
+    $api.fixIos7Bar(header);
+
+    if(api.systemType === 'ios') {
+      // $('.search-bar').css('margin-top','69px')
+    }
+
+
+    $('.ac_results').width(api.winWidth);
+
+
+    //点击搜索框
+    $('#searchText').on('click', function() {
+      $('.placeholder').animate({'left': '25%'},500);
+      $('#searchText').focus();
+    });
+
+    $('.placeholder').on('click', function() {
+      $('#searchText').trigger('click');
+    });
+
+
+    $("#searchText").suggest(citys,{hot_list:commoncitys,attachObject:"#suggest2",onSelect:function() {
+      var code = $(this).data('area_code');
+      var city = $(this).val();
+
+      setRecentlyRecords(code,city);
+      //刷新首页
+      api.execScript({
+        name: 'index',
+        script: 'changecity("'+code+'","'+city+'");'
+      });
+
+      api.closeWin();
+    },dataContainer : '#searchText'});
+
+    $('#searchText').on('focus',  function() {
+      
+      // animteHeader(true);
+    }).on('blur', function() {
+      // animteHeader(false);
+      $('#searchText').val('');
+      $('.placeholder').animate({'left': '50%'},500);
+      $('.placeholder').removeClass('hidden');
+    }).on('keydown',  function() {
+      $('.placeholder').addClass('hidden');
+    });
+    
+
+    // function animteHeader(flag) {
+    //   if(flag) {
+    //     if(api.systemType === 'ios') {
+    //       $('#header').animate({'margin-top':'-43px'},500);
+    //     }else{
+    //       $('#header').animate({'margin-top':'-43px'},500);
+    //     }
+    //   }else{
+    //     $('#header').animate({'margin-top':'0'},500);
+    //   }
+    // }
+
+    // $('.anchor-bar').on('touchstart', 'li', function() {
+    //   var which = $(this).attr('which');
+    //   if(!$('#'+which)[0]) return;
+    //   var top  = $('#'+which).offset().top - $('#header').outerHeight();
+    //   $('body').animate({'scrollTop' : top}, 300);
+    //   return false;
+    // });
+
+    $('li[name=p]').on('click',  function() {
+      var code = $(this).attr('code');
+      var city = $(this).text();
+      $(this).addClass('active');
+      setRecentlyRecords(code,city);
+      //刷新首页
+      api.execScript({
+        name: 'index',
+        script: 'changecity("'+code+'","'+city+'");'
+      });
+
+      api.closeWin();
+    });
+
+
+    function renderRecentlyCitys() {
+      var recentlyCitys = $api.getStorage('recentlyCitys');
+      var htmlStr = '';
+      $.each(recentlyCitys, function(key, val) {
+        htmlStr += '<li name="p" class="border" code="'+key+'">'+val['city']+'</li>';
+      });
+
+      if($.isEmptyObject(recentlyCitys)) {
+        $('#recently').addClass('hidden');
+      }else{
+        $('#recently').removeClass('hidden');
+      }
+
+      $('#recentlyList').html(htmlStr);
+    }
+
+    
+    function setRecentlyRecords(code, city) {
+      var curObj = $api.getStorage('recentlyCitys');
+      if(!$.isEmptyObject(curObj)) {
+        if(!curObj[code]) {
+          curObj[code] = {
+            'code' : code,
+            'city' : city
+          }
+        }
+      }else{
+        curObj = {};
+        curObj[code] = {
+          'code' : code,
+          'city' : city
+        }
+      }
+      $api.setStorage('recentlyCitys', curObj);
+
+    }
+
+  }
+</script>
+</html>

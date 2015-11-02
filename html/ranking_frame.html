@@ -1,0 +1,141 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../css/ranking.css">
+  <title>排名</title>
+  
+</head>
+<body>
+<div class="wrap">
+  <!-- 排名 -->
+  <div class="ranking">
+    <div class="head">
+      <div class="cat"></div>
+    </div>
+    <h1>恭喜，真是了不起的成就！</h1>
+    <div class="content">
+      <ul class="ranking-list">
+        <!-- <li>
+          <i class="icon-m icon-trophy r">2</i>
+          <div class="pre-icon">
+            <i class="icon-m icon-shop"></i>
+          </div>
+          <span>杭州大头俱乐部</span>
+        </li> -->
+        <li name="pond" class="hidden">
+          <div id="pondRank" class="r"></div>
+          <div class="icon-box bg-yellow">
+            <i class="icon-m icon-here2"></i>
+          </div>
+          <div class="title" id="pondName"></div>
+        </li>
+
+        <li>
+          <div id="cityRank" class="r"></div>
+          <div class="icon-box bg-green">
+            <i class="icon-m icon-city"></i>
+          </div>
+          <div class="title" id="cityName"></div>
+        </li>
+  
+        <li>
+          <div id="countryRank" class="r"></div>
+          <div class="icon-box bg-red">
+            <i class="icon-m icon-china"></i>
+          </div>
+          <div class="title">中国</div>
+        </li>
+
+      </ul>
+
+      <button id="shareRank" class="btn-fill btn-lg color-blue mt20">立刻分享到朋友圈</button>
+
+      
+
+
+    </div>
+  </div>
+  <!-- 排名 End -->
+
+</div>
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+
+    var city_rank = api.pageParam['city_rank'];
+    var pond_rank = api.pageParam['pond_rank'];
+    var country_rank = api.pageParam['country_rank'];
+    var pond_name = api.pageParam['pond_name'];
+    var city_name = api.pageParam['city_name'];
+    
+    if(city_rank <= 10 || pond_rank <= 10 || country_rank <= 10) {
+      $('body').append('<audio autoplay preload="auto"><source src="../images/ten.mp3"></audio>')
+    }else{
+      $('body').append('<audio autoplay preload="auto"><source src="../images/jiayou.mp3"></audio>')
+    }
+    
+    var fish = api.pageParam['fish'];
+    var length = api.pageParam['length'];
+    var weight = api.pageParam['weight'];
+
+    //钓点排行
+    if(pond_rank && pond_rank != -1) {
+      $('li[name=pond]').removeClass('hidden');
+      $('#pondName').text(pond_name);
+      $('#pondRank').html(getIconFromRank(pond_rank));
+    }
+    
+    //城市排行
+    $('#cityName').text(city_name);
+    if(city_rank) {
+      $('#cityRank').html(getIconFromRank(city_rank));
+    }
+
+    //中国排行
+    if(country_rank) {
+      $('#countryRank').html(getIconFromRank(country_rank));
+    }
+
+
+    function getIconFromRank(rank) {
+      if(rank == 1) {
+        return '<i class="icon-m icon-trophy trophy-the-first mid-one"></i>';
+      }else if(rank == 2) {
+        return '<i class="icon-m icon-trophy trophy-the-second mid-one"></i>';
+      }else if(rank == 3) {
+        return '<i class="icon-m icon-trophy trophy-the-third mid-one"></i>';
+      }else{
+        return rank;
+      }
+      return '';
+    }
+
+
+    // var text = '我钓的'+fish+weight+'斤'+length+'cm，获得了'+pond_name+'第'+pond_rank+'，'+city_name+'第'+city_rank+'，全国第'+country_rank+'，在杭州大通聚乐部排名第5。'
+    var text = '我钓的'+(fish?fish:'')+(weight?weight+'斤' : '')+(length?length+'cm':'')+'，获得了'+((pond_rank && pond_rank != -1)? pond_name+'第'+pond_rank+'，' : '')+''+city_name+'第'+city_rank+'，全国第'+country_rank+'。'
+
+    $('#shareRank').on('click', function() {
+      var datas = {};
+      datas['info'] = {
+        'title' : '我钓的'+fish+'破纪录了，快来给我点个赞吧！',
+        'description' : text,
+        'content_url' : 'http://www.yddapp.com/',
+        'imageUrl' : 'http://img1.shanggou.la/default/logo.jpg'
+      };
+      
+      sharePop('分享我的排名', datas);
+    });
+    
+  }
+</script>
+</html>

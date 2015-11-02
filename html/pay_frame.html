@@ -1,0 +1,113 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../css/shop-detail.css">
+  <title>支付</title>
+  <style>
+    .pay{
+      font-size: 26px;
+      vertical-align: middle;
+      margin-right: 10px;
+    }
+    /*.form-page{
+      position: absolute;
+      width: 100%;
+      bottom: 0;
+    }*/
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="nice-box  border-bottom">
+      <h3 class="border-bottom" id="gatherName">订单名称：<span>郭宅村农庄塘费</span></h3>    
+    </div>
+    <div class="nice-box mt10 border-bottom">
+      <h3 class="border-bottom" id="gatherName">订单金额：<span>100元</span></h3>    
+    </div>
+
+    <div class="nice-box mt10 border-bottom">
+      <h3 class="border-bottom" id="gatherName">实际支付：<span>60元</span></h3>    
+    </div>
+
+    <div class="nice-box mt10 border-bottom">
+      <h3 class="border-bottom" id="gatherName">选择支付方式<small class="text-orange">（首次支付立减5元）</small></h3>    
+      <div class="text-list mt10 border-bottom">
+        <ul>
+          <li class="border-bottom">
+            <span class="r">
+              <span class="enter"></span>
+            </span>
+            <span class="field"><i class="icon-m pay icon-pay-way" style="color:#0c3084;"></i>银行卡支付</span>
+          </li>
+          <li class="border-bottom">
+            <span class="r">
+              <span class="enter"><i class="icon-m icon-check text-blue"></i></span>
+            </span>
+            <span class="field"><i class="icon-m pay icon-alipay" style="color:#01a6ea;"></i>支付宝支付</span>
+          </li>
+          <li class="border-bottom">
+            <span class="r">
+              <span class="enter"></span>
+            </span>
+            <span class="field"><i class="icon-m pay icon-wechat" style="color:#059500;"></i>微信支付</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="form-page">
+      <div class="form-row mt20">
+          <button id="payBtn" type="button" class="btn-fill btn-lg color-blue">确认支付</button>
+      </div>
+    </div>
+
+
+  </div>
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+
+    $('#payBtn').on('tap',  function() {
+      var pingpp = api.require('pingpp');
+
+      var params = {
+        id: 10988,
+        amount: 100,
+        channel: 'alipay',
+        pond_id: 520
+      }
+
+      sendAjax(URLConfig('payCharge'), params, function(data, code, msg) {
+        if(code == 0) {
+          
+        }else{
+          
+        }
+      });
+      
+      var params = {
+          charge: '14de38d3bcb515a4',
+          scheme: "app_PubjX1GSyzrPrXrb"
+      };
+      
+      pingpp.createPayment(params, function(ret, err){
+          if (ret.result == "success") {
+              api.alert({msg:"success"});
+          }
+      });
+
+      
+    });
+  }
+
+</script>
+</html>

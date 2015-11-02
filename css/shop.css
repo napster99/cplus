@@ -1,0 +1,116 @@
+
+
+/*当前地址*/
+
+.cur-addr{
+  padding-left: 15px;
+  height: 33px;
+  line-height: 33px;
+  color: #888;
+  position: relative;
+  z-index: 2;
+}
+
+.cur-addr .icon-m{
+  position: absolute;
+  right: 0; top: -3px;
+  padding: 13px 15px;
+}
+
+.cur-addr .c{
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  margin-right: 45px;
+}
+
+.cur-addr .c:before{
+  content: "当前："
+}
+
+
+/*商户列表*/
+.shop-list li{
+  height: 94px;
+  padding: 10px;
+  background-color: #fff;
+}
+
+.shop-list .img-box{
+  float: left;
+  width: 97px;
+  height: 73px;
+  overflow: hidden;
+  text-align: center;
+}
+
+
+.shop-list .info{
+  margin-left: 105px; 
+  position: relative;
+}
+
+.shop-list .info .name{
+  font-size: 15px;
+  padding-top: 3.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow:ellipsis;
+  margin-right: 60px;
+}
+
+.shop-list .info .price{
+  margin: 12px 0;
+  font-size: 16px;
+  color: #ff8a00;
+}
+
+.shop-list .info small,.shop-list .info del{
+  color: #aaa;
+  font-size: 12px;
+}
+
+.shop-list .info small + del{
+  margin-left: 10px;
+}
+
+.shop-list .text-badge{
+  margin-left: 10px;
+}
+
+.shop-list .info .addr{
+  color: #aaa;
+  position: relative;
+}
+
+.shop-list .addr .c{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow:ellipsis;
+  margin-right: 60px;
+}
+
+
+.shop-list .info [class^="auth-lv"]{
+  position: absolute;
+  right: 0;
+  top: 5px;
+}
+
+.shop-list .info .distance{
+  position: absolute;
+  right: 0; top: 0;
+}
+
+.shop-list .icon-box{
+  position: fixed;
+  bottom: 10px; right: 10px;
+  border-radius: 5px;
+  background-color: rgba(0,0,0,.4);
+  color: #fff;
+  font-size: 20px;
+  width: 35px;
+  text-align: center;
+  height: 35px;
+  line-height: 36px;
+}

@@ -1,0 +1,246 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../css/voucher.css">
+  <title>任务_鱼多多_找钓点，就用鱼多多</title>
+  
+</head>
+<body style="background-color:transparent;">
+  <div class="wrap">
+
+    <div class="pop">
+      <div class="mask"></div>
+      <div class="pop-c">
+        <div class="award-box">
+          <div class="sham-pic">
+            <div class="trophy">
+              <i class="icon-m icon-trophy"></i>
+              <i class="icon-m s1 icon-star-fill"></i>
+              <i class="icon-m s2 icon-star-fill"></i>
+              <i class="icon-m s3 icon-star-fill"></i>
+              <i class="icon-m s4 icon-star-fill"></i>
+            </div>
+          </div>
+          <div>
+            <div class="title" id="title"></div>
+            <div class="award">
+               <!-- 抵用券列表 -->
+               <div class="voucher-list">
+                <ul id="couponsList">
+                  <!-- <li class="border">
+                      <div class="left-box">
+                        <div class="img-box"><i class="icon-m icon-shop"></i></div>
+                        <div class="shop">杭州</div>
+                      </div>
+                      <div class="info">
+                        <h3 class="name"><strong class="text-orange">免单券</strong></h3>
+                        <div class="time">5月1日 - 5月31日</div>
+                        <div class="condition">成功邀请好友 1/5</div>  
+                      </div>
+                      <div class="dot"></div>
+                      <div class="stamp-left"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+                      <div class="stamp-right"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+                      <div class="superscript">未激活</div>
+                  </li> -->
+                </ul>
+              </div>
+              <!-- 抵用券列表end -->
+              <div class="info">
+                使用说明：在钓点列表中，找到带有<span class="text-badge bg-orange">合作</span>标志的钓点即可使用。
+              </div>
+            </div>
+            <button id="shareIt"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+    
+    var data = api.pageParam;
+    
+    function renderData() {
+      var title = data['free']['desc'];
+      var name = data['free']['name'];
+      title = title.replace('{name}', '<span class="text-orange">'+name+'</span>');
+      $('#title').html(title);
+
+      var htmlStr = '', time = '永久';
+      var outerCoupon = data['free']['coupon'];
+      var innerCoupon = outerCoupon['coupon'];
+
+      var price = outerCoupon['coupon']['discount'];
+      var name = outerCoupon['coupon']['name'];
+      var unit = '元', type = '代金券';
+
+      var organization = innerCoupon['organization'];
+      var started = innerCoupon['started'];
+      var expired = innerCoupon['expired'];
+
+
+      var started = new Date(started*1000).Format("M月d日");
+      var expired = new Date(expired*1000).Format("M月d日");
+
+      //分享 limit
+      var doneCount = innerCoupon['limit']['data']['progress'][0];
+      var allCount = innerCoupon['limit']['data']['progress'][1];
+      if(innerCoupon['expired']) {
+        time = started + '-' + expired;
+      }
+
+      if(doneCount == allCount) {
+        $('#shareIt').text('炫耀一下');
+      }else{
+        $('#shareIt').text('立刻分享，邀请好友');
+      }
+
+      if(innerCoupon['type'] == 0){
+        unit = '折';
+        type = '券';
+      }
+      
+      if(innerCoupon['discount'] == 0 && innerCoupon['type'] == 0){
+        unit = '';
+        type = '';
+        price = '免单券';
+      }
+      
+      htmlStr += '<li class="border">'
+        +'  <div class="left-box">'
+        +'    <div class="img-box"><i class="icon-m icon-shop"></i></div>'
+        +'    <div class="shop">'+organization+'</div>'
+        +'  </div>'
+        +'  <div class="info">'
+
+        if(innerCoupon['type'] == 0 && price == 0){
+          if(name) {
+            htmlStr += '  <h3 class="name"><strong class="text-orange">'+name+'</strong>'
+          }else{
+            htmlStr += '  <h3 class="name"><strong class="text-orange">免单券</strong>'
+          }
+        }else{
+          if(name) {
+            htmlStr += '  <h3 class="name"><strong class="text-orange">'+name+'</strong>&nbsp;'
+          }else{
+            htmlStr += '  <h3 class="name"><strong class="text-orange">'+price+unit+'</strong>&nbsp;'+type
+          }
+        }
+
+        htmlStr += '</h3>'
+        htmlStr += '    <div class="time">'+time+'</div>'
+        +'    <div class="condition">成功邀请好友 '+doneCount+'/'+allCount+'</div>  '
+        +'  </div>'
+        +'  <div class="dot"></div>'
+        +'  <div class="stamp-left"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>'
+        +'  <div class="stamp-right"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>'
+        if(innerCoupon['status'] < 0) {
+          htmlStr +='  <div class="superscript">未激活</div>'
+        }else{
+          htmlStr +='  <div class="superscript active">已激活</div>'
+        }
+        htmlStr += '</li>'
+
+      $('#couponsList').html(htmlStr);
+
+    }
+
+    renderData();
+
+    var descs = data['free']['coupon']['coupon']['limit']['data']['share']['description'];
+    var links = data['free']['coupon']['coupon']['limit']['data']['share']['content_url'];
+    var imgUrls = data['free']['coupon']['coupon']['limit']['data']['share']['thumb_url'];
+
+    //分享 激活
+    $('#shareIt').on('tap', function() {
+        //share it
+        var url = imgUrls;
+        if(!url) {
+          url = 'http://img1.shanggou.la/default/logo.jpg';
+        }
+        
+        api.imageCache({
+            url: url
+        },function(ret,err){
+            if (ret) {
+              var path = ret.url;
+              var cacheDir = api.cacheDir; 
+              var imageFilter = api.require('imageFilter');
+              imageFilter.compress({
+                  img: path,
+                  quality: 0.1,
+                  scale: 0.5,
+                  // size : {
+                  //   w : 30,
+                  //   h : 30
+                  // },
+                  save: {
+                      imgPath: api.cacheDir,
+                      imgName: 'share.jpg'
+                  }
+              }, function(ret, err){
+                  if(ret.status) {
+                    var imgSmallPath = api.cacheDir + '/share.jpg';
+                    var weiXin = api.require('weiXin');
+                    weiXin.registerApp(function(ret,err){
+                        if (ret.status) {
+                          weiXin.sendRequest({
+                              scene:'timeline',
+                              contentType:'web_page',
+                              title:descs,
+                              description:descs,
+                              thumbUrl: imgSmallPath,
+                              contentUrl: links
+                          },function(ret,err){
+                              if(ret.status){
+                                api.toast({
+                                  msg: '分享成功',
+                                  duration:2000,
+                                  location: 'middle'
+                                });
+                              }else{
+                                api.toast({
+                                  msg: '分享取消',
+                                  duration:2000,
+                                  location: 'middle'
+                                });
+                              };
+
+
+                              setTimeout(function() {
+                                api.closeFrame();
+                              }, 2000);
+                          });
+                        }
+                    });
+                  }
+              });
+            }
+        });
+    });
+    
+    
+    //点击阴影区域关闭
+    $('body').on('tap', function(event) {
+      if(event.target.tagName === 'BUTTON') return;
+      if($(event.target).parents('.award-box')[0]) return;
+      api.closeFrame();
+    });
+
+
+
+
+  }
+</script>
+</html>

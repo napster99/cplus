@@ -1,0 +1,180 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+
+
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../css/topic.css">
+  <title>话题列表</title>
+  
+</head>
+<body>
+  <div id="conDiv" class="wrap hidden">
+    <div class="topic-list">
+      <ul id="topicList">
+        <!-- <li class="border-bottom">
+          <div class="icon-box bg-purple2">
+            <i class="icon-m icon-jiong"></i>
+          </div>
+          <div class="info">
+            <div class="name">
+              <div class="count">
+                <i class="icon-m icon-img"></i><span>137</span>
+              </div>
+              奇闻囧事
+            </div>
+            <div class="desc">扒一扒钓鱼的奇闻囧事</div>
+          </div>
+        </li> -->
+      </ul>
+    </div>
+  </div>
+  <div class="load-page wait"></div>
+</body>
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<script src="../script/common.js"></script>
+<script>
+  apiready = function() {
+
+    var isEnd = false, isAjaxing = false;
+
+    var condicationObj = {
+      'page' : 1
+    }
+
+    function getListData(name, params, callback, first) {
+      if(!first) {
+        showButtonLoadDiv(true, $('#conDiv'));  
+      }
+      isAjaxing = true;
+      sendAjax(URLConfig(name), params, function(data, code, msg) {
+        isAjaxing = false;
+        api.refreshHeaderLoadDone();
+        if(code === 0) {
+          callback(data, first);
+        }else{
+          api.toast({
+            msg: msg || '请求失败，稍后再试',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+    }
+
+
+    window.initdata = function() {
+      getListData('topicList', condicationObj, function(data, first) {
+        renderData(data,first);
+      }, true);
+    }
+    
+    initdata();
+
+    api.setRefreshHeaderInfo({
+        visible: true,
+        loadingImg: 'widget://image/push-down.gif',
+        bgColor: '#fff',
+        textColor: '#ccc',
+        textDown: '下拉刷新...',
+        textUp: '松开刷新...',
+        showTime: true
+    }, function(ret, err){
+       isEnd = false;
+       isAjaxing = false;
+       condicationObj['page'] = 1;
+      getListData('topicList', condicationObj, renderData, true);
+    });
+
+    //下拉加载
+    api.addEventListener({
+      name: 'scrolltobottom'
+    }, function(ret, err){
+      if(!isEnd && !isAjaxing) {
+        showButtonLoadDiv(false, $('#conDiv'));
+        ++condicationObj['page'];
+        getListData('topicList', condicationObj ,renderData);
+      }
+    });
+        
+    function renderData(data, first) {
+      var htmlStr = '', proImg = {};
+      for(var i=0; i<data.length; i++) {
+        var icon1 = data[i]['icon'].split(' ')[0];
+        var icon2 = data[i]['icon'].split(' ')[1];
+        
+        htmlStr += '<li id="'+data[i]['id']+'" name="'+data[i]['name']+'" tapmode="active" onclick="enterTopicDetail(this);" class="border-bottom">'
+        +'<div class="icon-box '+icon1+'">'
+        +'    <i class="icon-m '+icon2+'"></i>'
+        +' </div>'
+        +'  <div class="info">'
+        +'    <div class="name">'
+        if(data[i]['feed_num'] != 0) {
+          htmlStr += '      <div class="count">'
+          +'        <i class="icon-m icon-img"></i><span>'+data[i]['feed_num']+'</span>'
+          +'      </div>'
+        }
+        
+        htmlStr += data[i]['name']
+        +'    </div>'
+        +'    <div class="desc">'+data[i]['des']+'</div>'
+        +'  </div>'
+        +'</li>'
+      }
+
+      // getImageSize(proImg);
+
+      if(first) {
+        $('#topicList').html(htmlStr);
+        $('.wrap').animate({scrollTop: '0px'}, 200);
+      }else{
+        $('#topicList').append(htmlStr);  
+      }
+      
+      if(first) {
+        showLoadDiv(false, $('#conDiv'));
+      }
+
+      showButtonLoadDiv(false, $('#conDiv'));
+      if(data.length < 15) {
+        isEnd = true;
+        if(first && data.length === 0) {
+          showNoData($('#conDiv'));
+        }else if(!first){
+          api.toast({
+            msg: '没有更多数据了',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      }else{
+        showButtonLoadDiv(true, $('#conDiv'));
+      }
+    }
+
+
+    window.enterTopicDetail = function(el) {
+      var id = el.id;
+      var name = $(el).attr('name');
+      api.openWin({
+        'name' : 'topic_detail',
+        'url' : 'topic_detail.html',
+        'scrollToTop' : false,
+        'pageParam' : {'id' : id, 'name' : name}
+      });
+
+    }
+
+    
+    
+  }
+
+</script>
+</html>

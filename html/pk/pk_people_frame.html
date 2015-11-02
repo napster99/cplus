@@ -1,0 +1,140 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <link rel="stylesheet" href="../../css/shop-detail.css">
+  <style>
+
+    .icon-appreciate{
+      margin-right: 5px;
+    }
+    
+    .icon-blue{
+      color: blue;
+      font-size: 16px;
+    }
+
+    .icon-red{
+      color: red;
+    }
+
+    .name{
+      font-weight: bold;
+    }
+
+    .parameter>ul>li {
+      padding-left: 20px;
+    }
+
+    .nickname{
+      display: inline-block;
+      width: 200px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis; 
+      vertical-align: middle;
+    }
+
+  </style>
+  <title>获奖名单</title>
+</head>
+<body>
+  <div class="wrap">
+    <div class="nice-box border-bottom">
+      <h3 class="border-bottom" style="color:red;">红方最佳</h3>
+      <div class="parameter border-bottom">
+        <ul id="redList">
+          <li>暂无名单</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="nice-box mt10 border-bottom">
+      <h3 class="border-bottom" style="color:blue;">蓝方最佳</h3>
+      <div class="parameter border-bottom">
+        <ul id="blueList">
+          <li>暂无名单</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="nice-box mt10 border-bottom">
+      <h3 class="border-bottom">参与奖</h3>
+      <div class="parameter border-bottom">
+        <ul id="participationList">
+         <li>暂无名单</li>
+        </ul>
+      </div>
+    </div>
+
+   
+    
+  </div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+  apiready = function() {
+
+    var pid = api.pageParam['id'];
+    
+    sendAjax(URLConfig('awardedList'), {pk_id : pid},  function(data, code, msg) {
+      if(code == 0) {
+        renderData(data);
+      }
+    });
+    
+
+    function renderData(data) {
+      var htmlStr = '';
+      for(var i=0; i<data['red'].length; i++) {
+        if(i === 0) {
+          htmlStr += '<li class="name"><span class="nickname">'+data['red'][i]['nickname']+'</span> <i class="icon-m icon-appreciate icon-red"></i>'+data['red'][i]['zan']+'</li>'
+        }else{
+          htmlStr += '<li class="name border-top"><span class="nickname">'+data['red'][i]['nickname']+'</span> <i class="icon-m icon-appreciate icon-red"></i>'+data['red'][i]['zan']+'</li>'
+        }
+      }
+
+      if(htmlStr) {
+        $('#redList').html(htmlStr);
+      }
+
+      var htmlStr = '';
+      for(var i=0; i<data['blue'].length; i++) {
+        if(i === 0) {
+          htmlStr += '<li class="name"><span class="nickname">'+data['blue'][i]['nickname']+'</span> <i class="icon-m icon-appreciate icon-blue"></i>'+data['blue'][i]['zan']+'</li>'
+        }else{
+          htmlStr += '<li class="name border-top"><span class="nickname">'+data['blue'][i]['nickname']+'</span> <i class="icon-m icon-appreciate icon-blue"></i>'+data['blue'][i]['zan']+'</li>'
+        }
+      }
+      
+      if(htmlStr){
+        $('#blueList').html(htmlStr);
+      }
+      
+      
+      var htmlStr = '';
+      for(var i=0; i<data['participation'].length; i++) {
+        if(i === 0) {
+          htmlStr += '<li class="name border-top">'+data['participation'][i]['nickname']+'</li>'
+        }else{
+          htmlStr += '<li class="name border-top">'+data['participation'][i]['nickname']+'</li>'
+        }
+      }
+      
+      if(htmlStr){
+        $('#participationList').html(htmlStr);
+      }
+
+    }
+  }
+
+</script>
+</html>

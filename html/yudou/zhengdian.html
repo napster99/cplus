@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+
+
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <title>抢鱼豆</title>
+  
+</head>
+<body>
+
+<div class="wrap body-white">
+  <!-- 头部 -->
+  <div id="header" class="top-bar gray-style">
+    <div class="l" ontouchstart="api.closeWin();">
+      <div class="icon-text-h">
+        <i class="icon-m icon-arrow-left"></i><span>返回</span>
+      </div>
+    </div>
+    <div class="center-part">抢鱼豆</div>
+  </div>
+  <!-- 头部 end-->
+</div>
+
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+  apiready = function() {
+    // 设置ios7的标题栏字体变亮，全局用一个就行了
+    api.setStatusBarStyle({
+      style: 'dark'
+    });
+
+    api.addEventListener({
+      name:'viewappear'
+    },function(ret,err){
+      // 设置ios7的标题栏字体变亮，全局用一个就行了
+      api.setStatusBarStyle({
+        style: 'dark'
+      });
+    });
+
+    var header = $api.byId('header');
+    $api.fixIos7Bar(header);
+    function openFrame() {
+      api.openFrame({
+        name: 'zhengdian',
+        url: './zhengdian_frame.html',
+        opaque: true,
+        vScrollBarEnabled: true,
+        rect: {
+          x: 0,
+          y: $('.top-bar').offset().height,
+          w: 'auto',
+          h: 'auto'
+        }
+      });
+    }
+
+    openFrame();
+
+  }
+
+</script>
+</html>

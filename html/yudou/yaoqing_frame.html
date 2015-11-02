@@ -1,0 +1,182 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <link rel="stylesheet" href="../../css/search.css">
+  <link rel="stylesheet" href="../../css/friend-add.css">
+  <title>邀请好友</title>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="content">
+    <div class="actions">
+      <ul id="share">
+        <li name="duanxin" class="border-right">
+          <div class="icon-box bg-brown"><i class="icon-m icon-phone-book"></i></div>
+          <p>短信邀请好友</p>
+        </li>
+        <li name="weixin" class="border-right">
+          <div class="icon-box bg-green"><i class="icon-m icon-wechat"></i></div>
+          <p>微信邀请好友</p>
+        </li>
+        <li name="qq">
+          <div class="icon-box bg-blue"><i class="icon-m icon-qq"></i></div>
+          <p>QQ邀请好友</p>
+        </li>
+      </ul>
+    </div>
+    <h4 class="section-title">您已成功邀请 <span id="friendNum"></span> 位好友<span class="r">获得 <span id="credit"></span> 鱼豆</span></h4>
+    <div class="user-sns-list border-top border-bottom">
+      <ul id="userList">
+      </ul>
+    </div>
+  </div>
+  <div class="section-title">邀请规则：邀请好友后，首次下载登陆，即可活动500鱼豆。</div>
+</div>
+</body>
+
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+  apiready = function() {
+
+    var userInner = $api.getStorage('user');
+
+    sendAjax(URLConfig('yudouInvite'), null, function(data, code, msg) {
+      if(code == 0) {
+        renderData(data);
+      }else{
+        api.toast({msg: msg || '获取信息失败，请稍候再试！', duration:2000, location: 'middle'});
+      }
+    });
+
+    function renderData(data) {
+      var htmlStr = '';
+
+      $('#credit').text(data['credit']);
+      $('#friendNum').text(data['friend_num']);
+
+
+      var userArr = data['users'];
+      for(var i=0; i<userArr.length; i++) {
+        if(userInner &&( userInner['id'] == userArr[i]['uid'])) continue;
+        htmlStr += '<li class="border-bottom">'
+        +'  <div class="avatar-box" onclick="enterProfileYudou(this);" uid="'+userArr[i]['uid']+'" url="'+userArr[i]['avatar']+'"><i class="icon-m icon-user"></i></div>'
+        if(userArr[i]['is_follow']) {
+          htmlStr += '  <div class="btn-box"><button follow="yes" uid="'+userArr[i]['uid']+'" class="btn-line">已关注</button></div>'
+        }else{
+          htmlStr += '  <div class="btn-box"><button follow="no" uid="'+userArr[i]['uid']+'" class="btn-line color-green">关注</button></div>'
+        }
+        htmlStr += '  <div class="infos">'
+        +'    <h3>'+userArr[i]['uname']+'</h3>'
+        +'    <div class="info">'
+        +'      <div><span>'+userArr[i]['feed_num']+'</span>篇渔获</div>'
+        +'      <div><span>'+userArr[i]['fans']+'</span>人关注</div>'
+        +'    </div>'
+        +'  </div>'
+        +'</li>'
+      }
+
+      $('#userList').html(htmlStr);
+
+      renderAvatar();
+    }
+
+
+    $(document).on('tap', 'button', function() {
+        var el = $(this);
+        var uid = el.attr('uid'), follow = el.attr('follow');
+
+        
+        if($.isEmptyObject(userInner)) {
+          showLoginConfirm('../index.html');  
+          return;
+        }
+
+        if(follow === 'no'){
+          //关注
+          el.removeClass('color-green').text('已关注').attr('follow', 'yes');
+          sendAjax(URLConfig('follow'), {'uid' : uid}, function(data, code, msg) {
+            if(code != 0) {
+              el.addClass('color-green').text('关注').attr('follow', 'no');
+              api.toast({msg: msg || '请求失败，稍后再试',duration:2000,location:'middle'});
+            }
+          });
+        }else{
+          //取消关注
+          el.addClass('color-green').text('关注').attr('follow', 'no');
+          sendAjax(URLConfig('cancelFollow'), {'uid' : uid}, function(data, code, msg) {
+            if(code != 0) {
+              el.removeClass('color-green').text('已关注').attr('follow', 'yes');
+              api.toast({msg: msg || '请求失败，稍后再试', duration:2000,location: 'middle'});
+            }
+          });
+        }
+
+    })
+
+
+    //打开个人简介页
+    window.enterProfileYudou = function(el) {
+      var uid = $(el).attr('uid')
+    
+      if(!uid) return;
+      api.openWin({
+        'name' : 'profile',
+        'url' : '../profile.html',
+        'bounces' : true,
+        'bgColor' : '#507be7',
+        'pageParam' : {'uid' : uid}
+      });
+
+    }
+
+
+    //分享
+    $('#share').on('click', 'li', function() {
+      var name = $(this).attr('name');
+      if(name === 'weixin') {
+          var curDatas = {};
+          var title = '添加微信好友';
+          curDatas['info'] = {
+          'title' : '【鱼多多】钓鱼神器',
+          'description' : '全城钓点，一手掌握；风向气压，专业预报；还有好玩的渔获排名；快来给我点赞！',
+          'content_url' : 'http://www.yddapp.com/',
+          'imageUrl' : 'http://img1.shanggou.la/default/logo.jpg'
+          };
+
+          shareWeixinPop(title, curDatas);
+      }else if(name === 'qq'){
+          var curDatas = {};
+          var title = '添加QQ好友';
+          curDatas['info'] = {
+          'title' : '【鱼多多】钓鱼神器',
+          'description' : '全城钓点，一手掌握；风向气压，专业预报；还有好玩的渔获排名；快来给我点赞！',
+          'content_url' : 'http://www.yddapp.com/',
+          'imageUrl' : 'http://img1.shanggou.la/default/logo.jpg'
+          };
+
+          shareQQPop(title, curDatas);
+      }else if(name === 'duanxin'){
+        api.sms({
+          numbers: [],
+          text: '鱼多多请你去钓鱼，首单不要钱！全城钓点，一手掌握；还有好玩的渔获排名；快来给我点赞！点此安装 http://www.yddapp.com/ '
+        },function(ret, err){
+          if(ret.status){
+            api.toast({msg: '发送成功',duration:2000,location: 'middle'});
+          }
+        });
+      }
+
+    });
+  }
+</script>
+</html>

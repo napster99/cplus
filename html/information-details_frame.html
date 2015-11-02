@@ -1,0 +1,463 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+
+
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/component.css">
+  <link rel="stylesheet" href="../css/article-detail.css">
+  <link rel="stylesheet" href="../css/article.css">
+  <link rel="stylesheet" href="../css/font-icon.css">
+  <link rel="stylesheet" href="../script/ratchet/ratchet.css">
+  
+  <title>知道_鱼多多_找钓点，就用鱼多多</title>
+  <style>
+  .proportion-bg {
+    width: 200px;
+    height: 2px;
+    background: #c3c3c3;
+    position: relative;
+    margin-top: 30px;
+  }
+  .proportion-in{
+    width: 50%;
+    height: 2px;
+    background: #007aff;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+  .proportion-dot{
+    width: 19px;
+    height: 19px;
+    border:1px solid #ebebeb;
+    border-radius: 19px;
+    background: #fff;
+    box-shadow: -1px 3px 8px 2px #ebebeb;
+    position: absolute;
+    left: 50%;
+    top: -10px;
+    margin-left: -10px;
+    z-index: 3;
+  }
+
+  #header{
+    height: 20px;
+    background: #fff;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 999;
+  }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div id="header" class="hidden"></div>
+  <div class="article-detail">
+    <div id="header2" class="head border-bottom">
+      <h1 id="title"></h1>
+      <div class="info">
+        <span class="source">创想计划</span>
+        <span class="pv" id="views"></span>
+      </div>
+    </div>
+    <div class="content border-bottom" id="content" style="padding-top:47px;">
+    </div>
+
+    <div class="block">
+      <div class="hd border-bottom">立即分享给小伙伴</div>
+      <ul id="shareCon" class="share">
+        <li name="weixin">
+          <div class="icon-wrap"><i class="icon-m icon-wechat"></i></div>
+          <div class="name">微信</div>
+        </li>
+        <li name="sendFriends">
+          <div class="icon-wrap"><i class="icon-m icon-friends-circle"></i></div>
+          <div class="name">朋友圈</div>
+        </li>
+        <li name="qq">
+          <div class="icon-wrap"><i class="icon-m icon-qq"></i></div>
+          <div class="name">QQ</div>
+        </li>
+        <li name="qzone">
+          <div class="icon-wrap"><i class="icon-m icon-qzone"></i></div>
+          <div class="name">QQ空间</div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <div class="hd border-bottom">精彩推荐</div>
+      <ul id="mesList" class="article-list">
+      </ul>
+
+    </div>
+
+  </div>
+
+
+  <div class="mask hidden"></div>
+  <div id="setPop" class="set-pop" style="bottom:-180px;">
+    <ul id="menu" class="menu border-top">
+      <li class="border-bottom">
+        <div class="r">
+          <div id="barrageCon" class="pull-right">
+            <div class="toggle active" id="barrageSwitch">
+              <div class="toggle-handle"></div>
+            </div>
+          </div>
+        </div>
+        夜间模式
+      </li>
+      <li class="border-bottom">
+        <div class="r">
+          <div class="proportion-bg">
+            <div class="proportion-dot" style="left: 20%;"></div>
+            <div class="proportion-in" style="width: 20%;"></div>
+          </div>
+        </div>
+        屏幕亮度
+      </li>
+      <li class="border-bottom">
+        <div class="r">
+          <ul id="fontSizeSet" class="font-size-switch">
+            <li name="font-size-small" class="border-right">小</li>
+            <li name="font-size-medium" class="border-right active">中</li>
+            <li name="font-size-big" class="border-right">大</li>
+            <li name="font-size-super">超大</li>
+          </ul> 
+        </div>
+        字体大小
+      </li>
+    </ul>
+  </div>
+
+  <!-- 分享弹窗 -->
+  <div id="sharePop" class="share-pop border-top" style="bottom:-80px;">
+    <ul>
+      <li name="weixin" class="border-right">
+        <i class="icon-m icon-wechat"></i>
+        <div class="name">微信聊天</div>
+      </li>
+      <li name="sendFriends" class="border-right">
+        <i class="icon-m icon-friends-circle"></i>
+        <div class="name">朋友圈</div>
+      </li>
+      <li name="qq" class="border-right">
+        <i class="icon-m icon-qq"></i>
+        <div class="name">QQ聊天</div>
+      </li>
+      <li name="qzone">
+        <i class="icon-m icon-qzone"></i>
+        <div class="name">QQ空间</div>
+      </li>
+    </ul>
+  </div>
+  <!-- 分享弹窗 -->
+
+</div>
+
+
+
+</body>
+
+<script src="../script/api.js"></script>
+<script src="../script/zepto.min.js"></script>
+<!-- <script src="../script/jquery1.8.2.js"></script> -->
+<script src="../script/common.js"></script>
+<script src="../script/ratchet/ratchet.js"></script>
+<script>
+  apiready = function() {
+
+    var imageUrls = [];
+
+    var curDatas = null;
+
+    var isFontSetPopOpend = false;
+
+    var isSharePopOpend = false;
+
+    var bookReader = api.require('bookReader');
+
+    var header = $api.byId('header');
+    myFixIos7Bar(header, $('#header2'));
+
+    
+    var fontSetting = $api.getStorage('fontSetting');
+    if($.isEmptyObject(fontSetting)) {
+      fontSetting = {
+        'fontSize' : 'font-size-medium',  //中号
+        'light'    : 70,
+        'isNight'  : 'no'
+      }
+      bookReader.getBrightness(function(ret,err) {
+        if(ret['status']) {
+          fontSetting['light'] = ret['brightness'];
+        }
+      });
+    }
+
+
+    function initRender(data) {
+      data = data || api.pageParam['data'];
+      curDatas = data;
+      renderFontSetting();
+      renderData(data);
+    }
+
+    initRender();
+
+    window.initRender = initRender;
+
+    $('#content').on('click', 'img',  function() {
+      var idx = $(this).attr('index');
+
+  
+
+    });
+
+
+    //渲染数据
+    function renderData(data) {
+      $('#title').text(data['info']['title']);
+      $('#views').text(data['info']['views']);
+      $('#content').html(data['info']['content']);
+      
+
+      //设置图片编号
+      var imgs = $('#content').find('img');
+      for(var i=0; i<imgs.length; i++) {
+        imgs.eq(i).attr('index',i);
+        imageUrls.push(imgs.eq(i).attr('src'));
+      }
+
+      //渲染精彩推荐
+      var htmlStr = '';
+      for(var i=0; i<data['relation'].length; i++) {
+        var curData = data['relation'][i];
+        htmlStr += '<li onclick="enterMesDetail(this);" id="'+curData['id']+'" class="style-1 border-bottom">'
+                +'  <h3 class="title">'+curData['title']+'</h3>'
+                +'  <div class="images">'
+                +'    <div class="img-box"><img src="'+curData['thumb']+'" /></div>'
+                +'  </div>'
+                +'  <div class="count">您是第'+curData['views']+'位知道</div>'
+                +'</li>'
+      }
+      $('#mesList').html(htmlStr);
+    }
+
+    window.enterMesDetail = function(el) {
+      api.execScript({
+        name: 'detail',
+        script: 'updateContent('+el.id+');'
+      });
+    }
+
+
+    //======================字体设置==============================
+
+    function renderFontSetting() {
+
+      var fontSize = fontSetting['fontSize'];
+      var light = fontSetting['light'];
+      var isNight = fontSetting['isNight'];
+
+      $api.setStorage('fontSetting',{
+         'fontSize' : fontSize,  //中号
+        'light'    : light,
+        'isNight'  : isNight
+      });
+
+      $('.proportion-dot').css('left', light+'%');
+      $('.proportion-in').css('width', light+'%');
+
+      $('#content').removeClass('font-size-super').
+      removeClass('font-size-big').
+      removeClass('font-size-medium').
+      removeClass('font-size-small');
+
+      $('#content').addClass(fontSize);
+
+      $('#fontSizeSet').find('li.active').removeClass('active');
+      $('#fontSizeSet').find('li[name='+fontSize+']').addClass('active');
+      
+      if(isNight === 'yes') {
+        $('#barrageCon').html('<div class="toggle active" id="barrageSwitch"><div class="toggle-handle"></div></div>');
+        //加上夜间CSS TODO
+        $('body').addClass('dark-style');
+        $('body').css('background','#3f3f3f !important');
+        // 设置ios7的标题栏字体变亮，全局用一个就行了
+        api.setStatusBarStyle({
+          style: 'light'
+        });
+
+        api.execScript({
+          name : 'detail',
+          script : 'addBodyClass(true);'
+        })
+
+      }else{
+        $('#barrageCon').html('<div class="toggle" id="barrageSwitch"><div class="toggle-handle"></div></div>');
+        $('body').removeClass('dark-style');
+
+        api.execScript({
+          name : 'detail',
+          script : 'addBodyClass();'
+        })
+        
+      }
+    }
+
+    //字体设置
+    window.setFontFunc = function() {
+      if(isSharePopOpend) {
+        $('#sharePop').animate({'bottom':'-80px'}, 300,  function() {
+          isSharePopOpend = false;
+        });
+      }
+
+      if(isFontSetPopOpend) {
+        $('.mask').trigger('click');
+        return;
+      };
+
+      $('.mask').height($('#content').height() + $('.head').height() + $('.block').eq(0).height() + $('.block').eq(1).height() + $('.footer-place').height());
+      $('.mask').removeClass('hidden');
+      $('#setPop').animate({'bottom' : '0'},300,function() {});
+      isFontSetPopOpend = true;
+    }
+
+
+    $('.mask').on('click',  function() {
+
+      $('#sharePop').animate({'bottom':'-80px'}, 300,  function() {
+        isSharePopOpend = false;
+      });
+
+      $('#setPop').animate({'bottom' : '-180px'},300,function() {
+        $('.mask').addClass('hidden');
+        isFontSetPopOpend = false;
+      });
+    });
+
+
+    //屏幕亮度
+    $('.proportion-dot')[0].addEventListener('touchstart',  function(event) {
+      event.preventDefault();
+    });
+
+    $('.proportion-dot')[0].addEventListener('touchmove',  function(event) {
+      event.preventDefault();
+      var rate = parseInt((event.targetTouches[0].pageX - $('.proportion-bg').offset().left)/$('.proportion-bg').width() * 100);
+      if(rate < 1) rate = 0;
+      if(rate > 100) rate = 100;
+      $(this).css('left',rate + '%');
+      $('.proportion-in').width(rate + '%');
+      fontSetting['light'] = rate;
+    });
+
+    $('.proportion-dot')[0].addEventListener('touchend',  function(event) {
+      event.preventDefault();
+      renderFontSetting();
+    });
+
+
+    //字体大小
+    $('#fontSizeSet').on('click', 'li', function() {
+      var clsName = $(this).attr('name');
+      if(fontSetting['fontSize'] === clsName) {
+        return;
+      }
+      fontSetting['fontSize'] = clsName;
+      renderFontSetting();
+      $('.mask').height($('#content').height() + $('.head').height() + $('.block').eq(0).height() + $('.block').eq(1).height() + $('.footer-place').height());
+    });
+
+    //夜间模式
+    $(document).on('click', '#barrageSwitch', function() {
+      if($(this).hasClass('active')) { //开启夜间模式
+        fontSetting['isNight'] = 'yes';
+      }else{
+        fontSetting['isNight'] = 'no';
+      }
+      renderFontSetting();
+    });
+
+    //======================字体设置==============================
+
+
+
+
+
+    //+++++++++++++++++++++分享+++++++++++++++++++++++++++++++++++++
+    var weiXin = api.require('weiXin');
+    var qq = api.require('qq');
+
+    // if(!$api.getStorage('weixin-article')) {
+      weiXin.registerApp(
+        function(ret,err){
+          if(ret['status']) {
+            $api.setStorage('weixinStatus', true);
+          }else{
+            api.toast({
+              msg: '微信注册APP失败！',
+              duration:2000,
+              location: 'middle'
+            });
+          }
+        }
+      );
+    // }
+
+  
+    //分享
+    $('li').on('click',  function() {
+      var name = $(this).attr('name');
+      switch(name){
+        case 'weixin':
+          shareForWeixin(weiXin, 'session', curDatas, 'share_art');
+          break;
+        case 'sendFriends':
+          shareForWeixin(weiXin, 'timeline', curDatas, 'share_art');
+          break;
+        case 'qq':
+          shareForQQ(qq, 'QFriend', curDatas, 'share_art');
+          break;
+        case 'qzone':
+          shareForQQ(qq, 'QZone', curDatas, 'share_art');
+          break;
+      }
+    });
+
+  
+    //分享弹窗 setFontFunc
+    window.setShareFunc = function() {
+      if(isFontSetPopOpend) {
+        $('#setPop').animate({'bottom' : '-180px'},300,function() {
+          isFontSetPopOpend = false;
+        });
+      }
+      if(isSharePopOpend) {
+        $('.mask').trigger('click');
+        return;
+      };
+      $('.mask').height($('#content').height() + $('.head').height() + $('.block').eq(0).height() + $('.block').eq(1).height() + $('.footer-place').height());
+      $('.mask').removeClass('hidden');
+      $('#sharePop').animate({'bottom':'0'}, 300,  function() {
+        isSharePopOpend = true;
+      })
+    }
+
+   //++++++++++++++++++++分享++++++++++++++++++++++++++++++++++++++
+
+
+
+
+  }
+</script>
+</html>

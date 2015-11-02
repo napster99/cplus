@@ -1,0 +1,430 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="./css/base.css">
+  <link rel="stylesheet" href="./css/component.css">
+  <link rel="stylesheet" href="./css/font-icon.css">
+  <link rel="stylesheet" href="./css/login.css">
+  <title>登录_鱼多多_找钓点，就用鱼多多</title>
+  <style type="text/css">
+    .swipe {
+      overflow: hidden;
+      /*visibility: hidden;*/
+      position: relative;
+    }
+    .swipe-wrap {
+      overflow: hidden;
+      position: relative;
+    }
+    .swipe-wrap > li {
+      float:left;
+      width:100%;
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+
+
+  <div id="slider" class="swipe hidden">
+    <ul class="swipe-wrap">
+      <li><img src="./images/first-1.jpg"></li>
+      <li><img src="./images/first-2.jpg"></li>
+      <li id="threeImg"><img src="./images/first-3.jpg"></li>
+    </ul>
+  </div>
+
+
+
+  <div id="wrap" class="wrap hidden">
+    <div class="login">
+      <div id="guangguang" class="guest">
+        先逛一逛
+      </div>
+
+      <div class="login-way">
+        <ul>
+          <li id="login">手机号登录</li>
+          <li id="weixin">微信登录</li>
+          <li id="qq">QQ登录</li>
+      </div>  
+    </div>
+</div>
+</body>
+<script src="./script/api.js"></script>
+<script src="./script/zepto.min.js"></script>
+<script src="./script/common.js"></script>
+<script src="./script/swipe/swipe.js"></script>
+<script src="http://webapi.amap.com/maps?v=1.3&key=425928309ed735359972d7edb1534ff1"></script>
+<script>
+  /* 首页头部和底部 */
+  apiready = function() {
+    // FastClick.attach(document.body);
+    if(api.systemType === 'android') {
+      $('#qq').removeClass('hidden');
+    }
+
+
+    api.setFrameAttr({
+      'scrollToTop' : false
+    });
+
+    // var rong = api.require('rongCloud');
+
+    // rong.init(function(ret, err){
+    //         api.toast({ msg: JSON.stringify(ret) });
+    // });
+
+
+    // rong.connect({
+    // token: 'ThptTWyiPPPvZHvuSiuri82yq+hfEluLjZ78E1qo4hEVSFQNpqdoPu406urMWKN4Z3/olWR+v9JVLAwfOQoLrA=='},
+    // function(ret, err){
+    //     if (ret.status == 'success')
+    //         api.toast({ msg: ret.result.userId });
+    // });
+
+      // 设置ios7的标题栏字体变亮，全局用一个就行了
+      api.setStatusBarStyle({
+        style: 'dark'
+      });
+      
+      api.addEventListener({
+        name:'viewappear'
+      },function(ret,err){
+        // 设置ios7的标题栏字体变亮，全局用一个就行了
+        api.setStatusBarStyle({
+          style: 'dark'
+        });
+      });
+      
+      api.setWinAttr({
+        // 'name' : 'root',
+        'bounces' : false
+      });
+
+      var mapInfo = $api.getStorage('mapInfo');
+      if($.isEmptyObject(mapInfo)) {
+        //定位失败，默认上海
+        $api.setStorage('mapInfo', {
+          'parent_code' : 310100,
+          'parent_name' : '上海',
+          'area_code' : 310116,
+          'area_name' : '金山区'
+        });
+
+      }
+
+      var curCityObj = $api.getStorage('curCityObj');
+      if($.isEmptyObject(curCityObj)) {
+        //定位失败，默认上海
+        $api.setStorage('curCityObj', {
+          'parent_code' : 310100,
+          'parent_name' : '上海',
+          'area_code' : 310116,
+          'area_name' : '金山区'
+        });
+      }
+
+    //断网提示
+    api.addEventListener({
+      name: 'offline'
+    }, function(ret, err){
+      api.hideProgress();
+      api.toast({msg: '网路无法连接，请检查！',duration:2000, location: 'middle'});
+      api.removeLaunchView();
+
+    });
+
+    
+    var guangguang = $api.byId('guangguang');
+    $api.fixIos7Bar(guangguang);
+    //第一次加载
+    var appFirstStart = $api.getStorage('appFirstStart');
+
+    checkAppVersion();
+    
+    if(!appFirstStart) {
+      api.removeLaunchView();
+      $('#slider').removeClass('hidden');
+      $('#slider').find('img').height(Number(api.winHeight) - 2).width(Number(api.winWidth));
+      var slide = $api.byId('slider');
+      $('#dotBox').find('li').eq(0).addClass('active');
+      window.mySwipe = Swipe(slide, {
+        // auto: 3000,
+        continuous: false,
+        disableScroll: false,
+        stopPropagation: true,
+        callback: function(index, elem) {
+        },
+        transitionEnd: function(index, elem) {
+        }
+      });
+      
+     
+    }else{
+      $('#slider').addClass('hidden');
+      $('#wrap').removeClass('hidden');
+      isLogin();
+    }
+    
+    $('#threeImg').on('click',  function() {
+      $api.setStorage('appFirstStart', true);
+      $('#slider').addClass('hidden');
+      $('#wrap').removeClass('hidden');
+      isLogin();
+    });
+
+
+    function isLogin() {
+      api.showProgress({
+          style: 'default',
+          animationType: 'fade',
+          title: '正在检测用户信息...',
+          text: '再耐心等待一会',
+          modal: true
+      });
+      
+      //定位完后请求是否登陆
+      authInfo(function(data, code, msg) {
+        api.hideProgress();
+        if(code === 0) {
+          $api.setStorage('user', data);
+          
+          api.openWin({
+            name: 'index',
+            url: './index-main.html',
+            bounces : false,
+            scrollToTop : false,
+            slidBackEnabled : false
+          });
+        }else{
+          api.removeLaunchView();
+        }
+      });
+
+
+    }
+
+
+    function openLogin(params, nickname, avatar) {
+      sendAjax(URLConfig('openLogin'), params, function(data, code, msg) {
+        if(code === 0) {
+          if(!data['nickname']) {
+            //跳转资料
+            api.openWin({
+              'name' : 'complete-info',
+              'url' : './html/complete-info.html',
+              'bounces' : false,
+              'pageParam' : {'nickname' : nickname, 'avatar' : avatar},
+              'slidBackEnabled' : false
+            });
+          }else{
+            $api.setStorage('user', data);
+            api.openWin({
+              'name' : 'index',
+              'url' : './index-main.html',
+              'bounces' : false,
+              'scrollToTop' : false,
+              'slidBackEnabled' : false
+            });
+          }
+
+        }else{
+          isSend = false;
+           api.toast({
+            msg: msg || '登录失败，请稍后再试！',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+    }
+
+    
+    $('#register').on('tap',  function() {
+      api.openWin({
+          name: 'register',
+          url: './html/register.html',
+          bounces : false
+      });
+    });
+
+
+    $('#login').on('tap',  function() {
+      api.openWin({
+          name: 'login',
+          url: './html/login.html',
+          bounces : false
+      });
+    });
+
+
+    $('#guangguang').on('tap',  function() {
+      api.openWin({
+          name: 'index',
+          url: './index-main.html',
+          slidBackEnabled : false,
+          bounces : false,
+          scrollToTop : false,
+          pageParam : {'guangguang' : true}
+      });
+    });
+
+
+    
+    //初始化推送服务，只Android有效，ios上会自动初始化
+    var ajpush = api.require('ajpush');
+    if(ajpush) {
+      try{
+        ajpush.init(function(ret) {
+          if(ret && ret.status){
+            //success
+            ajpush.getRegistrationId(function(ret) {
+              var registrationId = ret.id;
+              $api.setStorage('registrationId', registrationId);
+              // 0a115acb713 napster iphone 5s
+            });
+          }
+        });
+        
+        if(api.systemType === 'ios') {
+          ajpush.getRegistrationId(function(ret) {
+            var registrationId = ret.id;
+            $api.setStorage('registrationId', registrationId);
+          });
+        }
+        
+        ajpush.setListener(function(ret) {
+           var id = ret.id;
+           var title = ret.title;
+           var content = ret.content;
+           var extra = ret.extra;
+           
+           if(typeof extra === 'string') {
+              extra = JSON.parse(extra);
+           }
+           
+           setTimeout(function() {
+            jpushAction(extra['url']);
+          },1000)
+        });
+
+        /* 监听推送消息 */
+        if(api.systemType === 'ios') {
+          api.addEventListener({name:'noticeclicked'}, function(ret,err) {
+              if(ret && ret.value){
+                  var ajpush = ret.value;
+                  var content = ajpush.content;
+                  var extra = ajpush.extra;
+
+                  if(typeof extra === 'string') {
+                    extra = JSON.parse(extra);
+                  }
+
+                  setTimeout(function() {
+                    jpushAction(extra['url']);
+                  },1000)
+              }
+          })
+        }else{
+          api.addEventListener({name:'appintent'}, function(ret,err) {
+            if(ret && ret.appParam.ajpush){
+                var ajpush = ret.appParam.ajpush;
+                var id = ajpush.id;
+                var title = ajpush.title;
+                var content = ajpush.content;
+                var extra = ajpush.extra;
+
+                if(typeof extra === 'string') {
+                  extra = JSON.parse(extra);
+                }
+
+                setTimeout(function() {
+                  jpushAction(extra['url']);
+                },1000)
+
+            }
+          })
+        }
+      }catch(e){
+        var errmsg = e.message+'   '+JSON.stringify(e);
+        uploadErrLog('exception', errmsg);
+      }
+      
+    }
+
+
+    var weiXin = api.require('weiXin');
+    function weixinGetUserInfo() {
+      weiXin.getUserInfo(function(rets,errs){ 
+        if(rets.status){
+            var openid = rets.openid;
+            var registrationId = $api.getStorage('registrationId');
+            var params = {
+              'source' : 'weixin',
+              'openid' : rets['openid'],
+              'nickname' : rets['nickname'],
+              'gender' : rets['gender'],
+              'avatar' : rets['headimgurl'],
+              'unionid' : rets['unionid'],
+              'registration_id' : registrationId
+            }
+            openLogin(params, params['nickname'], params['avatar']);
+         }else{
+           weixinRefreshToken();
+         }
+      });
+    }
+
+    function weixinRefreshToken() {
+      weiXin.refreshToken(function(ret,err){ 
+        if(ret.status){
+            weixinGetUserInfo();
+         }
+      });
+    }
+    
+    $('#weixin').on('click',  function() {
+      weiXin.registerApp(function(ret,err){
+          if(ret.status) {
+            $api.setStorage('weixin-index',true);
+          }else{
+            $api.setStorage('weixin-index',null);
+          }
+        });
+      weiXin.auth(function(ret,err){ 
+        if(ret.status){
+            weixinGetUserInfo();
+         }
+      });
+    });
+    
+    $('#qq').on('click',  function() {
+      var obj = api.require('qq');
+      obj.login(function(ret,err){
+        obj.getUserInfo(function(rets,errs) {
+          if (rets.status) {
+            var registrationId = $api.getStorage('registrationId');
+            var params = {
+              'source' : 'qq',
+              'openid' : ret['openId'],
+              'nickname' : rets['info']['nickname'],
+              'gender' : rets['info']['gender'] === '男'? 1 : 2,
+              'avatar' : rets['info']['figureurl_qq_2'],
+              'registration_id' : registrationId
+            }
+            openLogin(params, params['nickname'], params['avatar']);
+          }
+        });
+      });
+    });
+
+  }
+
+  
+</script>
+</html>

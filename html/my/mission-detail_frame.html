@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <title>任务_鱼多多_找钓点，就用鱼多多</title>
+  
+</head>
+<body>
+
+  <div class="mission-detail">
+    <div class="block border-bottom">
+      <h2 id="missionTitle"></h2>
+      <div class="status" id="notice"></div>  
+
+      <ul class="info">
+        <li>任务性质：<span id="taskTag"></span></li>
+        <li id="reward">金币奖励：<i class="icon-m icon-know2"></i>+<span></span></li>
+        <li id="reward_exp">经验奖励：<i class="icon-m icon-know2"></i>+<span></span></li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h3>任务说明</h3>
+      <div id="desc" class="desc">
+        
+      </div>
+    </div>
+
+  </div>
+
+
+
+</div>
+</body>
+
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<script>
+  apiready = function() {
+
+    function getData() {
+      sendAjax(URLConfig('taskInfo'), {'key' : api.pageParam['key']}, function(data, code, msg) {
+        if(code === 0) {
+          renderData(data);
+        }else{
+          api.toast({
+            msg: msg || '请求失败，稍后再试',
+            duration:2000,
+            location: 'middle'
+          });
+        }
+      });
+    }
+
+    getData();
+
+    function renderData(data) {
+      $('#missionTitle').text(data['name']);
+      $('#notice').text(data['notice']);
+      $('#desc').text(data['desc']);
+      $('#reward').find('span').text(data['reward']);
+      if(data['reward_exp'] ) {
+        $('#reward_exp').find('span').text(data['reward_exp']);
+      }else{
+        $('#reward_exp').addClass('hidden');
+      }
+      $('#taskTag').text(data['task_tag']);
+    }
+
+  }
+
+</script>
+</html>

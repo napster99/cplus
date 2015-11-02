@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="address=no">
+
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/component.css">
+  <link rel="stylesheet" href="../../css/font-icon.css">
+  <title>湿度</title>
+</head>
+<body>
+  <div class="wrap">
+    <div class="text-list mt10">
+      <ul class="border-top">
+        <li class="border-bottom">
+          <select>
+          </select>
+        </li>
+      </ul>
+    </div>
+  </div>
+</body>
+<script src="../../script/api.js"></script>
+<script src="../../script/zepto.min.js"></script>
+<script src="../../script/common.js"></script>
+<!-- <script type="text/javascript" src="http://code.jquery.com/jquery-latest.js"></script> -->
+<script>
+  apiready = function() {
+   function initSelectData() {
+      var htmlStr = '<option value="">请选择</option>';
+      for(var i=1; i<100; i++) {
+        htmlStr += '<option value="'+i+'">' + i+'</option>';
+      }
+      $('select').html(htmlStr);
+    }
+
+    initSelectData();
+
+    if(api.pageParam['humidity']) {
+      var humidity  = api.pageParam['humidity'].replace('%','');
+      $('select').find('option').eq(humidity)[0].selected = true;
+    }
+    
+    $('select').on('change',  function() {
+      var value = $(this).val();
+      if(value) {
+        api.execScript({
+          name: 'humidity',
+          script: 'changeSaveStatus(true);'
+        });
+      }else{
+        api.execScript({
+          name: 'humidity',
+          script: 'changeSaveStatus(false);'
+        });
+      }
+    });
+
+
+    window.saveHumidity = function() {
+      var humidity = $('select').find(':selected').val();
+      if(!/^\d+(\.\d+)?$/.test(humidity)) {
+        api.toast({msg: '请输入数字', duration:1000,location: 'middle'});
+        return;
+      }
+      api.execScript({
+        name : 'publish-fishery',
+        frameName: 'publish-fishery',
+        script: 'setHumidityInfo("'+humidity+'");'
+      });
+
+      api.closeWin();
+    }
+   
+
+  }
+
+</script>
+</html>
